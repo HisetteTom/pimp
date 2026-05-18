@@ -33,7 +33,7 @@ jobs:
           
           # Run react-doctor with --json to get numeric score reliably
           # Use jq to extract the score from the JSON output
-          SCORE=$(bunx react-doctor@latest . --json -y | jq '.score' || echo "0")
+          SCORE=$(bunx react-doctor@latest . --json -y | jq '.summary.score' || echo "0")
           echo "score=$SCORE" >> $GITHUB_OUTPUT
           
           # Prepare report output (strip ANSI colors if any, though NO_COLOR is set)
