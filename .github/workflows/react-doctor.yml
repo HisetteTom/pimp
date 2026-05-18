@@ -27,17 +27,26 @@ jobs:
 
       - name: Run React Doctor
         id: doctor
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI: true
         run: |
-          # Run react-doctor and save human-readable report for PR comment
-          bunx react-doctor@latest . --fail-on none -y > report.txt
+          # Run react-doctor and save human-readable report
+          bunx react-doctor@latest . --project pimp --fail-on none -y > report.txt 2>&1
           
-          # Run react-doctor with --json to get numeric score reliably
-          # Use jq to extract the score from the JSON output
-          SCORE=$(bunx react-doctor@latest . --json -y | jq '.summary.score' || echo "0")
+          # Run with --json to temp file, redirecting stderr to avoid noise
+          bunx react-doctor@latest . --project pimp --json -y > raw_result.json 2>/dev/null
+          
+          # Extract only the JSON part
+          sed -n '/{/,$p' raw_result.json > result.json
+          
+          # Extract score with fallback paths
+          SCORE=$(jq '.summary.score // .projects[0].score.score // 0' result.json)
           echo "score=$SCORE" >> $GITHUB_OUTPUT
           
-          # Prepare report output (strip ANSI colors if any, though NO_COLOR is set)
-          REPORT=$(cat report.txt)
+          # Prepare clean report for PR comment
+          # Start from the version header
+          REPORT=$(sed -n '/react-doctor/,$p' report.txt || cat report.txt)
           echo "report<<EOF" >> $GITHUB_OUTPUT
           echo "$REPORT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
