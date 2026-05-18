@@ -2,19 +2,14 @@ name: React Doctor
 
 on:
   push:
-    branches: ["**"]
-  pull_request:
-    branches: ["**"]
+    branches: ["main"]
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   doctor:
     runs-on: ubuntu-latest
-    env:
-      NO_COLOR: 1
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,55 +22,15 @@ jobs:
 
       - name: Run React Doctor
         id: doctor
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Run diagnostic and PR comment
-          npx react-doctor@latest . --project pimp --fail-on none --pr-comment --annotations
+          # Run once to show diagnostics in logs and output annotations
+          npx react-doctor@latest . --fail-on none -y --annotations
           
-          # Capture score reliably
-          SCORE=$(npx react-doctor@latest . --project pimp --score --fail-on none | tail -1 | tr -d '[:space:]')
+          # Run again to capture score reliably. -y skips project prompts.
+          SCORE=$(npx react-doctor@latest . --score --fail-on none -y | tail -1 | tr -d '[:space:]')
           echo "score=$SCORE" >> "$GITHUB_OUTPUT"
 
-      - name: Post/Update PR Comment
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        env:
-          DOCTOR_SCORE: ${{ steps.doctor.outputs.score }}
-          # The action doesn't output the full report text directly in a simple way,
-          # so we might need to run it once more for the report or just show the score.
-          # For now, we'll show the score and a link to the results if possible.
-        with:
-          script: |
-            const score = parseInt(process.env.DOCTOR_SCORE) || 0;
-            const body = `### React Doctor Report\n\n**Health Score: ${score}/100**\n\nCheck the Action logs for full details.`;
-            
-            const { data: comments } = await github.rest.issues.listComments({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
-            
-            const botComment = comments.find(c => c.body.includes('### React Doctor Report'));
-            
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                comment_id: botComment.id,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: body
-              });
-            }
-
-      - name: Update README Health Score Badge
-        if: github.event_name == 'push'
+      - name: Update README Badge
         run: |
           SCORE=${{ steps.doctor.outputs.score }}
           COLOR="lightgrey"
@@ -87,19 +42,13 @@ jobs:
             else COLOR="red"; fi
           else
             SCORE="0"
+            COLOR="red"
           fi
           
-          # Use Shields.io endpoint or simple badge. 
-          # Spaces should be underscores or %20. React_Doctor is fine.
-          # Slashes in message must be encoded as %2F.
           BADGE="[![Health Score](https://img.shields.io/badge/React_Doctor-${SCORE}%2F100-${COLOR})](https://github.com/millionco/react-doctor)"
-          
-          # Replace the badge line in README.md
-          # Match the existing badge line and swap it.
           sed -i "s@\[\!\[Health Score\].*@${BADGE} <!-- DOCTOR_BADGE_START --><!-- DOCTOR_BADGE_END -->@g" README.md
 
       - name: Commit changes
-        if: github.event_name == 'push'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update react-doctor health score [skip ci]"
