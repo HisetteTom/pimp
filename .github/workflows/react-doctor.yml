@@ -27,10 +27,15 @@ jobs:
 
       - name: Run React Doctor
         id: doctor
-        uses: millionco/react-doctor@main
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          fail-on: none
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Run diagnostic and PR comment
+          npx react-doctor@latest . --project pimp --fail-on none --pr-comment --annotations
+          
+          # Capture score reliably
+          SCORE=$(npx react-doctor@latest . --project pimp --score --fail-on none | tail -1 | tr -d '[:space:]')
+          echo "score=$SCORE" >> "$GITHUB_OUTPUT"
 
       - name: Post/Update PR Comment
         if: github.event_name == 'pull_request'
