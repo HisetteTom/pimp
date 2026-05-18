@@ -32,26 +32,34 @@ jobs:
           CI: true
         run: |
           # Run react-doctor and save human-readable report
-          bunx react-doctor@latest . --project pimp --fail-on none -y > report.txt 2>&1
-          
-          # Run with --json to temp file, redirecting stderr to avoid noise
-          bunx react-doctor@latest . --project pimp --json -y > raw_result.json 2>/dev/null
-          
+          bun x react-doctor@latest . --project pimp --fail-on none -y > report.txt 2>&1
+
+          # Run with --json to temp file
+          bun x react-doctor@latest . --project pimp --json -y > raw_result.json 2>&1
+
+          echo "--- RAW RESULT START ---"
+          cat raw_result.json
+          echo "--- RAW RESULT END ---"
+
           # Extract only the JSON part
           sed -n '/{/,$p' raw_result.json > result.json
-          
+
+          echo "--- EXTRACTED JSON START ---"
+          cat result.json
+          echo "--- EXTRACTED JSON END ---"
+
           # Extract score with fallback paths
           SCORE=$(jq '.summary.score // .projects[0].score.score // 0' result.json)
           echo "score=$SCORE" >> $GITHUB_OUTPUT
-          
+
           # Prepare clean report for PR comment
-          # Start from the version header
           REPORT=$(sed -n '/react-doctor/,$p' report.txt || cat report.txt)
           echo "report<<EOF" >> $GITHUB_OUTPUT
           echo "$REPORT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
-          
+
           echo "Captured Score: $SCORE"
+
 
       - name: Post/Update PR Comment
         if: github.event_name == 'pull_request'
