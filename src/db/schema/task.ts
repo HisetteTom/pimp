@@ -6,9 +6,5 @@ export const task = pgTable("task", {
 	status: varchar("status", { length: 255 }),
 	timeStart: time("time-start", { withTimezone: true }),
 	timeEnd: time("time-end", { withTimezone: true }),
-});
-
-export const taskResponsabilityFk = foreignKey({
-	columns: [task.id],
-	foreignColumns: [responsability.id],
+	responsabilityId: integer("responsability_id").references(() => responsability.id),
 });

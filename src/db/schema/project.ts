@@ -5,9 +5,5 @@ export const project = pgTable("project", {
 	id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
 	dateStart: date("date-start"),
 	dateEnd: date("date-end"),
-});
-
-export const projectTaskFk = foreignKey({
-	columns: [project.id],
-	foreignColumns: [task.id],
+	taskId: integer("task_id").references(() => task.id),
 });

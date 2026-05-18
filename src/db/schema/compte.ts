@@ -8,18 +8,10 @@ export const compte = pgTable("compte", {
 	mail: varchar("mail", { length: 255 }),
 	password: varchar("password", { length: 255 }),
 	role: varchar("role", { length: 255 }),
+	projectId: integer("project_id").references(() => project.id),
+	responsabilityId: integer("responsability_id").references(() => responsability.id),
 }, (table) => {
 	return {
 		compteIndex0: index("compte_index_0").on(table.id),
 	};
-});
-
-export const compteProjectFk = foreignKey({
-	columns: [compte.id],
-	foreignColumns: [project.id],
-});
-
-export const compteResponsabilityFk = foreignKey({
-	columns: [compte.id],
-	foreignColumns: [responsability.id],
 });
