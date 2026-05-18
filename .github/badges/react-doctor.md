@@ -1,0 +1,1 @@
+[![Health Score](https://img.shields.io/badge/React_Doctor-100%2F100-brightgreen)](https://github.com/millionco/react-doctor)

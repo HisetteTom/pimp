@@ -1,5 +1,5 @@
 import { diagnose } from "react-doctor/api";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
 
 async function run() {
@@ -7,17 +7,14 @@ async function run() {
   
   try {
     const result = await diagnose(".");
-    // console.log("Full result:", JSON.stringify(result, null, 2));
     
     const scoreObj = result.score;
-    
     if (!scoreObj) {
       console.error("No score returned from react-doctor.");
       process.exit(1);
     }
 
     const score = typeof scoreObj === "object" ? scoreObj.score : scoreObj;
-    
     if (typeof score !== "number") {
       console.error("Failed to get a numeric score from react-doctor.", scoreObj);
       process.exit(1);
@@ -31,29 +28,38 @@ async function run() {
 
     console.log(`Score: ${score}, Color: ${color}`);
 
+    // Strategy: Write badge to a separate file to avoid README merge conflicts
     const badge = `[![Health Score](https://img.shields.io/badge/React_Doctor-${score}%2F100-${color})](https://github.com/millionco/react-doctor)`;
+    
+    const badgeDir = join(process.cwd(), ".github", "badges");
+    if (!existsSync(badgeDir)) {
+      mkdirSync(badgeDir, { recursive: true });
+    }
+    
+    const badgeFilePath = join(badgeDir, "react-doctor.md");
+    writeFileSync(badgeFilePath, badge);
+    console.log(`.github/badges/react-doctor.md updated successfully.`);
+
+    // One-time README update to point to the file if markers exist
     const readmePath = join(process.cwd(), "README.md");
     let readme = readFileSync(readmePath, "utf-8");
-
-    // Replace the existing badge line between markers
     const markerRegex = /<!-- DOCTOR_BADGE_START -->[\s\S]*?<!-- DOCTOR_BADGE_END -->/;
-    const badgeWithMarkers = `<!-- DOCTOR_BADGE_START -->${badge}<!-- DOCTOR_BADGE_END -->`;
+    
+    // We replace the markers with a relative link to the badge file or just a placeholder
+    // GitHub supports embedding markdown files in other markdown via some tricks, 
+    // but the most conflict-free way is to keep the badge in its own file and let the user link to it,
+    // or use a stable URL that points to the badge file on the current branch.
+    
+    // For now, let's keep the README stable by pointing to the file on the current branch
+    const stableLink = `<!-- DOCTOR_BADGE_START -->\n[![](https://img.shields.io/badge/Health_Score-Check_Badge-blue) (Check Latest Health Score)](.github/badges/react-doctor.md)\n<!-- DOCTOR_BADGE_END -->`;
 
-    if (readme.match(markerRegex)) {
-        readme = readme.replace(markerRegex, badgeWithMarkers);
-    } else {
-        // Fallback: replace any Health Score badge line
-        const badgeRegex = /\[\!\[Health Score\].*?\n/;
-        if (readme.match(badgeRegex)) {
-            readme = readme.replace(badgeRegex, `${badgeWithMarkers}\n`);
-        } else {
-            // Append after title if possible
-            readme = readme.replace(/(# .*\n)/, `$1\n${badgeWithMarkers}\n`);
-        }
+    if (markerRegex.test(readme)) {
+        // If we still have the old badge in README, we replace it with a stable link that doesn't change with the score
+        readme = readme.replace(markerRegex, stableLink);
+        writeFileSync(readmePath, readme);
+        console.log("README.md updated with stable link to prevent future conflicts.");
     }
 
-    writeFileSync(readmePath, readme);
-    console.log("README.md updated successfully.");
   } catch (error) {
     console.error("Error running react-doctor:", error);
     process.exit(1);
