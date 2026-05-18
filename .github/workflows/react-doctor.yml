@@ -4,7 +4,7 @@ on:
   push:
     branches: ["**"]
   pull_request:
-    branches: [main]
+    branches: ["**"]
 
 permissions:
   contents: write
@@ -28,25 +28,32 @@ jobs:
       - name: Run React Doctor
         id: doctor
         run: |
-          # Run scan for report
-          REPORT=$(bunx react-doctor@latest . --fail-on none)
+          # Run react-doctor and save full report for PR comment
+          bunx react-doctor@latest . --fail-on none -y > report.txt
+          
+          # Get numeric score reliably
+          SCORE=$(bunx react-doctor@latest . --score -y | tail -n 1 | grep -oE '[0-9]+' || echo "0")
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
+          
+          # Prepare report output
+          REPORT=$(cat report.txt)
           echo "report<<EOF" >> $GITHUB_OUTPUT
           echo "$REPORT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
           
-          # Get numeric score. Use --score and ensure only the number is captured.
-          SCORE=$(bunx react-doctor@latest . --score | grep -E '^[0-9]+$' || echo "0")
-          echo "score=$SCORE" >> $GITHUB_OUTPUT
           echo "Captured Score: $SCORE"
 
       - name: Post/Update PR Comment
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
+        env:
+          DOCTOR_SCORE: ${{ steps.doctor.outputs.score }}
+          DOCTOR_REPORT: ${{ steps.doctor.outputs.report }}
         with:
           script: |
-            const score = "${{ steps.doctor.outputs.score }}";
-            const report = `${{ steps.doctor.outputs.report }}`.trim();
-            const body = `### 🩺 React Doctor Report\n\n**Health Score: ${score}/100**\n\n<details>\n<summary>View Details</summary>\n\n\`\`\`\n${report}\n\`\`\`\n\n</details>`;
+            const score = parseInt(process.env.DOCTOR_SCORE) || 0;
+            const report = process.env.DOCTOR_REPORT || "";
+            const body = `### React Doctor Report\n\n**Health Score: ${score}/100**\n\n<details>\n<summary>View Details</summary>\n\n\`\`\`\n${report}\n\`\`\`\n\n</details>`;
             
             const { data: comments } = await github.rest.issues.listComments({
               issue_number: context.issue.number,
@@ -54,7 +61,7 @@ jobs:
               repo: context.repo.repo,
             });
             
-            const botComment = comments.find(c => c.body.includes('🩺 React Doctor Report'));
+            const botComment = comments.find(c => c.body.includes('### React Doctor Report'));
             
             if (botComment) {
               await github.rest.issues.updateComment({
@@ -87,11 +94,14 @@ jobs:
             SCORE="0"
           fi
           
-          # Use %2F for slash to avoid URL issues
+          # Use Shields.io endpoint or simple badge. 
+          # Spaces should be underscores or %20. React_Doctor is fine.
+          # Slashes in message must be encoded as %2F.
           BADGE="[![Health Score](https://img.shields.io/badge/React_Doctor-${SCORE}%2F100-${COLOR})](https://github.com/millionco/react-doctor)"
           
-          # Use @ as delimiter for sed to avoid escaping slashes in the URL
-          sed -i "s@\[!\[Health Score\].*@${BADGE} <!-- DOCTOR_BADGE_START --><!-- DOCTOR_BADGE_END -->@g" README.md
+          # Replace the badge line in README.md
+          # Match the existing badge line and swap it.
+          sed -i "s@\[\!\[Health Score\].*@${BADGE} <!-- DOCTOR_BADGE_START --><!-- DOCTOR_BADGE_END -->@g" README.md
 
       - name: Commit changes
         if: github.event_name == 'push'
