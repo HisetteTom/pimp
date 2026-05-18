@@ -60,19 +60,18 @@ async function run() {
     const repo = process.env.GITHUB_REPOSITORY || "HisetteTom/pimp";
     const branch = process.env.GITHUB_REF_NAME || "main";
     
-    const dynamicBadgeUrl = `https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/${repo}/${branch}/.github/badges/react-doctor.json`;
+    // Using a more reliable shields.io format for GitHub files
+    const dynamicBadgeUrl = `https://img.shields.io/badge/endpoint?url=https://raw.githubusercontent.com/${repo}/${branch}/.github/badges/react-doctor.json`;
     const badgeMarkdown = `[![Health Score](${dynamicBadgeUrl})](https://github.com/millionco/react-doctor)`;
     const stableLink = `<!-- DOCTOR_BADGE_START -->\n${badgeMarkdown}\n<!-- DOCTOR_BADGE_END -->`;
 
     const markerRegex = /<!-- DOCTOR_BADGE_START -->[\s\S]*?<!-- DOCTOR_BADGE_END -->/;
 
     if (markerRegex.test(readme)) {
-        // Force update if it's the placeholder or missing
-        if (!readme.includes(repo) || !readme.includes("img.shields.io/endpoint")) {
-            readme = readme.replace(markerRegex, stableLink);
-            writeFileSync(readmePath, readme);
-            console.log("README.md updated with real repo dynamic link.");
-        }
+        // Force update to ensure URL is always correct
+        readme = readme.replace(markerRegex, stableLink);
+        writeFileSync(readmePath, readme);
+        console.log("README.md forced update with dynamic link.");
     }
 
   } catch (error) {
