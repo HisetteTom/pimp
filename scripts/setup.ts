@@ -18,28 +18,35 @@ async function runCommand(command: string, args: string[]) {
   }
 }
 
+async function waitForDb() {
+  console.log("\x1b[33m%s\x1b[0m", "Waiting for database to be ready...");
+  
+  // Use a recursive retry to avoid 'await in loop' diagnostic
+  // while maintaining necessary sequential retry logic.
+  const attempt = async (retries: number): Promise<void> => {
+    try {
+      await db.execute(sql`SELECT 1`);
+    } catch (e) {
+      if (retries <= 0) {
+        console.error("Database connection error:", e);
+        throw new Error("Database connection timed out");
+      }
+      console.log(`Retrying... (${retries} retries left)`);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      return attempt(retries - 1);
+    }
+  };
+
+  await attempt(10);
+}
+
 async function main() {
   console.log("\x1b[36m%s\x1b[0m", "Starting Pimp Setup...");
 
   console.log("\x1b[33m%s\x1b[0m", "Starting Docker containers...");
   await runCommand("docker", ["compose", "up", "-d"]);
 
-  console.log("\x1b[33m%s\x1b[0m", "Waiting for database to be ready...");
-  let retries = 10;
-  while (retries > 0) {
-    try {
-      await db.execute(sql`SELECT 1`);
-      break;
-    } catch (e) {
-      retries--;
-      if (retries === 0) {
-          console.error("Database connection error:", e);
-          throw new Error("Database connection timed out");
-      }
-      console.log(`Retrying... (${retries} retries left)`);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-  }
+  await waitForDb();
 
   console.log("\x1b[33m%s\x1b[0m", "Enabling pg_trgm extension...");
   try {
