@@ -28,36 +28,52 @@ async function run() {
 
     console.log(`Score: ${score}, Color: ${color}`);
 
-    // Strategy: Write badge to a separate file to avoid README merge conflicts
-    const badge = `[![Health Score](https://img.shields.io/badge/React_Doctor-${score}%2F100-${color})](https://github.com/millionco/react-doctor)`;
+    // Create JSON for shields.io dynamic badge
+    const badgeData = {
+      schemaVersion: 1,
+      label: "React Doctor",
+      message: `${score}/100`,
+      color: color,
+    };
     
     const badgeDir = join(process.cwd(), ".github", "badges");
     if (!existsSync(badgeDir)) {
       mkdirSync(badgeDir, { recursive: true });
     }
     
-    const badgeFilePath = join(badgeDir, "react-doctor.md");
-    writeFileSync(badgeFilePath, badge);
-    console.log(`.github/badges/react-doctor.md updated successfully.`);
+    const jsonPath = join(badgeDir, "react-doctor.json");
+    writeFileSync(jsonPath, JSON.stringify(badgeData, null, 2));
+    console.log(`.github/badges/react-doctor.json updated.`);
 
-    // One-time README update to point to the file if markers exist
+    // Update README with STATIC dynamic-badge link
+    // This link never changes, so NO MERGE CONFLICTS.
+    // It fetches the JSON from the current branch.
     const readmePath = join(process.cwd(), "README.md");
     let readme = readFileSync(readmePath, "utf-8");
+    
+    // We need to know repo owner and name for the raw.githubusercontent link
+    // Defaulting to placeholders or trying to infer if possible, 
+    // but better to use a relative link if shields.io supports it (it doesn't directly).
+    // However, we can use a placeholder that the user can fix or we can try to guess.
+    
+    // For local dev, we use a generic label. In CI, we can use env vars.
+    const repo = process.env.GITHUB_REPOSITORY || "OWNER/REPO";
+    const branch = process.env.GITHUB_REF_NAME || "main";
+    
+    const dynamicBadgeUrl = `https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/${repo}/${branch}/.github/badges/react-doctor.json`;
+    const badgeMarkdown = `[![Health Score](${dynamicBadgeUrl})](https://github.com/millionco/react-doctor)`;
+    const stableLink = `<!-- DOCTOR_BADGE_START -->\n${badgeMarkdown}\n<!-- DOCTOR_BADGE_END -->`;
+
     const markerRegex = /<!-- DOCTOR_BADGE_START -->[\s\S]*?<!-- DOCTOR_BADGE_END -->/;
-    
-    // We replace the markers with a relative link to the badge file or just a placeholder
-    // GitHub supports embedding markdown files in other markdown via some tricks, 
-    // but the most conflict-free way is to keep the badge in its own file and let the user link to it,
-    // or use a stable URL that points to the badge file on the current branch.
-    
-    // For now, let's keep the README stable by pointing to the file on the current branch
-    const stableLink = `<!-- DOCTOR_BADGE_START -->\n[![](https://img.shields.io/badge/Health_Score-Check_Badge-blue) (Check Latest Health Score)](.github/badges/react-doctor.md)\n<!-- DOCTOR_BADGE_END -->`;
 
     if (markerRegex.test(readme)) {
-        // If we still have the old badge in README, we replace it with a stable link that doesn't change with the score
-        readme = readme.replace(markerRegex, stableLink);
-        writeFileSync(readmePath, readme);
-        console.log("README.md updated with stable link to prevent future conflicts.");
+        // We only update if it's not already the dynamic badge or if we're forcing a stable setup
+        // To avoid conflicts, we want this to be WRITTEN ONCE and then NEVER CHANGED by the script again.
+        if (!readme.includes("img.shields.io/endpoint")) {
+            readme = readme.replace(markerRegex, stableLink);
+            writeFileSync(readmePath, readme);
+            console.log("README.md updated with dynamic endpoint link.");
+        }
     }
 
   } catch (error) {
