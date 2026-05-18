@@ -26,24 +26,37 @@ jobs:
       - name: Run React Doctor
         id: doctor
         run: |
-          # We run it manually to avoid issues with the official action's current version
-          # --score outputs only the number (0-100)
-          SCORE=$(bunx react-doctor@latest . --score | tail -n 1 | tr -d '[:space:]')
-          echo "Captured Score: $SCORE"
-          echo "score=$SCORE" >> $GITHUB_OUTPUT
+          # Use --project pimp to avoid prompts
+          # Use --score to get just the number
+          # We use tail -n 1 to grab the very last line
+          RAW_SCORE=$(bunx react-doctor@latest . --project pimp --score --fail-on none | tail -n 1 | tr -d '[:space:]')
+          
+          # Clean score: remove non-numeric chars (handles "Score: 85" or similar)
+          SCORE=$(echo "$RAW_SCORE" | sed 's/[^0-9]//g')
+          
+          if [ -z "$SCORE" ]; then
+            echo "Error: Could not capture score. Raw output: $RAW_SCORE"
+            echo "score=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "Captured Score: $SCORE"
+            echo "score=$SCORE" >> "$GITHUB_OUTPUT"
+          fi
       - name: Update README Health Score Badge
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           SCORE=${{ steps.doctor.outputs.score }}
           
-          # Default to grey if score is missing
+          # Default to grey if score is missing or invalid
           COLOR="lightgrey"
-          if [ -n "$SCORE" ]; then
+          if [[ "$SCORE" =~ ^[0-9]+$ ]]; then
             if [ "$SCORE" -gt 85 ]; then COLOR="brightgreen";
             elif [ "$SCORE" -gt 70 ]; then COLOR="green";
             elif [ "$SCORE" -gt 50 ]; then COLOR="yellow";
             elif [ "$SCORE" -gt 25 ]; then COLOR="orange";
             else COLOR="red"; fi
+          else
+            SCORE="0"
+            COLOR="red"
           fi
           
           # Replace the badge line in README
