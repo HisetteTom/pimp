@@ -13,6 +13,8 @@ permissions:
 jobs:
   doctor:
     runs-on: ubuntu-latest
+    env:
+      NO_COLOR: 1
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,16 +28,16 @@ jobs:
       - name: Run React Doctor
         id: doctor
         run: |
-          # Run full scan for report
+          # Run scan for report
           REPORT=$(bunx react-doctor@latest . --fail-on none)
-          # Escape for output
           echo "report<<EOF" >> $GITHUB_OUTPUT
           echo "$REPORT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
           
-          # Get numeric score
-          SCORE=$(bunx react-doctor@latest . --score | tail -n 1 | tr -d '[:space:]')
+          # Get numeric score. Use --score and ensure only the number is captured.
+          SCORE=$(bunx react-doctor@latest . --score | grep -E '^[0-9]+$' || echo "0")
           echo "score=$SCORE" >> $GITHUB_OUTPUT
+          echo "Captured Score: $SCORE"
 
       - name: Post/Update PR Comment
         if: github.event_name == 'pull_request'
@@ -82,11 +84,14 @@ jobs:
             elif [ "$SCORE" -gt 25 ]; then COLOR="orange";
             else COLOR="red"; fi
           else
-            SCORE="?"
+            SCORE="0"
           fi
           
-          BADGE="[![Health Score](https://img.shields.io/badge/React_Doctor-$SCORE%2F100-$COLOR)](https://github.com/millionco/react-doctor)"
-          sed -i "s|\[!\[Health Score\].*|${BADGE} <!-- DOCTOR_BADGE_START --><!-- DOCTOR_BADGE_END -->|g" README.md
+          # Use %2F for slash to avoid URL issues
+          BADGE="[![Health Score](https://img.shields.io/badge/React_Doctor-${SCORE}%2F100-${COLOR})](https://github.com/millionco/react-doctor)"
+          
+          # Use @ as delimiter for sed to avoid escaping slashes in the URL
+          sed -i "s@\[!\[Health Score\].*@${BADGE} <!-- DOCTOR_BADGE_START --><!-- DOCTOR_BADGE_END -->@g" README.md
 
       - name: Commit changes
         if: github.event_name == 'push'
