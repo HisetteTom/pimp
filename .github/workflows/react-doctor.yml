@@ -2,7 +2,7 @@ name: React Doctor
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
   pull_request:
     branches: [main]
 
@@ -23,39 +23,73 @@ jobs:
         with:
           bun-version: latest
 
-      # Use the official action ONLY for Pull Requests (for sticky comments & annotations)
-      - name: Run React Doctor (PR)
-        if: github.event_name == 'pull_request'
-        uses: millionco/react-doctor@main
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          diff: ${{ github.base_ref }}
-
-      # Use manual bunx for Push to main (to update the badge score safely)
-      - name: Run React Doctor (Push)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        id: doctor_push
+      - name: Run React Doctor
+        id: doctor
         run: |
+          # Run full scan for report
+          REPORT=$(bunx react-doctor@latest . --fail-on none)
+          # Escape for output
+          echo "report<<EOF" >> $GITHUB_OUTPUT
+          echo "$REPORT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          # Get numeric score
           SCORE=$(bunx react-doctor@latest . --score | tail -n 1 | tr -d '[:space:]')
           echo "score=$SCORE" >> $GITHUB_OUTPUT
 
+      - name: Post/Update PR Comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const score = "${{ steps.doctor.outputs.score }}";
+            const report = `${{ steps.doctor.outputs.report }}`.trim();
+            const body = `### 🩺 React Doctor Report\n\n**Health Score: ${score}/100**\n\n<details>\n<summary>View Details</summary>\n\n\`\`\`\n${report}\n\`\`\`\n\n</details>`;
+            
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            
+            const botComment = comments.find(c => c.body.includes('🩺 React Doctor Report'));
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                comment_id: botComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
+
       - name: Update README Health Score Badge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push'
         run: |
-          SCORE=${{ steps.doctor_push.outputs.score }}
+          SCORE=${{ steps.doctor.outputs.score }}
           COLOR="lightgrey"
-          if [ -n "$SCORE" ]; then
+          if [[ "$SCORE" =~ ^[0-9]+$ ]]; then
             if [ "$SCORE" -gt 85 ]; then COLOR="brightgreen";
             elif [ "$SCORE" -gt 70 ]; then COLOR="green";
             elif [ "$SCORE" -gt 50 ]; then COLOR="yellow";
             elif [ "$SCORE" -gt 25 ]; then COLOR="orange";
             else COLOR="red"; fi
+          else
+            SCORE="?"
           fi
+          
           BADGE="[![Health Score](https://img.shields.io/badge/React_Doctor-$SCORE%2F100-$COLOR)](https://github.com/millionco/react-doctor)"
           sed -i "s|\[!\[Health Score\].*|${BADGE} <!-- DOCTOR_BADGE_START --><!-- DOCTOR_BADGE_END -->|g" README.md
 
       - name: Commit changes
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update react-doctor health score [skip ci]"
