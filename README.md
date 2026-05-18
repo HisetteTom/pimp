@@ -1,7 +1,7 @@
 # Pimp
 
 <!-- DOCTOR_BADGE_START -->
-[![Health Score](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/OWNER/REPO/main/.github/badges/react-doctor.json)](https://github.com/millionco/react-doctor)
+[![Health Score](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/HisetteTom/pimp/main/.github/badges/react-doctor.json)](https://github.com/millionco/react-doctor)
 <!-- DOCTOR_BADGE_END -->
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).

@@ -57,7 +57,7 @@ async function run() {
     // However, we can use a placeholder that the user can fix or we can try to guess.
     
     // For local dev, we use a generic label. In CI, we can use env vars.
-    const repo = process.env.GITHUB_REPOSITORY || "OWNER/REPO";
+    const repo = process.env.GITHUB_REPOSITORY || "HisetteTom/pimp";
     const branch = process.env.GITHUB_REF_NAME || "main";
     
     const dynamicBadgeUrl = `https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/${repo}/${branch}/.github/badges/react-doctor.json`;
@@ -67,12 +67,11 @@ async function run() {
     const markerRegex = /<!-- DOCTOR_BADGE_START -->[\s\S]*?<!-- DOCTOR_BADGE_END -->/;
 
     if (markerRegex.test(readme)) {
-        // We only update if it's not already the dynamic badge or if we're forcing a stable setup
-        // To avoid conflicts, we want this to be WRITTEN ONCE and then NEVER CHANGED by the script again.
-        if (!readme.includes("img.shields.io/endpoint")) {
+        // Force update if it's the placeholder or missing
+        if (!readme.includes(repo) || !readme.includes("img.shields.io/endpoint")) {
             readme = readme.replace(markerRegex, stableLink);
             writeFileSync(readmePath, readme);
-            console.log("README.md updated with dynamic endpoint link.");
+            console.log("README.md updated with real repo dynamic link.");
         }
     }
 
