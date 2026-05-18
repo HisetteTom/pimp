@@ -2,9 +2,8 @@ name: React Doctor
 
 on:
   push:
-    branches: [main]
+    branches: ["*"]
   pull_request:
-    branches: [main]
 
 permissions:
   contents: write
@@ -23,52 +22,13 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Run React Doctor
-        id: doctor
-        run: |
-          # Use --project pimp to avoid prompts
-          # Use --score to get just the number
-          # We grab the last numeric sequence from the output
-          RAW_OUTPUT=$(bunx react-doctor@latest . --project pimp --score --fail-on none)
-          echo "Full Output:"
-          echo "$RAW_OUTPUT"
-          
-          # Extract the last number from the entire output
-          SCORE=$(echo "$RAW_OUTPUT" | grep -oE '[0-9]+' | tail -n 1)
-          
-          if [ -z "$SCORE" ]; then
-            echo "Error: No numeric score found in output."
-            echo "score=0" >> "$GITHUB_OUTPUT"
-          else
-            echo "Final Score: $SCORE"
-            echo "score=$SCORE" >> "$GITHUB_OUTPUT"
-          fi
+      - name: Install dependencies
+        run: bun install
 
-      - name: Update README Badge
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          SCORE=${{ steps.doctor.outputs.score }}
-          COLOR="lightgrey"
-          
-          # Validate score is a number and within 0-100 range (just in case)
-          if [[ "$SCORE" =~ ^[0-9]+$ ]]; then
-            if [ "$SCORE" -gt 100 ]; then SCORE=100; fi
-            
-            if [ "$SCORE" -gt 85 ]; then COLOR="brightgreen";
-            elif [ "$SCORE" -gt 70 ]; then COLOR="green";
-            elif [ "$SCORE" -gt 50 ]; then COLOR="yellow";
-            elif [ "$SCORE" -gt 25 ]; then COLOR="orange";
-            else COLOR="red"; fi
-          else
-            SCORE="0"
-            COLOR="red"
-          fi
-          
-          BADGE="[![Health Score](https://img.shields.io/badge/React_Doctor-${SCORE}%2F100-${COLOR})](https://github.com/millionco/react-doctor)"
-          sed -i "s|\[!\[Health Score\].*|${BADGE} <!-- DOCTOR_BADGE_START --><!-- DOCTOR_BADGE_END -->|g" README.md
+      - name: Run React Doctor Script
+        run: bun run scripts/react-doctor-report.ts
 
       - name: Commit changes
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update react-doctor health score [skip ci]"

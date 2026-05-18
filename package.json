@@ -37,6 +37,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "^10.4.0",
     "eslint-config-next": "16.2.6",
+    "react-doctor": "^0.2.1",
     "tailwindcss": "^4.3.0",
     "tsx": "^4.22.1",
     "typescript": "^6.0.3"
