@@ -28,14 +28,15 @@ jobs:
       - name: Run React Doctor
         id: doctor
         run: |
-          # Run react-doctor and save full report for PR comment
+          # Run react-doctor and save human-readable report for PR comment
           bunx react-doctor@latest . --fail-on none -y > report.txt
           
-          # Get numeric score reliably
-          SCORE=$(bunx react-doctor@latest . --score -y | tail -n 1 | grep -oE '[0-9]+' || echo "0")
+          # Run react-doctor with --json to get numeric score reliably
+          # Use jq to extract the score from the JSON output
+          SCORE=$(bunx react-doctor@latest . --json -y | jq '.score' || echo "0")
           echo "score=$SCORE" >> $GITHUB_OUTPUT
           
-          # Prepare report output
+          # Prepare report output (strip ANSI colors if any, though NO_COLOR is set)
           REPORT=$(cat report.txt)
           echo "report<<EOF" >> $GITHUB_OUTPUT
           echo "$REPORT" >> $GITHUB_OUTPUT
