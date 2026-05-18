@@ -23,30 +23,31 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Run React Doctor (PR)
-        if: github.event_name == 'pull_request'
-        uses: millionco/react-doctor@main
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          diff: ${{ github.base_ref }}
-
-      - name: Run React Doctor (Push)
-        if: github.event_name == 'push'
-        id: doctor_push
-        uses: millionco/react-doctor@main
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run React Doctor
+        id: doctor
+        run: |
+          # We run it manually to avoid issues with the official action's current version
+          # --score outputs only the number (0-100)
+          SCORE=$(bunx react-doctor@latest . --score | tail -n 1 | tr -d '[:space:]')
+          echo "Captured Score: $SCORE"
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
 
       - name: Update README Health Score Badge
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
-          SCORE=${{ steps.doctor_push.outputs.score }}
-          COLOR="red"
-          if [ "$SCORE" -gt 85 ]; then COLOR="brightgreen";
-          elif [ "$SCORE" -gt 70 ]; then COLOR="green";
-          elif [ "$SCORE" -gt 50 ]; then COLOR="yellow";
-          elif [ "$SCORE" -gt 25 ]; then COLOR="orange"; fi
+          SCORE=${{ steps.doctor.outputs.score }}
           
+          # Default to grey if score is missing
+          COLOR="lightgrey"
+          if [ -n "$SCORE" ]; then
+            if [ "$SCORE" -gt 85 ]; then COLOR="brightgreen";
+            elif [ "$SCORE" -gt 70 ]; then COLOR="green";
+            elif [ "$SCORE" -gt 50 ]; then COLOR="yellow";
+            elif [ "$SCORE" -gt 25 ]; then COLOR="orange";
+            else COLOR="red"; fi
+          fi
+          
+          # Replace the badge line in README
           BADGE="[![Health Score](https://img.shields.io/badge/React_Doctor-$SCORE%2F100-$COLOR)](https://github.com/millionco/react-doctor)"
           sed -i "s|\[!\[Health Score\].*|${BADGE} <!-- DOCTOR_BADGE_START --><!-- DOCTOR_BADGE_END -->|g" README.md
 
