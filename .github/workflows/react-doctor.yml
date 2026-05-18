@@ -1,0 +1,58 @@
+name: React Doctor
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  doctor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Run React Doctor (PR)
+        if: github.event_name == 'pull_request'
+        uses: millionco/react-doctor@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          diff: ${{ github.base_ref }}
+
+      - name: Run React Doctor (Push)
+        if: github.event_name == 'push'
+        id: doctor_push
+        uses: millionco/react-doctor@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update README Health Score Badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          SCORE=${{ steps.doctor_push.outputs.score }}
+          COLOR="red"
+          if [ "$SCORE" -gt 85 ]; then COLOR="brightgreen";
+          elif [ "$SCORE" -gt 70 ]; then COLOR="green";
+          elif [ "$SCORE" -gt 50 ]; then COLOR="yellow";
+          elif [ "$SCORE" -gt 25 ]; then COLOR="orange"; fi
+          
+          BADGE="[![Health Score](https://img.shields.io/badge/React_Doctor-$SCORE%2F100-$COLOR)](https://github.com/millionco/react-doctor)"
+          sed -i "s|\[!\[Health Score\].*|${BADGE} <!-- DOCTOR_BADGE_START --><!-- DOCTOR_BADGE_END -->|g" README.md
+
+      - name: Commit changes
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update react-doctor health score [skip ci]"
+          file_pattern: 'README.md'
