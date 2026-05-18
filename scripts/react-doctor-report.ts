@@ -9,10 +9,17 @@ async function run() {
     const result = await diagnose(".");
     // console.log("Full result:", JSON.stringify(result, null, 2));
     
-    const score = typeof result.score === "object" ? result.score.score : result.score;
+    const scoreObj = result.score;
+    
+    if (!scoreObj) {
+      console.error("No score returned from react-doctor.");
+      process.exit(1);
+    }
+
+    const score = typeof scoreObj === "object" ? scoreObj.score : scoreObj;
     
     if (typeof score !== "number") {
-      console.error("Failed to get a numeric score from react-doctor.", result.score);
+      console.error("Failed to get a numeric score from react-doctor.", scoreObj);
       process.exit(1);
     }
 
@@ -29,15 +36,15 @@ async function run() {
     let readme = readFileSync(readmePath, "utf-8");
 
     // Replace the existing badge line between markers
-    const markerRegex = /<!-- DOCTOR_BADGE_START -->[\s\S]*?<!-- DOCTOR_BADGE_END -->/g;
+    const markerRegex = /<!-- DOCTOR_BADGE_START -->[\s\S]*?<!-- DOCTOR_BADGE_END -->/;
     const badgeWithMarkers = `<!-- DOCTOR_BADGE_START -->${badge}<!-- DOCTOR_BADGE_END -->`;
 
-    if (markerRegex.test(readme)) {
+    if (readme.match(markerRegex)) {
         readme = readme.replace(markerRegex, badgeWithMarkers);
     } else {
         // Fallback: replace any Health Score badge line
-        const badgeRegex = /\[\!\[Health Score\].*?\n/g;
-        if (badgeRegex.test(readme)) {
+        const badgeRegex = /\[\!\[Health Score\].*?\n/;
+        if (readme.match(badgeRegex)) {
             readme = readme.replace(badgeRegex, `${badgeWithMarkers}\n`);
         } else {
             // Append after title if possible
