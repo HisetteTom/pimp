@@ -1,5 +1,5 @@
 import { diagnose } from "react-doctor/api";
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
 async function run() {
@@ -28,50 +28,22 @@ async function run() {
 
     console.log(`Score: ${score}, Color: ${color}`);
 
-    // Create JSON for shields.io dynamic badge
-    const badgeData = {
-      schemaVersion: 1,
-      label: "React Doctor",
-      message: `${score}/100`,
-      color: color,
-    };
-    
-    const badgeDir = join(process.cwd(), ".github", "badges");
-    if (!existsSync(badgeDir)) {
-      mkdirSync(badgeDir, { recursive: true });
-    }
-    
-    const jsonPath = join(badgeDir, "react-doctor.json");
-    writeFileSync(jsonPath, JSON.stringify(badgeData, null, 2));
-    console.log(`.github/badges/react-doctor.json updated.`);
-
-    // Update README with STATIC dynamic-badge link
-    // This link never changes, so NO MERGE CONFLICTS.
-    // It fetches the JSON from the current branch.
+    // Private Repo -> Shields.io can't see JSON. 
+    // Reverting to static badge in README.
+    const badge = `[![Health Score](https://img.shields.io/badge/React_Doctor-${score}%2F100-${color})](https://github.com/millionco/react-doctor)`;
     const readmePath = join(process.cwd(), "README.md");
     let readme = readFileSync(readmePath, "utf-8");
-    
-    // We need to know repo owner and name for the raw.githubusercontent link
-    // Defaulting to placeholders or trying to infer if possible, 
-    // but better to use a relative link if shields.io supports it (it doesn't directly).
-    // However, we can use a placeholder that the user can fix or we can try to guess.
-    
-    // For local dev, we use a generic label. In CI, we can use env vars.
-    const repo = process.env.GITHUB_REPOSITORY || "HisetteTom/pimp";
-    const branch = process.env.GITHUB_REF_NAME || "main";
-    
-    // Using a more reliable shields.io format for GitHub files
-    const dynamicBadgeUrl = `https://img.shields.io/badge/endpoint?url=https://raw.githubusercontent.com/${repo}/${branch}/.github/badges/react-doctor.json`;
-    const badgeMarkdown = `[![Health Score](${dynamicBadgeUrl})](https://github.com/millionco/react-doctor)`;
-    const stableLink = `<!-- DOCTOR_BADGE_START -->\n${badgeMarkdown}\n<!-- DOCTOR_BADGE_END -->`;
 
     const markerRegex = /<!-- DOCTOR_BADGE_START -->[\s\S]*?<!-- DOCTOR_BADGE_END -->/;
+    const badgeWithMarkers = `<!-- DOCTOR_BADGE_START -->\n${badge}\n<!-- DOCTOR_BADGE_END -->`;
 
     if (markerRegex.test(readme)) {
-        // Force update to ensure URL is always correct
-        readme = readme.replace(markerRegex, stableLink);
+        readme = readme.replace(markerRegex, badgeWithMarkers);
         writeFileSync(readmePath, readme);
-        console.log("README.md forced update with dynamic link.");
+        console.log("README.md updated with static badge (required for private repo).");
+    } else {
+        console.error("Markers not found in README.md");
+        process.exit(1);
     }
 
   } catch (error) {
