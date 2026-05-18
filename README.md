@@ -1,6 +1,6 @@
 # Pimp
 
-[![Health Score](https://img.shields.io/badge/React_Doctor-0%2F100-red)](https://github.com/millionco/react-doctor) <!-- DOCTOR_BADGE_START --><!-- DOCTOR_BADGE_END -->
+[![Health Score](https://img.shields.io/badge/React_Doctor-[2mScoreunavailableinofflinemode.[22m%2F100-red)](https://github.com/millionco/react-doctor) <!-- DOCTOR_BADGE_START --><!-- DOCTOR_BADGE_END -->
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
