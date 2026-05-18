@@ -28,20 +28,12 @@ jobs:
       - name: Run React Doctor
         id: doctor
         run: |
-<<<<<<< HEAD
           # Run diagnostic and output annotations
           npx react-doctor@latest . --project pimp --fail-on none --annotations
           
           # Capture score reliably. Using --project avoids the prompt.
           # We grab the last line which should be the score when using --score.
           SCORE=$(npx react-doctor@latest . --project pimp --score --fail-on none | tail -1 | tr -d '[:space:]')
-=======
-          # Run once to show diagnostics in logs and output annotations
-          npx react-doctor@latest . --fail-on none -y --annotations
-          
-          # Run again to capture score reliably. -y skips project prompts.
-          SCORE=$(npx react-doctor@latest . --score --fail-on none -y | tail -1 | tr -d '[:space:]')
->>>>>>> 1e2b27b5d0b6c7d80ee9a38c0a660e2422d4eaa1
           echo "score=$SCORE" >> "$GITHUB_OUTPUT"
 
       - name: Update README Badge
