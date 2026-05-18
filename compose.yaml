@@ -1,0 +1,24 @@
+name: pimp
+
+services:
+  db:
+    image: postgres:18-alpine3.23
+    container_name: pimp-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pimp
+      POSTGRES_USER: pimp
+      POSTGRES_PASSWORD: pimp
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./pimp.sql:/docker-entrypoint-initdb.d/pimp.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pimp -d pimp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
