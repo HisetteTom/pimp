@@ -28,27 +28,32 @@ jobs:
         run: |
           # Use --project pimp to avoid prompts
           # Use --score to get just the number
-          # We use tail -n 1 to grab the very last line
-          RAW_SCORE=$(bunx react-doctor@latest . --project pimp --score --fail-on none | tail -n 1 | tr -d '[:space:]')
+          # We grab the last numeric sequence from the output
+          RAW_OUTPUT=$(bunx react-doctor@latest . --project pimp --score --fail-on none)
+          echo "Full Output:"
+          echo "$RAW_OUTPUT"
           
-          # Clean score: remove non-numeric chars (handles "Score: 85" or similar)
-          SCORE=$(echo "$RAW_SCORE" | sed 's/[^0-9]//g')
+          # Extract the last number from the entire output
+          SCORE=$(echo "$RAW_OUTPUT" | grep -oE '[0-9]+' | tail -n 1)
           
           if [ -z "$SCORE" ]; then
-            echo "Error: Could not capture score. Raw output: $RAW_SCORE"
+            echo "Error: No numeric score found in output."
             echo "score=0" >> "$GITHUB_OUTPUT"
           else
-            echo "Captured Score: $SCORE"
+            echo "Final Score: $SCORE"
             echo "score=$SCORE" >> "$GITHUB_OUTPUT"
           fi
-      - name: Update README Health Score Badge
+
+      - name: Update README Badge
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           SCORE=${{ steps.doctor.outputs.score }}
-          
-          # Default to grey if score is missing or invalid
           COLOR="lightgrey"
+          
+          # Validate score is a number and within 0-100 range (just in case)
           if [[ "$SCORE" =~ ^[0-9]+$ ]]; then
+            if [ "$SCORE" -gt 100 ]; then SCORE=100; fi
+            
             if [ "$SCORE" -gt 85 ]; then COLOR="brightgreen";
             elif [ "$SCORE" -gt 70 ]; then COLOR="green";
             elif [ "$SCORE" -gt 50 ]; then COLOR="yellow";
@@ -59,9 +64,9 @@ jobs:
             COLOR="red"
           fi
           
-          # Replace the badge line in README
-          BADGE="[![Health Score](https://img.shields.io/badge/React_Doctor-$SCORE%2F100-$COLOR)](https://github.com/millionco/react-doctor)"
+          BADGE="[![Health Score](https://img.shields.io/badge/React_Doctor-${SCORE}%2F100-${COLOR})](https://github.com/millionco/react-doctor)"
           sed -i "s|\[!\[Health Score\].*|${BADGE} <!-- DOCTOR_BADGE_START --><!-- DOCTOR_BADGE_END -->|g" README.md
+
       - name: Commit changes
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: stefanzweifel/git-auto-commit-action@v5
