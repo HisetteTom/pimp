@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { RegisterForm } from "./register-form";
 
 export const metadata: Metadata = {
-  title: "Inscription | PIMP",
+  title: "Inscription",
   description: "Créez votre compte PIMP pour rejoindre la plateforme de gestion de projets.",
 };
 

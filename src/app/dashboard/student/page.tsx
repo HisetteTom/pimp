@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Dashboard Étudiant | PIMP",
+  title: "Dashboard Étudiant",
   description: "Gérez vos projets et suivez votre progression sur PIMP.",
 };
 

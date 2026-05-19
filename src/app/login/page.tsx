@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
-  title: "Connexion | PIMP",
+  title: "Connexion",
   description: "Connectez-vous à votre espace PIMP pour gérer vos projets.",
 };
 
