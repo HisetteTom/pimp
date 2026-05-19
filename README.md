@@ -12,7 +12,7 @@
   </h4>
 
 <!-- DOCTOR_BADGE_START -->
-[![Health Score](https://img.shields.io/badge/React_Doctor-99%2F100-brightgreen)](https://github.com/millionco/react-doctor)
+[![Health Score](https://img.shields.io/badge/React_Doctor-100%2F100-brightgreen)](https://github.com/millionco/react-doctor)
 <!-- DOCTOR_BADGE_END -->
 </div>
 
