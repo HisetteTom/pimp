@@ -6,6 +6,12 @@ import { project, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { eq } from "drizzle-orm";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dashboard Étudiant | PIMP",
+  description: "Gérez vos projets et suivez votre progression sur PIMP.",
+};
 
 export default async function StudentDashboardPage() {
   const session = await auth.api.getSession({
