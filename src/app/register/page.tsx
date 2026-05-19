@@ -28,7 +28,6 @@ import { Loader2, User, AtSign, Mail, Lock, GraduationCap } from "lucide-react";
 type State = {
     email: string;
     password: string;
-    name: string;
     username: string;
     role: string;
     loading: boolean;
@@ -41,7 +40,6 @@ type Action =
 const initialState: State = {
     email: "",
     password: "",
-    name: "",
     username: "",
     role: "Étudiant",
     loading: false,
@@ -68,7 +66,7 @@ export default function RegisterPage() {
         const { error } = await authClient.signUp.email({
             email: state.email,
             password: state.password,
-            name: state.name,
+            name: state.username,
             username: state.username,
             // @ts-ignore
             role: state.role,
@@ -77,7 +75,7 @@ export default function RegisterPage() {
         if (error) {
             alert(error.message);
         } else {
-            push("/");
+            push("/dashboard/student");
         }
         dispatch({ type: "SET_LOADING", value: false });
     };
@@ -104,20 +102,7 @@ export default function RegisterPage() {
                     </div>
                 </CardHeader>
                 <form onSubmit={handleRegister}>
-                    <CardContent className="grid gap-6 sm:grid-cols-2 pt-8">
-                        <div className="space-y-2">
-                            <Label htmlFor="name" className="text-secondary/80 font-bold">Nom complet</Label>
-                            <div className="relative">
-                                <User className="absolute left-3 top-3 size-4 text-secondary/40" />
-                                <Input
-                                    id="name"
-                                    className="pl-10 h-10 border-2 border-secondary/10 focus-visible:ring-secondary focus-visible:border-secondary hover:border-secondary/30 transition-colors"
-                                    value={state.name}
-                                    onChange={(e) => dispatch({ type: "SET_FIELD", field: "name", value: e.target.value })}
-                                    required
-                                />
-                            </div>
-                        </div>
+                    <CardContent className="grid gap-6 pt-8">
                         <div className="space-y-2">
                             <Label htmlFor="username" className="text-secondary/80 font-bold">Username</Label>
                             <div className="relative">
@@ -171,7 +156,6 @@ export default function RegisterPage() {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Étudiant" className="focus:bg-secondary/10 focus:text-secondary">Étudiant</SelectItem>
-                                    <SelectItem value="Team Leader" className="focus:bg-secondary/10 focus:text-secondary">Team Leader</SelectItem>
                                     <SelectItem value="Encadrant" className="focus:bg-secondary/10 focus:text-secondary">Encadrant</SelectItem>
                                     <SelectItem value="Jury" className="focus:bg-secondary/10 focus:text-secondary">Jury</SelectItem>
                                 </SelectContent>

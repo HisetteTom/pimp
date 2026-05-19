@@ -6,6 +6,7 @@ import * as commentSchema from "./schema/comment";
 import * as compteSchema from "./schema/compte";
 import * as responsabilitySchema from "./schema/responsability";
 import * as livrableSchema from "./schema/livrable";
+import * as authSchema from "./schema/auth";
 
 const schema = {
   ...projectSchema,
@@ -14,6 +15,7 @@ const schema = {
   ...compteSchema,
   ...responsabilitySchema,
   ...livrableSchema,
+  ...authSchema,
 };
 
 const connectionString = process.env.DATABASE_URL;

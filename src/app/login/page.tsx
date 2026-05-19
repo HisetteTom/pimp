@@ -35,7 +35,7 @@ export default function LoginPage() {
         if (error) {
             alert(error.message);
         } else {
-            push("/");
+            push("/dashboard/student");
         }
         setLoading(false);
     };
