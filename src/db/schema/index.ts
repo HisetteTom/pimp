@@ -4,3 +4,4 @@ export * from "./comment";
 export * from "./compte";
 export * from "./responsability";
 export * from "./livrable";
+export * from "./auth";
