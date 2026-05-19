@@ -78,7 +78,7 @@ export default function NewProjectPage() {
             //inserer dans bdd
             
     
-            push("/index");//a creer
+            push("/project");
         } catch (error) {
             alert("Une erreur est survenue lors de la création du projet.");
         } finally {
