@@ -18,7 +18,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PIMP - Projet de fin d’année",
+  title: {
+    default: "PIMP - Projet de fin d’année",
+    template: "%s | PIMP",
+  },
   description: "Plateforme de gestion et suivi des projets étudiants",
   icons: {
     icon: "/pimp_favicon.ico",
