@@ -79,9 +79,9 @@ export default function NewProjectPage() {
             
     
             push("/project");
+            dispatch({ type: "SET_LOADING", value: false });
         } catch (error) {
             alert("Une erreur est survenue lors de la création du projet.");
-        } finally {
             dispatch({ type: "SET_LOADING", value: false });
         }
     };

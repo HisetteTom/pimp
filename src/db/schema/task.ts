@@ -1,10 +1,14 @@
-import { pgTable, integer, varchar, time, foreignKey } from "drizzle-orm/pg-core";
+import { pgTable, integer, varchar, text, timestamp, AnyPgColumn } from "drizzle-orm/pg-core";
 import { responsability } from "./responsability";
+import { team } from "./team";
 
 export const task = pgTable("task", {
 	id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
-	status: varchar("status", { length: 255 }),
-	timeStart: time("time-start", { withTimezone: true }),
-	timeEnd: time("time-end", { withTimezone: true }),
+	name: text("name").notNull(),
+	description: text("description"),
+	status: varchar("status", { length: 255 }).notNull().default("todo"), // todo, in_progress, done
+	deadline: timestamp("deadline"),
+	teamId: integer("team_id").references((): AnyPgColumn => team.id).notNull(),
 	responsabilityId: integer("responsability_id").references(() => responsability.id),
+	createdAt: timestamp("created_at").notNull().defaultNow(),
 });
