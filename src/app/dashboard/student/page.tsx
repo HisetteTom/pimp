@@ -22,7 +22,7 @@ export default async function StudentDashboardPage() {
     return <div>Unauthorized</div>;
   }
 
-  const [currentUser, allProjects, allUsers, refused, allTeams, userEnrollments] = await Promise.all([
+  const [currentUser, allProjects, allUsers, refused, allTeams, userEnrollments, allEnrollments] = await Promise.all([
     db.query.user.findFirst({
       where: eq(user.id, session.user.id),
     }),
@@ -30,7 +30,8 @@ export default async function StudentDashboardPage() {
     db.select().from(user),
     db.select().from(refusedProject).where(eq(refusedProject.userId, session.user.id)),
     db.select().from(team),
-    db.select().from(projectEnrollment).where(eq(projectEnrollment.userId, session.user.id))
+    db.select().from(projectEnrollment).where(eq(projectEnrollment.userId, session.user.id)),
+    db.select().from(projectEnrollment)
   ]);
 
   const refusedIds = new Set(refused.map((r) => r.projectId));
@@ -44,8 +45,6 @@ export default async function StudentDashboardPage() {
   }
 
   // Pre-index members by project ID for O(1) lookup
-  // We need to fetch ALL enrollments to count members correctly per project
-  const allEnrollments = await db.select().from(projectEnrollment);
   const enrollmentsByProject = new Map<number, typeof allEnrollments>();
   for (const e of allEnrollments) {
     const list = enrollmentsByProject.get(e.projectId) || [];

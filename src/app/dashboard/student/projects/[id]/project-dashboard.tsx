@@ -33,6 +33,14 @@ const emptySubscribe = () => () => {};
 const clientSnapshot = true;
 const serverSnapshot = false;
 
+// Stable mount time to avoid hydration flicker and sync setState
+let mountTime: number | null = null;
+const getMountTime = () => {
+  if (typeof window === 'undefined') return null;
+  if (!mountTime) mountTime = Date.now();
+  return mountTime;
+};
+
 const FeedbackSlot = ({ title }: { title: string }) => (
   <div className="p-6 border-2 border-primary/20 bg-primary/5 rounded-none flex flex-col gap-y-2 mb-8">
     <h4 className="text-[10px] font-semibold uppercase tracking-widest text-primary">Teacher Feedback - {title}</h4>
@@ -42,11 +50,7 @@ const FeedbackSlot = ({ title }: { title: string }) => (
 
 export function ProjectDashboard({ project, team, currentUser, tasks, livrables }: ProjectDashboardProps) {
   const isClient = useSyncExternalStore(emptySubscribe, () => clientSnapshot, () => serverSnapshot);
-  const [now, setNow] = useState<number | null>(null);
-
-  useEffect(() => {
-    setNow(Date.now());
-  }, []);
+  const now = useSyncExternalStore(emptySubscribe, getMountTime, () => null);
 
   const timelineProgress = useMemo(() => {
     if (!project.dateStart || !project.dateEnd || !now) return 0;

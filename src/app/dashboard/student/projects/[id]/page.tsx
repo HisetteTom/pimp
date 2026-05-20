@@ -31,9 +31,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     db.query.user.findFirst({
       where: eq(user.id, session.user.id),
     }),
-    db.query.team.findMany({
-      where: eq(team.projectId, projectId),
-    }),
+    db.select().from(team).where(eq(team.projectId, projectId)),
     db.select().from(projectEnrollment).where(eq(projectEnrollment.projectId, projectId)),
     db.select().from(projectEnrollment).where(eq(projectEnrollment.userId, session.user.id))
   ]);
@@ -42,11 +40,22 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     notFound();
   }
 
-  // Fetch users for this project based on enrollments
+  // Fetch users for this project based on enrollments and sidebar data in parallel
   const enrolledUserIds = allEnrollments.map(e => e.userId);
-  const projectUsers = enrolledUserIds.length > 0 
-    ? await db.query.user.findMany({ where: inArray(user.id, enrolledUserIds) }) 
-    : [];
+  const activeProjectIds = userEnrollments.map(e => e.projectId);
+  const activeTeamIds = userEnrollments.flatMap(e => e.teamId ? [e.teamId] : []);
+
+  const [projectUsers, activeProjects, activeTeams] = await Promise.all([
+    enrolledUserIds.length > 0 
+      ? db.query.user.findMany({ where: inArray(user.id, enrolledUserIds) }) 
+      : Promise.resolve([]),
+    activeProjectIds.length > 0
+      ? db.query.project.findMany({ where: inArray(project.id, activeProjectIds) })
+      : Promise.resolve([]),
+    activeTeamIds.length > 0
+      ? db.select().from(team).where(inArray(team.id, activeTeamIds))
+      : Promise.resolve([])
+  ]);
 
   const userMap = new Map(projectUsers.map(u => [u.id, u]));
 
@@ -61,27 +70,20 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     membersByTeam.set(e.teamId, list);
   }
 
-  const teamsWithMembers = allTeams.map(t => ({
-    ...t,
-    members: membersByTeam.get(t.id) || []
-  }));
+  const teamsWithMembers = allTeams.map(t => {
+    const members = membersByTeam.get(t.id) || [];
+    return {
+      id: t.id,
+      name: t.name,
+      projectId: t.projectId,
+      members
+    };
+  });
 
   const currentEnrollment = userEnrollments.find(e => e.projectId === projectId);
   const userTeam = currentEnrollment?.teamId 
     ? teamsWithMembers.find(t => t.id === currentEnrollment.teamId) 
     : null;
-
-  // Prepare sidebar data: all active projects for the user
-  const activeProjectIds = userEnrollments.map(e => e.projectId);
-  const activeProjects = activeProjectIds.length > 0
-    ? await db.query.project.findMany({ where: inArray(project.id, activeProjectIds) })
-    : [];
-  
-  // Also need teams for these projects to show team names in sidebar
-  const activeTeamIds = userEnrollments.flatMap(e => e.teamId ? [e.teamId] : []);
-  const activeTeams = activeTeamIds.length > 0
-    ? await db.query.team.findMany({ where: inArray(team.id, activeTeamIds) })
-    : [];
 
   const teamMap = new Map(activeTeams.map(t => [t.id, t]));
 
