@@ -15,9 +15,6 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
     <a href="#setup">Setup</a>
   </h4>
 
-<!-- DOCTOR_BADGE_START -->
-[![Health Score](https://img.shields.io/badge/React_Doctor-100%2F100-brightgreen)](https://github.com/millionco/react-doctor)
-<!-- DOCTOR_BADGE_END -->
 </div>
 
 <h2>Table of Contents</h2>
