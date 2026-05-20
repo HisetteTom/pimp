@@ -32,7 +32,8 @@ interface ProjectCardProps {
   dateStart?: string;
   dateEnd?: string;
   deadline: string;
-  members: number;
+  groups: number;
+  maxGroups: number;
   fullDescription?: string;
   membersList?: { id: string, name: string, image?: string | null }[];
   isMember?: boolean;
@@ -48,7 +49,8 @@ export function ProjectCard({
   dateStart, 
   dateEnd, 
   deadline, 
-  members, 
+  groups,
+  maxGroups,
   fullDescription, 
   membersList = EMPTY_MEMBERS,
   isMember = false
@@ -111,7 +113,7 @@ export function ProjectCard({
                 : "bg-primary/5 border-primary/20 text-primary"
             )}>
               <Users className="size-3.5" />
-              {members}/5
+              {groups}/{maxGroups}
             </div>
           </div>
           <CardDescription className="text-sm font-medium text-zinc-500 line-clamp-2 leading-relaxed">
@@ -208,12 +210,15 @@ export function ProjectCard({
                     <div className="flex items-center justify-between">
                       <h4 className="font-mono text-[10px] font-semibold uppercase tracking-widest text-zinc-400 flex items-center gap-3">
                         <Users className="size-3" />
-                        Project Team
+                        Project Groups
                       </h4>
                       <span className="font-mono text-[10px] font-black text-primary bg-primary/5 px-2 py-0.5 border border-primary/10">
-                        {members} / 5 SLOTS
+                        {groups} / {maxGroups} GROUPS
                       </span>
                     </div>
+                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">
+                      Max 5 members per group
+                    </p>
                     <div className="flex flex-wrap gap-2">
                       {membersList.length > 0 ? (
                         membersList.map((member) => (

@@ -21,6 +21,7 @@ Jury (optionnel)
 • Gestion des permissions selon le rôle
 2. Gestion des projets
 • Création des projets étudiants
+• **Limites : Un projet peut accueillir jusqu'à 8 groupes, avec un maximum de 5 personnes par groupe.**
 • Étudiants / Team Leader : gestion du projet, membres et dates importantes
 • Encadrants : supervision et suivi de l’avancement
 • États possibles : proposé, validé, en cours, en retard, livré, soutenu, clôturé

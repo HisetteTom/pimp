@@ -9,4 +9,6 @@ export const project = pgTable("project", {
 	dateStart: date("date-start"),
 	dateEnd: date("date-end"),
 	taskId: integer("task_id").references(() => task.id),
+	maxGroups: integer("max_groups").notNull().default(8),
+	maxMembersPerGroup: integer("max_members_per_group").notNull().default(5),
 });

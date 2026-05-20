@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as projectSchema from "./schema/project";
+import * as teamSchema from "./schema/team";
 import * as taskSchema from "./schema/task";
 import * as commentSchema from "./schema/comment";
 import * as compteSchema from "./schema/compte";
@@ -11,6 +12,7 @@ import * as refusedProjectSchema from "./schema/refused_project";
 
 const schema = {
   ...projectSchema,
+  ...teamSchema,
   ...taskSchema,
   ...commentSchema,
   ...compteSchema,

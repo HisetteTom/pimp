@@ -2,10 +2,10 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { ProjectCard } from "@/components/dashboard/project-card";
 import { Badge } from "@/components/ui/badge";
 import { db } from "@/db";
-import { project, user, refusedProject } from "@/db/schema";
+import { project, user, refusedProject, team, projectEnrollment } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -22,52 +22,84 @@ export default async function StudentDashboardPage() {
     return <div>Unauthorized</div>;
   }
 
-  const [currentUser, allProjects, allUsers, refused] = await Promise.all([
+  const [currentUser, allProjects, allUsers, refused, allTeams, userEnrollments] = await Promise.all([
     db.query.user.findFirst({
       where: eq(user.id, session.user.id),
     }),
     db.select().from(project),
     db.select().from(user),
-    db.select().from(refusedProject).where(eq(refusedProject.userId, session.user.id))
+    db.select().from(refusedProject).where(eq(refusedProject.userId, session.user.id)),
+    db.select().from(team),
+    db.select().from(projectEnrollment).where(eq(projectEnrollment.userId, session.user.id))
   ]);
 
   const refusedIds = new Set(refused.map((r) => r.projectId));
+  const enrolledProjectIds = new Set(userEnrollments.map(e => e.projectId));
+  const enrollmentMap = new Map(userEnrollments.map(e => [e.projectId, e]));
+
+  // Index teams by project ID
+  const teamsByProject = new Map<number, number>();
+  for (const t of allTeams) {
+    teamsByProject.set(t.projectId, (teamsByProject.get(t.projectId) || 0) + 1);
+  }
 
   // Pre-index members by project ID for O(1) lookup
-  const membersByProject = new Map<number | null, { id: string, name: string, image: string | null }[]>();
-  for (const u of allUsers) {
-    if (!u.projectId) continue;
-    const list = membersByProject.get(u.projectId) || [];
-    list.push({ id: u.id, name: u.name, image: u.image });
-    membersByProject.set(u.projectId, list);
+  // We need to fetch ALL enrollments to count members correctly per project
+  const allEnrollments = await db.select().from(projectEnrollment);
+  const enrollmentsByProject = new Map<number, typeof allEnrollments>();
+  for (const e of allEnrollments) {
+    const list = enrollmentsByProject.get(e.projectId) || [];
+    list.push(e);
+    enrollmentsByProject.set(e.projectId, list);
   }
-  
-  const myProjects: (typeof allProjects[0] & { membersList: { id: string, name: string, image: string | null }[] })[] = [];
-  const proposedProjects: (typeof allProjects[0] & { membersList: { id: string, name: string, image: string | null }[] })[] = [];
+
+  const userMap = new Map(allUsers.map(u => [u.id, u]));
+  const teamsById = new Map(allTeams.map(t => [t.id, t]));
+
+  const myProjects: (typeof allProjects[0] & { membersList: any[] })[] = [];
+  const proposedProjects: (typeof allProjects[0] & { membersList: any[] })[] = [];
 
   for (const p of allProjects) {
     if (refusedIds.has(p.id)) continue;
 
-    const projectMembers = membersByProject.get(p.id) || [];
+    const projectEnrollments = enrollmentsByProject.get(p.id) || [];
+    const membersList = projectEnrollments.map(e => {
+        const u = userMap.get(e.userId);
+        return {
+            id: e.userId,
+            name: u?.name || "Unknown",
+            image: u?.image || null
+        };
+    });
     
-    if (p.id === currentUser?.projectId) {
-      myProjects.push({ ...p, membersList: projectMembers });
+    if (enrolledProjectIds.has(p.id)) {
+      myProjects.push({ ...p, membersList });
     } else if (p.status === "proposed") {
-      proposedProjects.push({ ...p, membersList: projectMembers });
+      proposedProjects.push({ ...p, membersList });
     }
   }
 
+  const userProjectsData = myProjects.map(p => {
+    const enrollment = enrollmentMap.get(p.id);
+    const userTeam = enrollment?.teamId ? teamsById.get(enrollment.teamId) : null;
+    return {
+      id: p.id,
+      name: p.name,
+      teamName: userTeam?.name
+    };
+  });
+
   return (
-    <DashboardLayout>
+    <DashboardLayout userProjects={userProjectsData}>
       <div className="space-y-10 pb-10">
-        <div>
+        <div id="top" className="scroll-mt-10">
           <h1 className="text-4xl font-semibold tracking-tighter text-secondary uppercase">
             My Dashboard
           </h1>
         </div>
 
         {/* Section: My Projects */}
-        <section className="space-y-4">
+        <section id="my-projects" className="space-y-4 scroll-mt-10">
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-semibold text-secondary uppercase tracking-tight">My Projects</h2>
             <div className="h-px flex-1 bg-secondary/10" />
@@ -91,7 +123,8 @@ export default async function StudentDashboardPage() {
                   dateStart={p.dateStart || undefined}
                   dateEnd={p.dateEnd || undefined}
                   deadline={p.dateEnd || "Not defined"} 
-                  members={p.membersList.length} 
+                  groups={teamsByProject.get(p.id) || 0}
+                  maxGroups={p.maxGroups}
                   membersList={p.membersList}
                   isMember={true}
                 />
@@ -101,7 +134,7 @@ export default async function StudentDashboardPage() {
         </section>
 
         {/* Section: Proposals */}
-        <section className="space-y-4">
+        <section id="proposals" className="space-y-4 scroll-mt-10">
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-semibold text-primary uppercase tracking-tight">Proposals</h2>
             <div className="h-px flex-1 bg-primary/10" />
@@ -125,7 +158,8 @@ export default async function StudentDashboardPage() {
                   dateStart={p.dateStart || undefined}
                   dateEnd={p.dateEnd || undefined}
                   deadline={p.dateEnd || "Not defined"} 
-                  members={p.membersList.length} 
+                  groups={teamsByProject.get(p.id) || 0}
+                  maxGroups={p.maxGroups}
                   membersList={p.membersList}
                   isMember={false}
                 />
