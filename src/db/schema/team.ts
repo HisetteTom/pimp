@@ -5,4 +5,7 @@ export const team = pgTable("team", {
 	id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
 	name: text("name").notNull(),
 	projectId: integer("project_id").references((): AnyPgColumn => project.id).notNull(),
+	grade: text("grade"),
+	feedback: text("feedback"),
+	notes: text("notes"),
 });

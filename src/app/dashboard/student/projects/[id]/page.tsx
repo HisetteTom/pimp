@@ -76,6 +76,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
       id: t.id,
       name: t.name,
       projectId: t.projectId,
+      grade: t.grade,
+      feedback: t.feedback,
       members
     };
   });

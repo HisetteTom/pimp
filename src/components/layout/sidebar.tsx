@@ -37,6 +37,20 @@ export function Sidebar({ team, userProjects }: SidebarProps) {
   const pathname = usePathname();
   const { push } = useRouter();
   const [isPending, startTransition] = useTransition();
+  const { data: session } = authClient.useSession();
+  const role = (session?.user as any)?.role;
+  const isProfessor = role === "professor";
+
+  const navItems = isProfessor ? [
+    { href: "/dashboard/professor#top", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard/professor#projects", label: "All Projects", icon: FolderRoot },
+  ] : [
+    { href: "/dashboard/student#top", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard/student#my-projects", label: "My Projects", icon: FolderRoot },
+    { href: "/dashboard/student#proposals", label: "Proposals", icon: Lightbulb },
+  ];
+
+  const dashboardLink = isProfessor ? "/dashboard/professor" : "/dashboard/student";
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -60,7 +74,7 @@ export function Sidebar({ team, userProjects }: SidebarProps) {
   return (
     <div className="flex h-full flex-col p-6 overflow-y-auto scrollbar-none">
       <div className="mb-10 flex items-center gap-3 px-2">
-        <Link href="/dashboard/student" className="hover:opacity-80 transition-all active:scale-95">
+        <Link href={dashboardLink} className="hover:opacity-80 transition-all active:scale-95">
           <span className="text-2xl font-black tracking-[0.2em] text-zinc-900 dark:text-zinc-100 leading-none">
             PIMP
           </span>
@@ -87,10 +101,12 @@ export function Sidebar({ team, userProjects }: SidebarProps) {
 
         {userProjects && userProjects.length > 0 && (
           <div className="pt-8 space-y-4">
-            <p className="px-3 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Active Projects</p>
+            <p className="px-3 text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+              {isProfessor ? "All Projects" : "Active Projects"}
+            </p>
             <div className="space-y-1">
               {userProjects.map((p) => (
-                <Link key={p.id} href={`/dashboard/student/projects/${p.id}`}>
+                <Link key={p.id} href={isProfessor ? `/dashboard/professor/projects/${p.id}` : `/dashboard/student/projects/${p.id}`}>
                   <div className={cn(
                     "group flex flex-col px-3 py-2 border-l-2 transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900",
                     pathname.includes(`/projects/${p.id}`) ? "border-purple-600 bg-purple-500/5" : "border-transparent"
@@ -113,7 +129,7 @@ export function Sidebar({ team, userProjects }: SidebarProps) {
           </div>
         )}
 
-        {team && (
+        {!isProfessor && team && (
           <div className="pt-8 space-y-4">
             <div className="px-3 space-y-1">
               <p className="text-[13px] font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">
@@ -152,16 +168,16 @@ export function Sidebar({ team, userProjects }: SidebarProps) {
 
       <div className="mt-auto border-t border-zinc-100 dark:border-zinc-800 pt-6 space-y-2">
         <p className="px-3 mb-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account</p>
-        <Link href="/dashboard/student/profile">
+        <Link href={isProfessor ? "/dashboard/professor/profile" : "/dashboard/student/profile"}>
           <span className="flex items-center gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 dark:text-zinc-300 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900">
             <User className="size-4" />
-            Profil
+            Profile
           </span>
         </Link>
-        <Link href="/dashboard/student/settings">
+        <Link href={isProfessor ? "/dashboard/professor/settings" : "/dashboard/student/settings"}>
           <span className="flex items-center gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 dark:text-zinc-300 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900">
             <Settings className="size-4" />
-            Paramètres
+            Settings
           </span>
         </Link>
         <Button 
@@ -170,7 +186,7 @@ export function Sidebar({ team, userProjects }: SidebarProps) {
           className="w-full justify-start gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-500 dark:hover:bg-red-950 transition-all mt-4"
         >
           <LogOut className="size-4" />
-          Déconnexion
+          Logout
         </Button>
       </div>
     </div>

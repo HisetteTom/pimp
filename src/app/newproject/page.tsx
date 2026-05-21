@@ -117,7 +117,6 @@ export default function NewProjectPage() {
                                 <FolderKanban className="absolute left-3 top-3 size-4 text-secondary/40" />
                                 <Input
                                     id="name"
-                                    placeholder="Ex: Projet d'informatique de 3e année"
                                     className="pl-10 h-10 border-2 border-secondary/10 focus-visible:ring-secondary focus-visible:border-secondary hover:border-secondary/30 transition-colors"
                                     value={state.name}
                                     onChange={(e) => dispatch({ type: "SET_FIELD", field: "name", value: e.target.value })}
@@ -132,7 +131,6 @@ export default function NewProjectPage() {
                                 <FileText className="absolute left-3 top-3 size-4 text-secondary/40" />
                                 <Textarea
                                     id="description"
-                                    placeholder="Objectifs, composition, attendus..."
                                     className="pl-10 min-h-[100px] border-2 border-secondary/10 focus-visible:ring-secondary focus-visible:border-secondary hover:border-secondary/30 transition-colors"
                                     value={state.description}
                                     onChange={(e) => dispatch({ type: "SET_FIELD", field: "description", value: e.target.value })}
@@ -148,7 +146,6 @@ export default function NewProjectPage() {
                                 <User className="absolute left-3 top-3 size-4 text-secondary/40" />
                                 <Input
                                     id="teamLeader"
-                                    placeholder="Nom du team leader"
                                     className="pl-10 h-10 border-2 border-secondary/10 focus-visible:ring-secondary focus-visible:border-secondary hover:border-secondary/30 transition-colors"
                                     value={state.teamLeader}
                                     onChange={(e) => dispatch({ type: "SET_FIELD", field: "teamLeader", value: e.target.value })}
@@ -164,7 +161,6 @@ export default function NewProjectPage() {
                                 <Users className="absolute left-3 top-3 size-4 text-secondary/40" />
                                 <Input
                                     id="membres"
-                                    placeholder="Séparés par une virgule"
                                     className="pl-10 h-10 border-2 border-secondary/10 focus-visible:ring-secondary focus-visible:border-secondary hover:border-secondary/30 transition-colors"
                                     value={state.membres.join(", ")}
                                     onChange={(e) => dispatch({ type: "SET_FIELD", field: "membres", value: e.target.value.split(", ") })}
@@ -182,7 +178,7 @@ export default function NewProjectPage() {
                             >
                                 <SelectTrigger className="h-10 pl-10 relative border-2 border-secondary/10 focus:ring-secondary focus:border-secondary hover:border-secondary/30 transition-colors">
                                     <BookOpen className="absolute left-3 top-3 size-4 text-secondary/40" />
-                                    <SelectValue placeholder="Sélectionnez le sujet" />
+                                    <SelectValue/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="1" className="focus:bg-secondary/10 focus:text-secondary">

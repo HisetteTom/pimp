@@ -19,8 +19,8 @@ export default async function DashboardLayout({
 
   // Role based redirection
  
-  if (user.role !== "Étudiant") {
-     
+  if (user.role !== "student" && user.role !== "professor" && user.role !== "jury") {
+    redirect("/login");
   }
 
   return <>{children}</>;

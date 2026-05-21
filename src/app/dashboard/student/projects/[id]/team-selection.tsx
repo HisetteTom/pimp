@@ -98,8 +98,7 @@ export function TeamSelection({ projectId, teams, maxGroups, maxMembers }: TeamS
             <div className="space-y-2">
               <Label htmlFor="team-name" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Team Name</Label>
               <Input 
-                id="team-name" 
-                placeholder="E.G. THE PIXELS" 
+                id="team-name"  
                 value={newTeamName}
                 onChange={(e) => setNewTeamName(e.target.value)}
                 className="font-bold border-2 focus-visible:ring-primary"

@@ -19,7 +19,7 @@ interface Task {
   priority: string;
   deadline: string | null;
   assigneeId: string | null;
-  assignees: string | null;
+  assignees?: string | null;
 }
 
 interface TaskDetailDialogProps {
@@ -41,12 +41,13 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
   if (!task) return null;
 
   // Format date to YYYY-MM-DD for input type="date"
-  const formattedDeadline = task.deadline 
-    ? new Date(task.deadline).toISOString().split('T')[0] 
+  const formattedDeadline = task.deadline
+    ? new Date(task.deadline).toISOString().split('T')[0]
     : "";
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!task) return;
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -79,6 +80,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
   }
 
   async function handleDelete() {
+    if (!task) return;
     if (!confirm("Are you sure you want to delete this task?")) return;
     setDeleting(true);
 
@@ -128,7 +130,6 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
                 id="detail-description"
                 name="description"
                 defaultValue={task.description || ""}
-                placeholder="No description provided..."
                 rows={3}
                 className="text-xs leading-relaxed"
               />
@@ -141,7 +142,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
                 </Label>
                 <Select name="priority" defaultValue={task.priority}>
                   <SelectTrigger id="detail-priority">
-                    <SelectValue placeholder="Select priority" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="low">Low</SelectItem>
@@ -176,33 +177,30 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
                       key={member.id}
                       type="button"
                       onClick={() => {
-                        setSelectedAssignees(prev => 
-                          prev.includes(member.id) 
-                            ? prev.filter(id => id !== member.id) 
+                        setSelectedAssignees(prev =>
+                          prev.includes(member.id)
+                            ? prev.filter(id => id !== member.id)
                             : [...prev, member.id]
                         );
                       }}
-                      className={`w-full flex items-center justify-between p-2 rounded transition-all text-left group ${
-                        isAssigned 
-                          ? "bg-primary/10 text-primary border-2 border-primary/20" 
-                          : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent"
-                      }`}
+                      className={`w-full flex items-center justify-between p-2 rounded transition-all text-left group ${isAssigned
+                        ? "bg-primary/10 text-primary border-2 border-primary/20"
+                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent"
+                        }`}
                     >
                       <div className="flex items-center gap-2">
-                        <div className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold uppercase transition-all ${
-                          isAssigned 
-                            ? "bg-primary text-primary-foreground scale-105" 
-                            : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
-                        }`}>
+                        <div className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold uppercase transition-all ${isAssigned
+                          ? "bg-primary text-primary-foreground scale-105"
+                          : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+                          }`}>
                           {member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
                         </div>
                         <span className="text-xs font-semibold">{member.name}</span>
                       </div>
-                      <div className={`size-4 rounded border flex items-center justify-center transition-all ${
-                        isAssigned 
-                          ? "border-primary bg-primary text-primary-foreground" 
-                          : "border-zinc-300 dark:border-zinc-600 group-hover:border-zinc-400"
-                      }`}>
+                      <div className={`size-4 rounded border flex items-center justify-center transition-all ${isAssigned
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-zinc-300 dark:border-zinc-600 group-hover:border-zinc-400"
+                        }`}>
                         {isAssigned && <Check className="size-2.5 stroke-[3]" />}
                       </div>
                     </button>

@@ -85,18 +85,18 @@ export function TaskDialog({ projectId, teamId, members, trigger, defaultStatus 
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="name" className="text-xs uppercase font-bold text-zinc-400">Task Name</Label>
-              <Input id="name" name="name" placeholder="e.g. Design Database" required />
+              <Input id="name" name="name" required />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description" className="text-xs uppercase font-bold text-zinc-400">Description</Label>
-              <Textarea id="description" name="description" placeholder="Brief details about the task..." />
+              <Textarea id="description" name="description" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="priority" className="text-xs uppercase font-bold text-zinc-400">Priority</Label>
                 <Select name="priority" defaultValue="medium">
                   <SelectTrigger>
-                    <SelectValue placeholder="Select priority" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="low">Low</SelectItem>
@@ -120,33 +120,30 @@ export function TaskDialog({ projectId, teamId, members, trigger, defaultStatus 
                       key={member.id}
                       type="button"
                       onClick={() => {
-                        setSelectedAssignees(prev => 
-                          prev.includes(member.id) 
-                            ? prev.filter(id => id !== member.id) 
+                        setSelectedAssignees(prev =>
+                          prev.includes(member.id)
+                            ? prev.filter(id => id !== member.id)
                             : [...prev, member.id]
                         );
                       }}
-                      className={`w-full flex items-center justify-between p-2 rounded transition-all text-left group ${
-                        isAssigned 
-                          ? "bg-primary/10 text-primary border-2 border-primary/20" 
+                      className={`w-full flex items-center justify-between p-2 rounded transition-all text-left group ${isAssigned
+                          ? "bg-primary/10 text-primary border-2 border-primary/20"
                           : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center gap-2">
-                        <div className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold uppercase transition-all ${
-                          isAssigned 
-                            ? "bg-primary text-primary-foreground scale-105" 
+                        <div className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold uppercase transition-all ${isAssigned
+                            ? "bg-primary text-primary-foreground scale-105"
                             : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
-                        }`}>
+                          }`}>
                           {member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
                         </div>
                         <span className="text-xs font-semibold">{member.name}</span>
                       </div>
-                      <div className={`size-4 rounded border flex items-center justify-center transition-all ${
-                        isAssigned 
-                          ? "border-primary bg-primary text-primary-foreground" 
+                      <div className={`size-4 rounded border flex items-center justify-center transition-all ${isAssigned
+                          ? "border-primary bg-primary text-primary-foreground"
                           : "border-zinc-300 dark:border-zinc-600 group-hover:border-zinc-400"
-                      }`}>
+                        }`}>
                         {isAssigned && <Check className="size-2.5 stroke-[3]" />}
                       </div>
                     </button>
