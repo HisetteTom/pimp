@@ -58,7 +58,6 @@ export function TeamEvaluationCard({
     <Card className={`border-2 rounded-none transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.03)] hover:shadow-none ${isEvaluated ? "border-purple-500/30 bg-purple-500/[0.01]" : "border-zinc-200 dark:border-zinc-800"}`}>
       <CardHeader className="border-b border-zinc-100 dark:border-zinc-800 pb-4">
         <div className="flex items-center gap-2">
-          <Award className="size-4 text-purple-600" />
           <CardTitle className="text-sm font-black uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
             Team Evaluation
           </CardTitle>

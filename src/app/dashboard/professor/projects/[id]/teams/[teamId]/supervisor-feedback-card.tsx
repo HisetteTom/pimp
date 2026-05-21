@@ -13,6 +13,7 @@ interface SupervisorFeedbackCardProps {
   teamName: string;
   initialFeedback?: string | null;
   type: "overview" | "kanban" | "deliverables";
+  readOnly?: boolean;
 }
 
 export function SupervisorFeedbackCard({
@@ -21,6 +22,7 @@ export function SupervisorFeedbackCard({
   teamName,
   initialFeedback = "",
   type,
+  readOnly = false,
 }: SupervisorFeedbackCardProps) {
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
@@ -46,6 +48,7 @@ export function SupervisorFeedbackCard({
   const [feedback, setFeedback] = useState(currentInitialText);
 
   const handleSave = () => {
+    if (readOnly) return;
     startTransition(async () => {
       try {
         const updated = {
@@ -98,25 +101,27 @@ export function SupervisorFeedbackCard({
           <Textarea
             id={`written-feedback-${type}`}
             rows={5}
-            className="border border-zinc-200 dark:border-zinc-800 focus-visible:ring-primary rounded-none p-3 resize-y bg-zinc-50/50 dark:bg-zinc-900/10 text-sm"
+            className="border border-zinc-200 dark:border-zinc-800 focus-visible:ring-primary rounded-none p-3 resize-y bg-zinc-50/50 dark:bg-zinc-900/10 text-sm font-medium"
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
-            disabled={isPending}
+            disabled={isPending || readOnly}
           />
         </div>
 
-        <Button
-          onClick={handleSave}
-          disabled={isPending || !isChanged}
-          className="w-full h-12 text-sm font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none uppercase tracking-wider rounded-none cursor-pointer flex items-center justify-center gap-1.5"
-        >
-          {isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Save className="size-4" />
-          )}
-          Save {type} Comments
-        </Button>
+        {!readOnly && (
+          <Button
+            onClick={handleSave}
+            disabled={isPending || !isChanged}
+            className="w-full h-12 text-sm font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none uppercase tracking-wider rounded-none cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            {isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Save className="size-4" />
+            )}
+            Save {type} Comments
+          </Button>
+        )}
       </CardContent>
     </Card>
   );

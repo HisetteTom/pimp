@@ -1,0 +1,350 @@
+"use client";
+
+import { useTransition, useReducer, useEffect } from "react";
+import { toast } from "sonner";
+import { Plus, ClipboardCheck, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { createCriterion, updateCriterion, deleteCriterion } from "../evaluation-actions";
+import { ProjectsSidebar } from "./projects-sidebar";
+import { CriterionBuilderCard } from "./criterion-builder-card";
+import { CriterionRow } from "./criterion-row";
+
+interface Project {
+  id: number;
+  name: string;
+  description: string | null;
+  status: string;
+}
+
+interface Criterion {
+  id: number;
+  projectId: number;
+  name: string;
+  description: string | null;
+  maxPoints: number;
+}
+
+interface CriteriaManagerProps {
+  projects: Project[];
+  initialCriteria: Criterion[];
+}
+
+interface State {
+  selectedProjectId: number | null;
+  criteria: Criterion[];
+  isCreating: boolean;
+  newName: string;
+  newDescription: string;
+  newMaxPoints: number;
+  editingId: number | null;
+  editName: string;
+  editDescription: string;
+  editMaxPoints: number;
+}
+
+type Action =
+  | { type: "SET_SELECTED_PROJECT"; projectId: number | null }
+  | { type: "SET_CRITERIA"; criteria: Criterion[] }
+  | { type: "START_CREATE" }
+  | { type: "CANCEL_CREATE" }
+  | { type: "SET_NEW_NAME"; name: string }
+  | { type: "SET_NEW_DESCRIPTION"; description: string }
+  | { type: "SET_NEW_MAX_POINTS"; points: number }
+  | { type: "START_EDIT"; criterion: Criterion }
+  | { type: "CANCEL_EDIT" }
+  | { type: "SET_EDIT_NAME"; name: string }
+  | { type: "SET_EDIT_DESCRIPTION"; description: string }
+  | { type: "SET_EDIT_MAX_POINTS"; points: number }
+  | { type: "ADD_CRITERION"; criterion: Criterion }
+  | { type: "UPDATE_CRITERION"; criterion: Criterion }
+  | { type: "DELETE_CRITERION"; id: number };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "SET_SELECTED_PROJECT":
+      return {
+        ...state,
+        selectedProjectId: action.projectId,
+        isCreating: false,
+        editingId: null,
+      };
+    case "SET_CRITERIA":
+      return {
+        ...state,
+        criteria: action.criteria,
+      };
+    case "START_CREATE":
+      return {
+        ...state,
+        isCreating: true,
+        editingId: null,
+      };
+    case "CANCEL_CREATE":
+      return {
+        ...state,
+        isCreating: false,
+      };
+    case "SET_NEW_NAME":
+      return { ...state, newName: action.name };
+    case "SET_NEW_DESCRIPTION":
+      return { ...state, newDescription: action.description };
+    case "SET_NEW_MAX_POINTS":
+      return { ...state, newMaxPoints: action.points };
+    case "START_EDIT":
+      return {
+        ...state,
+        editingId: action.criterion.id,
+        editName: action.criterion.name,
+        editDescription: action.criterion.description || "",
+        editMaxPoints: action.criterion.maxPoints,
+        isCreating: false,
+      };
+    case "CANCEL_EDIT":
+      return {
+        ...state,
+        editingId: null,
+      };
+    case "SET_EDIT_NAME":
+      return { ...state, editName: action.name };
+    case "SET_EDIT_DESCRIPTION":
+      return { ...state, editDescription: action.description };
+    case "SET_EDIT_MAX_POINTS":
+      return { ...state, editMaxPoints: action.points };
+    case "ADD_CRITERION":
+      return {
+        ...state,
+        criteria: [...state.criteria, action.criterion],
+        isCreating: false,
+        newName: "",
+        newDescription: "",
+        newMaxPoints: 20,
+      };
+    case "UPDATE_CRITERION":
+      return {
+        ...state,
+        criteria: state.criteria.map((c) => (c.id === action.criterion.id ? action.criterion : c)),
+        editingId: null,
+      };
+    case "DELETE_CRITERION":
+      return {
+        ...state,
+        criteria: state.criteria.filter((c) => c.id !== action.id),
+      };
+    default:
+      return state;
+  }
+}
+
+export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerProps) {
+  const [isPending, startTransition] = useTransition();
+
+  const [state, dispatch] = useReducer(reducer, null, () => ({
+    selectedProjectId: projects.length > 0 ? projects[0].id : null,
+    criteria: initialCriteria,
+    isCreating: false,
+    newName: "",
+    newDescription: "",
+    newMaxPoints: 20,
+    editingId: null,
+    editName: "",
+    editDescription: "",
+    editMaxPoints: 20,
+  }));
+
+  // Synchronize state with incoming parent prop updates dynamically
+  useEffect(() => {
+    dispatch({ type: "SET_CRITERIA", criteria: initialCriteria });
+  }, [initialCriteria]);
+
+  const activeProject = projects.find((p) => p.id === state.selectedProjectId);
+
+  // Compute criteria list for selected project inline during render
+  const projectCriteria = state.criteria.reduce<Criterion[]>((acc, item) => {
+    if (item.projectId === state.selectedProjectId) {
+      acc.push(item);
+    }
+    return acc;
+  }, []);
+
+  const handleCreate = () => {
+    if (!state.selectedProjectId) return;
+    if (!state.newName.trim()) {
+      toast.error("Criterion name cannot be empty");
+      return;
+    }
+    if (state.newMaxPoints <= 0) {
+      toast.error("Max points must be a positive number");
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const newCp = await createCriterion({
+          projectId: state.selectedProjectId!,
+          name: state.newName.trim(),
+          description: state.newDescription.trim() || undefined,
+          maxPoints: state.newMaxPoints,
+        });
+
+        dispatch({ type: "ADD_CRITERION", criterion: newCp });
+        toast.success("Criterion added successfully!");
+      } catch (err) {
+        toast.error("Failed to add criterion");
+      }
+    });
+  };
+
+  const handleUpdate = (id: number) => {
+    if (!state.editName.trim()) {
+      toast.error("Criterion name cannot be empty");
+      return;
+    }
+    if (state.editMaxPoints <= 0) {
+      toast.error("Max points must be a positive number");
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const updated = await updateCriterion({
+          id,
+          name: state.editName.trim(),
+          description: state.editDescription.trim() || undefined,
+          maxPoints: state.editMaxPoints,
+        });
+
+        dispatch({ type: "UPDATE_CRITERION", criterion: updated });
+        toast.success("Criterion updated successfully!");
+      } catch (err) {
+        toast.error("Failed to update criterion");
+      }
+    });
+  };
+
+  const handleDelete = (id: number) => {
+    if (
+      !confirm(
+        "Are you sure you want to delete this criterion? This will also remove any scores recorded for this criterion."
+      )
+    ) {
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        await deleteCriterion(id);
+        dispatch({ type: "DELETE_CRITERION", id });
+        toast.success("Criterion deleted successfully!");
+      } catch (err) {
+        toast.error("Failed to delete criterion");
+      }
+    });
+  };
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <ProjectsSidebar
+        projects={projects}
+        selectedProjectId={state.selectedProjectId}
+        criteria={state.criteria}
+        onSelectProject={(id) => dispatch({ type: "SET_SELECTED_PROJECT", projectId: id })}
+      />
+
+      <div className="lg:col-span-8 space-y-6">
+        {activeProject ? (
+          <div className="space-y-6">
+            <div className="border-2 border-zinc-200 dark:border-zinc-800 p-6 bg-card flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] hover:shadow-none transition-shadow">
+              <div className="space-y-1">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-purple-600 dark:text-purple-400">
+                  Grid Settings
+                </span>
+                <h2 className="text-xl font-semibold uppercase text-zinc-900 dark:text-zinc-100 leading-tight">
+                  {activeProject.name}
+                </h2>
+                {activeProject.description && (
+                  <p className="text-[11px] font-medium text-zinc-500 line-clamp-2">
+                    {activeProject.description}
+                  </p>
+                )}
+              </div>
+              <Button
+                variant="unstyled"
+                onClick={() => dispatch({ type: "START_CREATE" })}
+                disabled={state.isCreating}
+                className="shrink-0 flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-95 transition-all"
+              >
+                <Plus className="size-4" />
+                Add Criterion
+              </Button>
+            </div>
+
+            {state.isCreating && (
+              <CriterionBuilderCard
+                newName={state.newName}
+                newDescription={state.newDescription}
+                newMaxPoints={state.newMaxPoints}
+                isPending={isPending}
+                onNameChange={(val) => dispatch({ type: "SET_NEW_NAME", name: val })}
+                onDescriptionChange={(val) => dispatch({ type: "SET_NEW_DESCRIPTION", description: val })}
+                onMaxPointsChange={(val) => dispatch({ type: "SET_NEW_MAX_POINTS", points: val })}
+                onSave={handleCreate}
+                onCancel={() => dispatch({ type: "CANCEL_CREATE" })}
+              />
+            )}
+
+            <div className="space-y-3">
+              {projectCriteria.map((c) => (
+                <CriterionRow
+                  key={c.id}
+                  criterion={c}
+                  isEditing={state.editingId === c.id}
+                  isPending={isPending}
+                  editName={state.editName}
+                  editDescription={state.editDescription}
+                  editMaxPoints={state.editMaxPoints}
+                  onNameChange={(val) => dispatch({ type: "SET_EDIT_NAME", name: val })}
+                  onDescriptionChange={(val) => dispatch({ type: "SET_EDIT_DESCRIPTION", description: val })}
+                  onMaxPointsChange={(val) => dispatch({ type: "SET_EDIT_MAX_POINTS", points: val })}
+                  onStartEdit={() => dispatch({ type: "START_EDIT", criterion: c })}
+                  onCancelEdit={() => dispatch({ type: "CANCEL_EDIT" })}
+                  onUpdate={() => handleUpdate(c.id)}
+                  onDelete={() => handleDelete(c.id)}
+                />
+              ))}
+
+              {projectCriteria.length === 0 && !state.isCreating && (
+                <div className="p-12 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-800 bg-card">
+                  <ClipboardCheck className="size-8 text-zinc-300 mx-auto mb-3" />
+                  <h4 className="text-[13px] font-semibold uppercase text-zinc-900 dark:text-zinc-100 mb-1">
+                    Empty Evaluation Grid
+                  </h4>
+                  <p className="text-xs font-medium text-zinc-400 max-w-sm mx-auto mb-4">
+                    There are no evaluation criteria established for this project yet. Use the button below to add your first criterion.
+                  </p>
+                  <Button
+                    variant="unstyled"
+                    onClick={() => dispatch({ type: "START_CREATE" })}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-95 transition-all"
+                  >
+                    <Plus className="size-4" />
+                    Add Your First Criterion
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="border-2 border-dashed border-zinc-200 dark:border-zinc-800 p-12 text-center bg-card">
+            <Sparkles className="size-10 text-zinc-300 mx-auto mb-4" />
+            <h3 className="text-sm font-semibold uppercase text-zinc-900 dark:text-zinc-100 mb-2">
+              No Projects Selected
+            </h3>
+            <p className="text-xs font-medium text-zinc-400 max-w-md mx-auto">
+              Please choose a project from the directory side panel to configure its customizable evaluation grid.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

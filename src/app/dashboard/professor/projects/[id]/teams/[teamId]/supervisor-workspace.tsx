@@ -3,7 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LayoutDashboard, CheckSquare, FileUp, Kanban as KanbanIcon, Clock, ArrowLeft, User, FileText, Plus, Trash2, Save, Loader2, Calendar } from "lucide-react";
+import { LayoutDashboard, CheckSquare, FileUp, Kanban as KanbanIcon, Clock, ArrowLeft, User, FileText, Plus, Trash2, Save, Loader2, Calendar, ClipboardCheck } from "lucide-react";
 import { useMemo, useSyncExternalStore, useState, useEffect, useTransition } from "react";
 import dynamic from 'next/dynamic';
 import Link from "next/link";
@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { SupervisorFeedbackCard } from "./supervisor-feedback-card";
 import { ReadOnlyKanban } from "./read-only-kanban";
 import { DeliverableReviewer } from "../../deliverable-reviewer";
+import { TeamEvaluationTab } from "./team-evaluation-tab";
 import { saveTeamNotes, createCheckpoint, updateCheckpoint, deleteCheckpoint, saveCheckpointNote } from "../../../../actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,9 +37,14 @@ interface SupervisorWorkspaceProps {
   livrables: any[];
   checkpoints: any[];
   checkpointNotes: any[];
+  criteria?: any[];
+  initialScores?: any[];
+  role?: string;
 }
 
 const COLORS = ['#000000', '#666666', '#cccccc'];
+const EMPTY_CRITERIA: any[] = [];
+const EMPTY_SCORES: any[] = [];
 
 const PieGradient = (props: any) => {
   const entryName = props.payload.name;
@@ -334,9 +340,10 @@ interface SupervisorNotesEditorProps {
   teamId: number;
   projectId: number;
   initialNotes: string | null;
+  readOnly?: boolean;
 }
 
-export function SupervisorNotesEditor({ teamId, projectId, initialNotes }: SupervisorNotesEditorProps) {
+export function SupervisorNotesEditor({ teamId, projectId, initialNotes, readOnly = false }: SupervisorNotesEditorProps) {
   const { refresh } = useRouter();
   const [newSectionTitle, setNewSectionTitle] = useState("");
   const [isSavingNotes, startSaveTransition] = useTransition();
@@ -361,7 +368,7 @@ export function SupervisorNotesEditor({ teamId, projectId, initialNotes }: Super
   const [notes, setNotes] = useState<any[]>(initialNotesArray);
 
   const handleAddSection = () => {
-    if (!newSectionTitle.trim()) return;
+    if (readOnly || !newSectionTitle.trim()) return;
     setNotes(prev => [
       ...prev,
       {
@@ -374,18 +381,22 @@ export function SupervisorNotesEditor({ teamId, projectId, initialNotes }: Super
   };
 
   const handleUpdateSectionContent = (id: string, text: string) => {
+    if (readOnly) return;
     setNotes(prev => prev.map(n => n.id === id ? { ...n, content: text } : n));
   };
 
   const handleUpdateSectionTitle = (id: string, title: string) => {
+    if (readOnly) return;
     setNotes(prev => prev.map(n => n.id === id ? { ...n, title } : n));
   };
 
   const handleDeleteSection = (id: string) => {
+    if (readOnly) return;
     setNotes(prev => prev.filter(n => n.id !== id));
   };
 
   const handleSaveNotes = () => {
+    if (readOnly) return;
     startSaveTransition(async () => {
       try {
         await saveTeamNotes(teamId, JSON.stringify(notes), projectId);
@@ -420,36 +431,40 @@ export function SupervisorNotesEditor({ teamId, projectId, initialNotes }: Super
             Teacher Private Notes
           </CardTitle>
         </div>
-        <Button
-          onClick={handleSaveNotes}
-          disabled={isSavingNotes || !isNotesChanged}
-          className="h-12 sm:h-10 text-xs font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none uppercase tracking-wider rounded-none cursor-pointer flex items-center justify-center gap-1.5"
-        >
-          {isSavingNotes ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
-          Save Notes
-        </Button>
+        {!readOnly && (
+          <Button
+            onClick={handleSaveNotes}
+            disabled={isSavingNotes || !isNotesChanged}
+            className="h-12 sm:h-10 text-xs font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none uppercase tracking-wider rounded-none cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            {isSavingNotes ? <Loader2 className="size-3.5 animate-spin" /> : <Save className="size-3.5" />}
+            Save Notes
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="p-6 pt-4 gap-y-4 relative z-10 flex flex-col">
         {/* New Section Maker */}
-        <div className="flex flex-col sm:flex-row gap-4 p-4 border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/5 items-stretch sm:items-center justify-between">
-          <div className="flex-1 max-w-md">
-            <input
-              type="text"
-              value={newSectionTitle}
-              onChange={(e) => setNewSectionTitle(e.target.value)}
-              className="w-full text-xs font-bold uppercase border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2.5 outline-none rounded-none focus:border-primary"
-            />
+        {!readOnly && (
+          <div className="flex flex-col sm:flex-row gap-4 p-4 border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/5 items-stretch sm:items-center justify-between">
+            <div className="flex-1 max-w-md">
+              <input
+                type="text"
+                value={newSectionTitle}
+                onChange={(e) => setNewSectionTitle(e.target.value)}
+                className="w-full text-xs font-bold uppercase border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2.5 outline-none rounded-none focus:border-primary"
+              />
+            </div>
+            <Button
+              onClick={handleAddSection}
+              disabled={!newSectionTitle.trim()}
+              variant="outline"
+              className="h-10 text-[10px] font-black border-2 border-zinc-900 dark:border-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-850 transition-all rounded-none uppercase cursor-pointer flex items-center justify-center gap-1"
+            >
+              <Plus className="size-3.5" />
+              Add Section
+            </Button>
           </div>
-          <Button
-            onClick={handleAddSection}
-            disabled={!newSectionTitle.trim()}
-            variant="outline"
-            className="h-10 text-[10px] font-black border-2 border-zinc-900 dark:border-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-850 transition-all rounded-none uppercase cursor-pointer flex items-center justify-center gap-1"
-          >
-            <Plus className="size-3.5" />
-            Add Section
-          </Button>
-        </div>
+        )}
 
         {/* Sections List */}
         <div className="gap-y-6 flex flex-col">
@@ -463,22 +478,26 @@ export function SupervisorNotesEditor({ teamId, projectId, initialNotes }: Super
                     type="text"
                     value={section.title}
                     onChange={(e) => handleUpdateSectionTitle(section.id, e.target.value)}
-                    className="text-xs font-black uppercase text-zinc-900 dark:text-zinc-100 bg-transparent border-b border-transparent hover:border-zinc-200 focus:border-primary focus:outline-none py-0.5 tracking-wider w-full max-w-xs"
+                    disabled={readOnly}
+                    className="text-xs font-black uppercase text-zinc-900 dark:text-zinc-100 bg-transparent border-b border-transparent hover:border-zinc-200 focus:border-primary focus:outline-none py-0.5 tracking-wider w-full max-w-xs disabled:cursor-not-allowed"
                   />
-                  <Button
-                    onClick={() => handleDeleteSection(section.id)}
-                    variant="unstyled"
-                    className="size-7 p-0 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer flex items-center justify-center rounded-none"
-                    title="Delete this section"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  {!readOnly && (
+                    <Button
+                      onClick={() => handleDeleteSection(section.id)}
+                      variant="unstyled"
+                      className="size-7 p-0 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer flex items-center justify-center rounded-none"
+                      title="Delete this section"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
                 </div>
                 <Textarea
                   rows={4}
                   value={section.content}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleUpdateSectionContent(section.id, e.target.value)}
-                  className="border border-zinc-200 dark:border-zinc-800 focus-visible:ring-primary rounded-none p-3 resize-y bg-white dark:bg-zinc-950 text-xs font-mono font-medium leading-relaxed text-zinc-700 dark:text-zinc-300"
+                  disabled={readOnly}
+                  className="border border-zinc-200 dark:border-zinc-800 focus-visible:ring-primary rounded-none p-3 resize-y bg-white dark:bg-zinc-950 text-xs font-mono font-medium leading-relaxed text-zinc-700 dark:text-zinc-300 disabled:cursor-not-allowed"
                 />
               </div>
             ))
@@ -489,7 +508,18 @@ export function SupervisorNotesEditor({ teamId, projectId, initialNotes }: Super
   );
 }
 
-export function SupervisorWorkspace({ project, team, members, tasks, livrables, checkpoints, checkpointNotes }: SupervisorWorkspaceProps) {
+export function SupervisorWorkspace({
+  project,
+  team,
+  members,
+  tasks,
+  livrables,
+  checkpoints,
+  checkpointNotes,
+  criteria = EMPTY_CRITERIA,
+  initialScores = EMPTY_SCORES,
+  role = "professor",
+}: SupervisorWorkspaceProps) {
   const isClient = useSyncExternalStore(emptySubscribe, () => clientSnapshot, () => serverSnapshot);
   const now = useSyncExternalStore(emptySubscribe, getMountTime, () => null);
 
@@ -574,6 +604,10 @@ export function SupervisorWorkspace({ project, team, members, tasks, livrables, 
               <FileText className="size-4" />
               Notes
             </TabsTrigger>
+            <TabsTrigger value="evaluation" className="data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none h-full px-2 font-semibold uppercase text-xs tracking-widest gap-2">
+              <ClipboardCheck className="size-4" />
+              Evaluation
+            </TabsTrigger>
           </TabsList>
 
           <div className="py-8">
@@ -599,6 +633,7 @@ export function SupervisorWorkspace({ project, team, members, tasks, livrables, 
                 teamName={team.name}
                 initialFeedback={team.feedback}
                 type="overview"
+                readOnly={role === "jury"}
               />
             </TabsContent>
 
@@ -614,6 +649,7 @@ export function SupervisorWorkspace({ project, team, members, tasks, livrables, 
                 teamName={team.name}
                 initialFeedback={team.feedback}
                 type="kanban"
+                readOnly={role === "jury"}
               />
             </TabsContent>
 
@@ -640,6 +676,7 @@ export function SupervisorWorkspace({ project, team, members, tasks, livrables, 
                         deliverableSource={deliv.source}
                         initialStatus={deliv.status}
                         initialFeedback={deliv.feedback}
+                        readOnly={role === "jury"}
                       />
                     ))}
                   </div>
@@ -652,6 +689,7 @@ export function SupervisorWorkspace({ project, team, members, tasks, livrables, 
                 teamName={team.name}
                 initialFeedback={team.feedback}
                 type="deliverables"
+                readOnly={role === "jury"}
               />
             </TabsContent>
 
@@ -661,6 +699,7 @@ export function SupervisorWorkspace({ project, team, members, tasks, livrables, 
                 teamId={team.id}
                 checkpoints={checkpoints}
                 checkpointNotes={checkpointNotes}
+                readOnly={role === "jury"}
               />
             </TabsContent>
 
@@ -670,6 +709,18 @@ export function SupervisorWorkspace({ project, team, members, tasks, livrables, 
                 teamId={team.id}
                 projectId={project.id}
                 initialNotes={team.notes}
+                readOnly={role === "jury"}
+              />
+            </TabsContent>
+
+            <TabsContent value="evaluation" className="mt-0 flex flex-col gap-y-8">
+              <TeamEvaluationTab
+                projectId={project.id}
+                teamId={team.id}
+                criteria={criteria}
+                initialScores={initialScores}
+                team={team}
+                role={role}
               />
             </TabsContent>
           </div>
@@ -703,9 +754,10 @@ interface CheckpointRowProps {
   projectId: number;
   savedNoteText: string;
   onRefresh: () => void;
+  readOnly?: boolean;
 }
 
-function CheckpointRow({ checkpoint, teamId, projectId, savedNoteText, onRefresh }: CheckpointRowProps) {
+function CheckpointRow({ checkpoint, teamId, projectId, savedNoteText, onRefresh, readOnly = false }: CheckpointRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(() => checkpoint.title);
   const [editDueDate, setEditDueDate] = useState(() =>
@@ -717,7 +769,7 @@ function CheckpointRow({ checkpoint, teamId, projectId, savedNoteText, onRefresh
   const [isSavingNote, startSaveNoteTransition] = useTransition();
 
   const handleUpdate = () => {
-    if (!editTitle.trim() || !editDueDate) return;
+    if (readOnly || !editTitle.trim() || !editDueDate) return;
     startUpdateTransition(async () => {
       try {
         await updateCheckpoint(checkpoint.id, editTitle.trim(), editDueDate, projectId);
@@ -731,6 +783,7 @@ function CheckpointRow({ checkpoint, teamId, projectId, savedNoteText, onRefresh
   };
 
   const handleDelete = () => {
+    if (readOnly) return;
     if (!confirm("Are you sure you want to delete this checkpoint? Notes for this checkpoint across all teams will be deleted.")) return;
     startDeleteTransition(async () => {
       try {
@@ -744,6 +797,7 @@ function CheckpointRow({ checkpoint, teamId, projectId, savedNoteText, onRefresh
   };
 
   const handleSaveNote = () => {
+    if (readOnly) return;
     startSaveNoteTransition(async () => {
       try {
         await saveCheckpointNote(checkpoint.id, teamId, localNote.trim(), projectId);
@@ -771,7 +825,7 @@ function CheckpointRow({ checkpoint, teamId, projectId, savedNoteText, onRefresh
       <div className="p-6 relative z-10 flex flex-col gap-y-6">
         {/* Checkpoint Header Info */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4 gap-4">
-          {isEditing ? (
+          {isEditing && !readOnly ? (
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               <input
                 type="text"
@@ -817,23 +871,25 @@ function CheckpointRow({ checkpoint, teamId, projectId, savedNoteText, onRefresh
                   </Badge>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => setIsEditing(true)}
-                  variant="outline"
-                  className="h-8 text-[9px] font-black rounded-none uppercase cursor-pointer"
-                >
-                  Edit
-                </Button>
-                <Button
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  variant="unstyled"
-                  className="size-8 p-0 text-rose-500/70 hover:text-rose-600 hover:bg-rose-50 dark:text-rose-450 dark:hover:text-rose-400 dark:hover:bg-rose-950/20 rounded-none cursor-pointer flex items-center justify-center"
-                >
-                  {isDeleting ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
-                </Button>
-              </div>
+              {!readOnly && (
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    variant="outline"
+                    className="h-8 text-[9px] font-black rounded-none uppercase cursor-pointer"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    variant="unstyled"
+                    className="size-8 p-0 text-rose-500/70 hover:text-rose-600 hover:bg-rose-50 dark:text-rose-450 dark:hover:text-rose-400 dark:hover:bg-rose-950/20 rounded-none cursor-pointer flex items-center justify-center"
+                  >
+                    {isDeleting ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -844,21 +900,24 @@ function CheckpointRow({ checkpoint, teamId, projectId, savedNoteText, onRefresh
             <label htmlFor={`note-textarea-${checkpoint.id}`} className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
               Meeting Notes & Remarks
             </label>
-            <Button
-              onClick={handleSaveNote}
-              disabled={isSavingNote || !isNoteChanged}
-              className="h-8 text-[9px] font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[2px_2px_0px_0px_rgba(var(--primary-rgb),0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none uppercase tracking-wider rounded-none cursor-pointer flex items-center justify-center gap-1"
-            >
-              {isSavingNote ? <Loader2 className="size-3 animate-spin" /> : <Save className="size-3" />}
-              Save Notes
-            </Button>
+            {!readOnly && (
+              <Button
+                onClick={handleSaveNote}
+                disabled={isSavingNote || !isNoteChanged}
+                className="h-8 text-[9px] font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[2px_2px_0px_0px_rgba(var(--primary-rgb),0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none uppercase tracking-wider rounded-none cursor-pointer flex items-center justify-center gap-1"
+              >
+                {isSavingNote ? <Loader2 className="size-3 animate-spin" /> : <Save className="size-3" />}
+                Save Notes
+              </Button>
+            )}
           </div>
           <Textarea
             id={`note-textarea-${checkpoint.id}`}
             rows={3}
             value={localNote}
             onChange={(e) => setLocalNote(e.target.value)}
-            className="border border-zinc-200 dark:border-zinc-800 focus-visible:ring-primary rounded-none p-3 resize-y bg-white dark:bg-zinc-950 text-xs font-mono font-medium leading-relaxed text-zinc-700 dark:text-zinc-300"
+            disabled={readOnly}
+            className="border border-zinc-200 dark:border-zinc-800 focus-visible:ring-primary rounded-none p-3 resize-y bg-white dark:bg-zinc-950 text-xs font-mono font-medium leading-relaxed text-zinc-700 dark:text-zinc-300 disabled:cursor-not-allowed"
           />
         </div>
       </div>
@@ -871,6 +930,7 @@ interface SupervisorDatesSectionProps {
   teamId: number;
   checkpoints: any[];
   checkpointNotes: any[];
+  readOnly?: boolean;
 }
 
 export function SupervisorDatesSection({
@@ -878,6 +938,7 @@ export function SupervisorDatesSection({
   teamId,
   checkpoints,
   checkpointNotes,
+  readOnly = false,
 }: SupervisorDatesSectionProps) {
   const { refresh } = useRouter();
   const [isAdding, setIsAdding] = useState(false);
@@ -886,7 +947,7 @@ export function SupervisorDatesSection({
   const [isCreating, startCreateTransition] = useTransition();
 
   const handleAddCheckpoint = () => {
-    if (!newTitle.trim() || !newDueDate) return;
+    if (readOnly || !newTitle.trim() || !newDueDate) return;
     startCreateTransition(async () => {
       try {
         await createCheckpoint(projectId, newTitle.trim(), newDueDate);
@@ -918,7 +979,7 @@ export function SupervisorDatesSection({
             Project Checkpoints & Meeting Notes
           </CardTitle>
         </div>
-        {!isAdding && (
+        {!isAdding && !readOnly && (
           <Button
             onClick={() => setIsAdding(true)}
             className="h-10 text-xs font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none uppercase tracking-wider rounded-none cursor-pointer flex items-center justify-center gap-1.5"
@@ -931,7 +992,7 @@ export function SupervisorDatesSection({
 
       <CardContent className="p-6 pt-4 gap-y-6 relative z-10 flex flex-col">
         {/* Add Checkpoint Form */}
-        {isAdding && (
+        {isAdding && !readOnly && (
           <div className="flex flex-col gap-4 p-5 border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/5 items-stretch">
             <h5 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-900 dark:text-zinc-150">Create New Project-wide Checkpoint</h5>
             <div className="flex flex-col sm:flex-row gap-4 items-end">
@@ -996,6 +1057,7 @@ export function SupervisorDatesSection({
                   projectId={projectId}
                   savedNoteText={note?.notes || ""}
                   onRefresh={refresh}
+                  readOnly={readOnly}
                 />
               );
             })

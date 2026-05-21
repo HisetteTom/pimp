@@ -10,6 +10,7 @@ import * as livrableSchema from "./schema/livrable";
 import * as authSchema from "./schema/auth";
 import * as refusedProjectSchema from "./schema/refused_project";
 import * as checkpointSchema from "./schema/checkpoint";
+import * as evaluationSchema from "./schema/evaluation";
 
 const schema = {
   ...projectSchema,
@@ -22,6 +23,7 @@ const schema = {
   ...authSchema,
   ...refusedProjectSchema,
   ...checkpointSchema,
+  ...evaluationSchema,
 };
 
 declare global {
