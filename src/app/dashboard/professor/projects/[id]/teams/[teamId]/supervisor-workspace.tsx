@@ -3,7 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LayoutDashboard, CheckSquare, FileUp, Kanban as KanbanIcon, Clock, ArrowLeft, User, FileText, Plus, Trash2, Save, Loader2, Calendar, ClipboardCheck } from "lucide-react";
+import { LayoutDashboard, CheckSquare, FileUp, Kanban as KanbanIcon, Clock, ArrowLeft, User, Crown, FileText, Plus, Trash2, Save, Loader2, Calendar, ClipboardCheck } from "lucide-react";
 import { useMemo, useSyncExternalStore, useState, useEffect, useTransition } from "react";
 import dynamic from 'next/dynamic';
 import Link from "next/link";
@@ -324,7 +324,11 @@ function TaskStatsAndBreakdown({
                   key={m.id}
                   className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/10 text-[10px] font-bold text-zinc-700 dark:text-zinc-300 rounded-none uppercase"
                 >
-                  <User className="size-3 text-zinc-500 dark:text-zinc-400" />
+                  {m.responsabilityId ? (
+                    <Crown className="size-3 text-amber-500" />
+                  ) : (
+                    <User className="size-3 text-zinc-500 dark:text-zinc-400" />
+                  )}
                   <span>{m.name || "Unknown"}</span>
                 </div>
               ))

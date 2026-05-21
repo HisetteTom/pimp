@@ -84,7 +84,7 @@ export async function createTeam(projectId: number, teamName: string) {
     projectId: projectId,
   }).returning();
 
-  // Assign user to team in this project
+  // Assign user to team in this project and make them leader
   await db.update(projectEnrollment)
     .set({ teamId: newTeam.id })
     .where(
@@ -93,6 +93,10 @@ export async function createTeam(projectId: number, teamName: string) {
         eq(projectEnrollment.projectId, projectId)
       )
     );
+
+  await db.update(user)
+    .set({ responsabilityId: 1 })
+    .where(eq(user.id, session.user.id));
 
   revalidatePath(`/dashboard/student/projects/${projectId}`);
 }

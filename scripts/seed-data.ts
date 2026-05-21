@@ -11,6 +11,7 @@ import { projectEnrollment } from "../src/db/schema/project_enrollment";
 import { compte } from "../src/db/schema/compte";
 import { responsability } from "../src/db/schema/responsability";
 import { faker } from "@faker-js/faker";
+import { inArray } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import "dotenv/config";
 
@@ -42,12 +43,16 @@ async function seed() {
       db.delete(account),
       db.delete(verification),
       db.delete(team),
-      db.delete(responsability),
     ]))
     .then(() => Promise.all([
       db.delete(user),
       db.delete(project),
+    ]))
+    .then(() => Promise.all([
+      db.delete(responsability),
     ]));
+  
+  await db.insert(responsability).values({ id: 1 });
   
   console.log("Database cleaned.");
 
@@ -105,13 +110,13 @@ async function seed() {
     }
   ]);
 
-  // Generate 20 random students using Faker
-  console.log("Generating 20 random student accounts…");
+  // Generate 80 random student accounts to ensure uniqueness
+  console.log("Generating 80 random student accounts…");
   const randomStudentIds: string[] = [];
   const studentsToInsert = [];
   const accountsToInsert = [];
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 80; i++) {
     const sId = crypto.randomUUID();
     const name = faker.person.fullName();
     const email = faker.internet.email({ firstName: name.split(" ")[0] }).toLowerCase();
@@ -296,14 +301,9 @@ async function seed() {
   // Enrolling students to teams
   console.log("Enrolling students and structuring groups…");
   const enrollmentsToInsert = [];
-  const enrolledUsersPerProject = new Map<number, Set<string>>();
+  const leaderUserIds = new Set<string>();
 
-  // Initialize sets for each project
-  for (const p of insertedProjects) {
-    enrolledUsersPerProject.set(p.id, new Set<string>());
-  }
-  
-  // Assign our test student to an ongoing project team
+  // Assign our test student to an ongoing project team as leader
   const targetProject = insertedProjects.find(p => p.status === "ongoing");
   const targetTeam = targetProject ? insertedTeams.find(t => t.projectId === targetProject.id) : null;
 
@@ -313,34 +313,26 @@ async function seed() {
       projectId: targetProject.id,
       teamId: targetTeam.id,
     });
-    enrolledUsersPerProject.get(targetProject.id)?.add(studentTestId);
+    leaderUserIds.add(studentTestId);
   }
 
-  // Shuffle students and assign to other active teams
-  let studentCursor = 0;
+  // Assign random students to teams (each student in only one team)
+  let studentIndex = 0;
   for (const t of insertedTeams) {
-    // Assign 3-4 members per team
     const teamSize = getInt({ min: 3, max: 4 });
-    const projectSet = enrolledUsersPerProject.get(t.projectId) || new Set<string>();
+    const currentTeamMembers = enrollmentsToInsert.filter(e => e.teamId === t.id);
+    let membersToAdd = teamSize - currentTeamMembers.length;
+    let isFirstMember = currentTeamMembers.length === 0;
 
-    for (let m = 0; m < teamSize; m++) {
-      let attempts = 0;
-      let candidateId = "";
-      
-      while (attempts < randomStudentIds.length) {
-        const potentialId = randomStudentIds[studentCursor % randomStudentIds.length];
-        studentCursor++;
-        attempts++;
-        if (!projectSet.has(potentialId)) {
-          candidateId = potentialId;
-          break;
+    for (let m = 0; m < membersToAdd; m++) {
+      if (studentIndex < randomStudentIds.length) {
+        const studentId = randomStudentIds[studentIndex++];
+        if (isFirstMember) {
+          leaderUserIds.add(studentId);
+          isFirstMember = false;
         }
-      }
-
-      if (candidateId) {
-        projectSet.add(candidateId);
         enrollmentsToInsert.push({
-          userId: candidateId,
+          userId: studentId,
           projectId: t.projectId,
           teamId: t.id,
         });
@@ -348,37 +340,28 @@ async function seed() {
     }
   }
 
-  // Add some students enrolled in "proposed" and "validated" projects without teams
+  await db.insert(projectEnrollment).values(enrollmentsToInsert);
+
+  if (leaderUserIds.size > 0) {
+    await db.update(user)
+      .set({ responsabilityId: 1 })
+      .where(inArray(user.id, Array.from(leaderUserIds)));
+  }
+
+  // Add remaining students to idle projects (without teams)
   const idleProjects = insertedProjects.filter(p => p.status === "proposed" || p.status === "validated");
   for (const p of idleProjects) {
-    const idleCount = getInt({ min: 2, max: 5 });
-    const projectSet = enrolledUsersPerProject.get(p.id) || new Set<string>();
-    
+    const idleCount = getInt({ min: 1, max: 2 });
     for (let c = 0; c < idleCount; c++) {
-      let attempts = 0;
-      let candidateId = "";
-      
-      while (attempts < randomStudentIds.length) {
-        const potentialId = randomStudentIds[getInt({ min: 0, max: randomStudentIds.length - 1 })];
-        attempts++;
-        if (!projectSet.has(potentialId)) {
-          candidateId = potentialId;
-          break;
-        }
-      }
-
-      if (candidateId) {
-        projectSet.add(candidateId);
+      if (studentIndex < randomStudentIds.length) {
         enrollmentsToInsert.push({
-          userId: candidateId,
+          userId: randomStudentIds[studentIndex++],
           projectId: p.id,
           teamId: null,
         });
       }
     }
   }
-
-  await db.insert(projectEnrollment).values(enrollmentsToInsert);
 
   // Generate realistic tasks and deliverables per active team
   console.log("Populating realistic tasks and deliverables…");

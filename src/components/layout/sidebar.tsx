@@ -16,7 +16,8 @@ import {
   Lightbulb,
   ChevronRight,
   Sun,
-  Moon
+  Moon,
+  Crown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -165,10 +166,19 @@ export function Sidebar({ team, userProjects }: SidebarProps) {
                   key={member.id} 
                   className="flex items-center gap-3 px-3 py-2 text-[12px] font-bold text-zinc-600 dark:text-zinc-400 border-l-2 border-transparent"
                 >
-                  <div className="size-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-black border border-zinc-200 dark:border-zinc-700">
-                    {member.name.charAt(0)}
+                  <div className="relative">
+                    <div className="size-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-black border border-zinc-200 dark:border-zinc-700">
+                      {member.name.charAt(0)}
+                    </div>
+                    {member.responsabilityId === 1 && (
+                      <div className="absolute -top-1 -right-1 bg-amber-500 rounded-full p-0.5 border border-white dark:border-zinc-950 shadow-sm">
+                        <Crown className="size-2 text-white" />
+                      </div>
+                    )}
                   </div>
-                  <span className="truncate">{member.name}</span>
+                  <span className={cn("truncate", member.responsabilityId === 1 && "text-zinc-900 dark:text-zinc-100 font-black")}>
+                    {member.name}
+                  </span>
                 </div>
               ))}
             </div>

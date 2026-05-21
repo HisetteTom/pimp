@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, Clock, Calendar, AlertCircle, ChevronRight, User } from "lucide-react";
+import { ArrowLeft, Clock, Calendar, AlertCircle, ChevronRight, User, Crown } from "lucide-react";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -232,7 +232,11 @@ export default async function ProfessorProjectDetailPage({ params }: { params: P
                                 key={m.id}
                                 className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/10 text-[10px] font-bold text-zinc-700 dark:text-zinc-300 rounded-none uppercase"
                               >
-                                <User className="size-3 text-zinc-400" />
+                                {m.responsabilityId ? (
+                                  <Crown className="size-3 text-amber-500" />
+                                ) : (
+                                  <User className="size-3 text-zinc-400" />
+                                )}
                                 <span>{m.name || "Unknown"}</span>
                               </div>
                             ))
