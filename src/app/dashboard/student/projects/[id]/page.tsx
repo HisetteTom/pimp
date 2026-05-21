@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { project, team, user, task, livrable, projectEnrollment } from "@/db/schema";
+import { project, team, user, task, livrable, projectEnrollment, checkpoint, checkpointNote } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, and, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
@@ -76,6 +76,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
       id: t.id,
       name: t.name,
       projectId: t.projectId,
+      grade: t.grade,
+      feedback: t.feedback,
       members
     };
   });
@@ -99,15 +101,24 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
 
   let teamTasks: any[] = [];
   let teamLivrables: any[] = [];
+  let checkpoints: any[] = [];
+  let checkpointNotes: any[] = [];
 
   if (userTeam) {
-    [teamTasks, teamLivrables] = await Promise.all([
+    [teamTasks, teamLivrables, checkpoints, checkpointNotes] = await Promise.all([
       db.query.task.findMany({
         where: eq(task.teamId, userTeam.id),
       }),
       db.query.livrable.findMany({
         where: eq(livrable.teamId, userTeam.id),
-      })
+      }),
+      db.query.checkpoint.findMany({
+        where: eq(checkpoint.projectId, projectId),
+        orderBy: (checkpoint, { asc }) => [asc(checkpoint.dueDate)],
+      }),
+      db.query.checkpointNote.findMany({
+        where: eq(checkpointNote.teamId, userTeam.id),
+      }),
     ]);
   }
 
@@ -137,6 +148,8 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
             currentUser={currentUser!}
             tasks={teamTasks}
             livrables={teamLivrables}
+            checkpoints={checkpoints}
+            checkpointNotes={checkpointNotes}
           />
         )}
       </div>

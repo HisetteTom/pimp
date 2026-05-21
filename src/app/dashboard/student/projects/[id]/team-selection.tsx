@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, Plus, ArrowRight } from "lucide-react";
+import { Users, Plus, ArrowRight, Crown } from "lucide-react";
 import { createTeam, joinTeam } from "@/app/dashboard/student/actions";
 import { cn } from "@/lib/utils";
 
@@ -64,8 +64,15 @@ export function TeamSelection({ projectId, teams, maxGroups, maxMembers }: TeamS
                 <CardContent className="px-6 pb-6">
                   <div className="flex flex-wrap gap-1.5">
                     {team.members.map((m: any) => (
-                      <div key={m.id} className="size-6 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold" title={m.name}>
-                        {m.name.charAt(0)}
+                      <div key={m.id} className="relative group/member" title={m.name}>
+                        <div className="size-6 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold">
+                          {m.name.charAt(0)}
+                        </div>
+                        {m.responsabilityId === 1 && (
+                          <div className="absolute -top-1 -right-1 bg-amber-500 rounded-full p-0.5 border border-white dark:border-zinc-950 shadow-sm">
+                            <Crown className="size-2 text-white" />
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -98,8 +105,7 @@ export function TeamSelection({ projectId, teams, maxGroups, maxMembers }: TeamS
             <div className="space-y-2">
               <Label htmlFor="team-name" className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Team Name</Label>
               <Input 
-                id="team-name" 
-                placeholder="E.G. THE PIXELS" 
+                id="team-name"  
                 value={newTeamName}
                 onChange={(e) => setNewTeamName(e.target.value)}
                 className="font-bold border-2 focus-visible:ring-primary"

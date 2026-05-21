@@ -5,7 +5,7 @@ export const project = pgTable("project", {
 	id: integer("id").primaryKey().generatedByDefaultAsIdentity(),
 	name: text("name").notNull(),
 	description: text("description"),
-	status: text("status").notNull().default("proposed"), // proposed, assigned, ongoing, finished
+	status: text("status").notNull().default("proposed"), // proposed, validated, ongoing, late, delivered, presented, closed
 	dateStart: date("date-start"),
 	dateEnd: date("date-end"),
 	taskId: integer("task_id").references((): AnyPgColumn => task.id),

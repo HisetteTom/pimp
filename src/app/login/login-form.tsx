@@ -35,7 +35,7 @@ export function LoginForm() {
         if (error) {
             alert(error.message);
         } else {
-            push("/dashboard/student");
+            push("/");
         }
         setLoading(false);
     };
@@ -57,7 +57,7 @@ export function LoginForm() {
                             Project Isen Manager Planner
                         </CardTitle>
                         <CardDescription className="text-muted-foreground font-semibold uppercase tracking-wider text-xs">
-                            Espace de Connexion
+                            Login Area
                         </CardDescription>
                     </div>
                 </CardHeader>
@@ -79,7 +79,7 @@ export function LoginForm() {
                         </div>
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="password" className="text-primary/80 font-bold">Mot de passe</Label>
+                                <Label htmlFor="password" className="text-primary/80 font-bold">Password</Label>
                             </div>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-3 size-4 text-primary/40" />
@@ -103,13 +103,13 @@ export function LoginForm() {
                             {loading ? (
                                 <Loader2 className="size-5 animate-spin" />
                             ) : (
-                                "SE CONNECTER"
+                                "SIGN IN"
                             )}
                         </Button>
                         <div className="text-sm text-center font-bold">
-                            <span className="text-muted-foreground uppercase tracking-tight">Pas de compte ? </span>
+                            <span className="text-muted-foreground uppercase tracking-tight">No account? </span>
                             <Link href="/register" className="text-secondary hover:text-primary transition-colors underline decoration-2 underline-offset-4">
-                                CRÉER UN PROFIL
+                                CREATE A PROFILE
                             </Link>
                         </div>
                     </CardFooter>

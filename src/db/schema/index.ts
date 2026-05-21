@@ -8,3 +8,5 @@ export * from "./livrable";
 export * from "./auth";
 export * from "./refused_project";
 export * from "./project_enrollment";
+export * from "./checkpoint";
+export * from "./evaluation";

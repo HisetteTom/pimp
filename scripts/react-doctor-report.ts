@@ -28,8 +28,6 @@ async function run() {
 
     console.log(`Score: ${score}, Color: ${color}`);
 
-    // Private Repo -> Shields.io can't see JSON. 
-    // Reverting to static badge in README.
     const badge = `[![Health Score](https://img.shields.io/badge/React_Doctor-${score}%2F100-${color})](https://github.com/millionco/react-doctor)`;
     const readmePath = join(process.cwd(), "README.md");
     let readme = readFileSync(readmePath, "utf-8");
