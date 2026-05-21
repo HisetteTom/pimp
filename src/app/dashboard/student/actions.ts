@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { project, user, refusedProject, team, projectEnrollment } from "@/db/schema";
+import { project, user, refusedProject, team, projectEnrollment, task } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, and, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -147,3 +147,91 @@ export async function leaveTeam(projectId: number) {
 
   revalidatePath(`/dashboard/student/projects/${projectId}`);
 }
+
+export async function createTask(data: {
+  name: string;
+  description?: string;
+  priority: string;
+  status?: string;
+  deadline?: Date;
+  teamId: number;
+  assigneeId?: string;
+  assignees?: string;
+  projectId: number;
+}) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) throw new Error("Unauthorized");
+
+  await db.insert(task).values({
+    name: data.name,
+    description: data.description,
+    priority: data.priority,
+    status: data.status || "todo",
+    deadline: data.deadline,
+    teamId: data.teamId,
+    assigneeId: data.assigneeId,
+    assignees: data.assignees,
+  });
+
+  revalidatePath(`/dashboard/student/projects/${data.projectId}`);
+}
+
+export async function updateTaskStatus(taskId: number, status: string, projectId: number) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) throw new Error("Unauthorized");
+
+  await db.update(task)
+    .set({ status })
+    .where(eq(task.id, taskId));
+
+  revalidatePath(`/dashboard/student/projects/${projectId}`);
+}
+
+export async function deleteTask(taskId: number, projectId: number) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) throw new Error("Unauthorized");
+
+  await db.delete(task).where(eq(task.id, taskId));
+
+  revalidatePath(`/dashboard/student/projects/${projectId}`);
+}
+
+export async function updateTask(data: {
+  id: number;
+  name: string;
+  description?: string | null;
+  priority: string;
+  deadline?: Date | null;
+  assigneeId?: string | null;
+  assignees?: string | null;
+  projectId: number;
+}) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) throw new Error("Unauthorized");
+
+  await db.update(task)
+    .set({
+      name: data.name,
+      description: data.description,
+      priority: data.priority,
+      deadline: data.deadline,
+      assigneeId: data.assigneeId,
+      assignees: data.assignees,
+    })
+    .where(eq(task.id, data.id));
+
+  revalidatePath(`/dashboard/student/projects/${data.projectId}`);
+}
+

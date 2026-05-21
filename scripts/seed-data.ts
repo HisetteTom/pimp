@@ -18,7 +18,7 @@ async function seed() {
   console.log("Seeding database...");
 
   console.log("Cleaning database...");
-  // Level 1: Delete children / leaf nodes
+  // Level 1 -> Level 2 -> Level 3: Delete sequentially using a single await chain to satisfy FK constraints and linter rules
   await Promise.all([
     db.delete(comment),
     db.delete(task),
@@ -29,15 +29,19 @@ async function seed() {
     db.delete(session),
     db.delete(account),
     db.delete(verification),
-    db.delete(team),
-    db.delete(responsability),
-  ]);
-
-  // Level 2: Delete parents
-  await Promise.all([
-    db.delete(user),
-    db.delete(project),
-  ]);
+  ])
+    .then(() =>
+      Promise.all([
+        db.delete(team),
+        db.delete(responsability),
+      ])
+    )
+    .then(() =>
+      Promise.all([
+        db.delete(user),
+        db.delete(project),
+      ])
+    );
   
   console.log("Database cleaned.");
 
