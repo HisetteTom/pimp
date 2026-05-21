@@ -222,10 +222,10 @@ export default async function ProfessorDashboardPage() {
               <TableHeader className="bg-zinc-50 dark:bg-zinc-900 border-b-2 border-zinc-200 dark:border-zinc-800">
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="w-[35%] font-black uppercase text-[10px] tracking-wider text-zinc-500 py-4 pl-6">Project Subject</TableHead>
-                  <TableHead className="w-[15%] font-black uppercase text-[10px] tracking-wider text-zinc-500 py-4 px-4">Status</TableHead>
-                  <TableHead className="w-[15%] font-black uppercase text-[10px] tracking-wider text-zinc-500 py-4 text-center px-4">Teams</TableHead>
-                  <TableHead className="w-[20%] font-black uppercase text-[10px] tracking-wider text-zinc-500 py-4 px-4">Timeline</TableHead>
-                  <TableHead className="w-[15%] text-left font-black uppercase text-[10px] tracking-wider text-zinc-500 py-4 px-4">Action</TableHead>
+                  <TableHead className="w-[15%] font-black uppercase text-[10px] tracking-wider text-zinc-500 p-4">Status</TableHead>
+                  <TableHead className="w-[15%] font-black uppercase text-[10px] tracking-wider text-zinc-500 p-4 text-center">Teams</TableHead>
+                  <TableHead className="w-[20%] font-black uppercase text-[10px] tracking-wider text-zinc-500 p-4">Timeline</TableHead>
+                  <TableHead className="w-[15%] text-left font-black uppercase text-[10px] tracking-wider text-zinc-500 p-4">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

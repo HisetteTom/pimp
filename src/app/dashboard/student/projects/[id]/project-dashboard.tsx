@@ -30,6 +30,8 @@ interface ProjectDashboardProps {
   currentUser: any;
   tasks: any[];
   livrables: any[];
+  checkpoints: any[];
+  checkpointNotes: any[];
 }
 
 const COLORS = ['#000000', '#666666', '#cccccc'];
@@ -399,7 +401,15 @@ function StudentDeliverablesSection({ project, team, livrables, feedback }: Stud
   );
 }
 
-export function ProjectDashboard({ project, team, currentUser, tasks, livrables }: ProjectDashboardProps) {
+export function ProjectDashboard({
+  project,
+  team,
+  currentUser,
+  tasks,
+  livrables,
+  checkpoints,
+  checkpointNotes,
+}: ProjectDashboardProps) {
   const isClient = useSyncExternalStore(emptySubscribe, () => clientSnapshot, () => serverSnapshot);
   const now = useSyncExternalStore(emptySubscribe, getMountTime, () => null);
 
@@ -469,6 +479,10 @@ export function ProjectDashboard({ project, team, currentUser, tasks, livrables 
             <FileUp className="size-4" />
             Deliverables
           </TabsTrigger>
+          <TabsTrigger value="dates" className="data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none h-full px-2 font-semibold uppercase text-xs tracking-widest gap-2">
+            <Clock className="size-4" />
+            Dates
+          </TabsTrigger>
         </TabsList>
 
         <div className="py-8">
@@ -502,8 +516,94 @@ export function ProjectDashboard({ project, team, currentUser, tasks, livrables 
               feedback={parsedFeedback.deliverables}
             />
           </TabsContent>
+
+          <TabsContent value="dates" className="mt-0">
+            <StudentDatesSection
+              checkpoints={checkpoints}
+              checkpointNotes={checkpointNotes}
+            />
+          </TabsContent>
         </div>
       </Tabs>
     </div>
+  );
+}
+
+function formatLocalDate(dateVal: any): string {
+  if (!dateVal) return "No Date";
+  try {
+    return new Date(dateVal).toLocaleDateString();
+  } catch {
+    return "No Date";
+  }
+}
+
+interface StudentDatesSectionProps {
+  checkpoints: any[];
+  checkpointNotes: any[];
+}
+
+function StudentDatesSection({ checkpoints, checkpointNotes }: StudentDatesSectionProps) {
+  return (
+    <Card className="group relative flex flex-col overflow-hidden border-2 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-none rounded-none">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.1]">
+        <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+          <pattern id="student-dates-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" />
+          </pattern>
+          <rect width="100%" height="100%" fill="url(#student-dates-grid)" />
+        </svg>
+      </div>
+
+      <CardHeader className="border-b border-zinc-150 dark:border-zinc-800 py-4 px-6 relative z-10">
+        <CardTitle className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+          Project Checkpoints & Meeting Notes
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="p-6 relative z-10 flex flex-col gap-y-6">
+        <div className="flex flex-col gap-y-6">
+          {checkpoints.length === 0 ? (
+            <p className="text-xs italic text-zinc-400 font-bold uppercase text-center py-8">
+              No checkpoints set for this project.
+            </p>
+          ) : (
+            checkpoints.map((cp) => {
+              const note = checkpointNotes.find((n) => n.checkpointId === cp.id);
+              return (
+                <div
+                  key={cp.id}
+                  className="p-5 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/20 dark:bg-zinc-900/5 hover:border-primary/40 transition-colors flex flex-col gap-y-4 rounded-none"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3 gap-2">
+                    <h4 className="text-sm font-semibold uppercase text-zinc-800 dark:text-zinc-200">
+                      {cp.title}
+                    </h4>
+                    <span suppressHydrationWarning className="text-[10px] font-mono font-bold uppercase text-zinc-500 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 tracking-wider">
+                      {formatLocalDate(cp.dueDate)}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col gap-y-2">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                      Supervisor Meeting Notes
+                    </span>
+                    {note?.notes ? (
+                      <div className="border-l-2 border-primary bg-zinc-50/50 dark:bg-zinc-900/10 p-4 text-xs font-mono text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                        {note.notes}
+                      </div>
+                    ) : (
+                      <p className="text-xs italic text-zinc-400 font-bold uppercase py-2">
+                        No supervisor notes recorded for this checkpoint yet.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

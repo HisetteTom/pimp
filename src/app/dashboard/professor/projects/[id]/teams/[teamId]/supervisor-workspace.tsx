@@ -3,7 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { LayoutDashboard, CheckSquare, FileUp, Kanban as KanbanIcon, Clock, ArrowLeft, User, FileText, Plus, Trash2, Save, Loader2 } from "lucide-react";
+import { LayoutDashboard, CheckSquare, FileUp, Kanban as KanbanIcon, Clock, ArrowLeft, User, FileText, Plus, Trash2, Save, Loader2, Calendar } from "lucide-react";
 import { useMemo, useSyncExternalStore, useState, useEffect, useTransition } from "react";
 import dynamic from 'next/dynamic';
 import Link from "next/link";
@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { SupervisorFeedbackCard } from "./supervisor-feedback-card";
 import { ReadOnlyKanban } from "./read-only-kanban";
 import { DeliverableReviewer } from "../../deliverable-reviewer";
-import { saveTeamNotes } from "../../../../actions";
+import { saveTeamNotes, createCheckpoint, updateCheckpoint, deleteCheckpoint, saveCheckpointNote } from "../../../../actions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -34,6 +34,8 @@ interface SupervisorWorkspaceProps {
   members: any[];
   tasks: any[];
   livrables: any[];
+  checkpoints: any[];
+  checkpointNotes: any[];
 }
 
 const COLORS = ['#000000', '#666666', '#cccccc'];
@@ -465,7 +467,7 @@ export function SupervisorNotesEditor({ teamId, projectId, initialNotes }: Super
                   />
                   <Button
                     onClick={() => handleDeleteSection(section.id)}
-                    variant="ghost"
+                    variant="unstyled"
                     className="size-7 p-0 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer flex items-center justify-center rounded-none"
                     title="Delete this section"
                   >
@@ -487,7 +489,7 @@ export function SupervisorNotesEditor({ teamId, projectId, initialNotes }: Super
   );
 }
 
-export function SupervisorWorkspace({ project, team, members, tasks, livrables }: SupervisorWorkspaceProps) {
+export function SupervisorWorkspace({ project, team, members, tasks, livrables, checkpoints, checkpointNotes }: SupervisorWorkspaceProps) {
   const isClient = useSyncExternalStore(emptySubscribe, () => clientSnapshot, () => serverSnapshot);
   const now = useSyncExternalStore(emptySubscribe, getMountTime, () => null);
 
@@ -563,6 +565,10 @@ export function SupervisorWorkspace({ project, team, members, tasks, livrables }
             <TabsTrigger value="deliverables" className="data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none h-full px-2 font-semibold uppercase text-xs tracking-widest gap-2">
               <FileUp className="size-4" />
               Deliverables
+            </TabsTrigger>
+            <TabsTrigger value="dates" className="data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none h-full px-2 font-semibold uppercase text-xs tracking-widest gap-2">
+              <Calendar className="size-4" />
+              Dates
             </TabsTrigger>
             <TabsTrigger value="notes" className="data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none h-full px-2 font-semibold uppercase text-xs tracking-widest gap-2">
               <FileText className="size-4" />
@@ -649,6 +655,15 @@ export function SupervisorWorkspace({ project, team, members, tasks, livrables }
               />
             </TabsContent>
 
+            <TabsContent value="dates" className="mt-0 flex flex-col gap-y-8">
+              <SupervisorDatesSection
+                projectId={project.id}
+                teamId={team.id}
+                checkpoints={checkpoints}
+                checkpointNotes={checkpointNotes}
+              />
+            </TabsContent>
+
             <TabsContent value="notes" className="mt-0 flex flex-col gap-y-8">
               <SupervisorNotesEditor
                 key={team.id}
@@ -661,5 +676,332 @@ export function SupervisorWorkspace({ project, team, members, tasks, livrables }
         </Tabs>
       </div>
     </div>
+  );
+}
+
+function formatIsoDate(dateVal: any): string {
+  if (!dateVal) return "";
+  try {
+    return new Date(dateVal).toISOString().split('T')[0];
+  } catch {
+    return "";
+  }
+}
+
+function formatLocalDate(dateVal: any): string {
+  if (!dateVal) return "No Date";
+  try {
+    return new Date(dateVal).toLocaleDateString();
+  } catch {
+    return "No Date";
+  }
+}
+
+interface CheckpointRowProps {
+  checkpoint: any;
+  teamId: number;
+  projectId: number;
+  savedNoteText: string;
+  onRefresh: () => void;
+}
+
+function CheckpointRow({ checkpoint, teamId, projectId, savedNoteText, onRefresh }: CheckpointRowProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(() => checkpoint.title);
+  const [editDueDate, setEditDueDate] = useState(() =>
+    checkpoint.dueDate ? formatIsoDate(checkpoint.dueDate) : ""
+  );
+  const [localNote, setLocalNote] = useState(() => savedNoteText);
+  const [isUpdating, startUpdateTransition] = useTransition();
+  const [isDeleting, startDeleteTransition] = useTransition();
+  const [isSavingNote, startSaveNoteTransition] = useTransition();
+
+  const handleUpdate = () => {
+    if (!editTitle.trim() || !editDueDate) return;
+    startUpdateTransition(async () => {
+      try {
+        await updateCheckpoint(checkpoint.id, editTitle.trim(), editDueDate, projectId);
+        toast.success("Checkpoint updated successfully!");
+        setIsEditing(false);
+        onRefresh();
+      } catch (err) {
+        toast.error("Failed to update checkpoint.");
+      }
+    });
+  };
+
+  const handleDelete = () => {
+    if (!confirm("Are you sure you want to delete this checkpoint? Notes for this checkpoint across all teams will be deleted.")) return;
+    startDeleteTransition(async () => {
+      try {
+        await deleteCheckpoint(checkpoint.id, projectId);
+        toast.success("Checkpoint deleted successfully!");
+        onRefresh();
+      } catch (err) {
+        toast.error("Failed to delete checkpoint.");
+      }
+    });
+  };
+
+  const handleSaveNote = () => {
+    startSaveNoteTransition(async () => {
+      try {
+        await saveCheckpointNote(checkpoint.id, teamId, localNote.trim(), projectId);
+        toast.success("Notes saved successfully!");
+        onRefresh();
+      } catch (err) {
+        toast.error("Failed to save notes.");
+      }
+    });
+  };
+
+  const isNoteChanged = localNote.trim() !== savedNoteText.trim();
+
+  return (
+    <Card className="border border-zinc-200 dark:border-zinc-800 bg-zinc-50/10 dark:bg-zinc-900/5 hover:border-primary/30 transition-all rounded-none relative overflow-hidden group/row">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.015] dark:opacity-[0.03]">
+        <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+          <pattern id={`cp-grid-${checkpoint.id}`} width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="0.5" />
+          </pattern>
+          <rect width="100%" height="100%" fill={`url(#cp-grid-${checkpoint.id})`} />
+        </svg>
+      </div>
+
+      <div className="p-6 relative z-10 flex flex-col gap-y-6">
+        {/* Checkpoint Header Info */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4 gap-4">
+          {isEditing ? (
+            <div className="flex flex-col sm:flex-row gap-4 flex-1">
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="flex-1 text-xs font-bold uppercase border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2.5 outline-none rounded-none focus:border-primary"
+              />
+              <input
+                type="date"
+                value={editDueDate}
+                onChange={(e) => setEditDueDate(e.target.value)}
+                className="text-xs font-bold uppercase border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2.5 outline-none rounded-none focus:border-primary font-mono"
+              />
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleUpdate}
+                  disabled={isUpdating}
+                  className="h-10 text-[10px] font-black bg-primary text-primary-foreground hover:bg-primary/90 rounded-none uppercase cursor-pointer"
+                >
+                  {isUpdating ? <Loader2 className="size-3 animate-spin" /> : "Save"}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditTitle(checkpoint.title);
+                    setEditDueDate(checkpoint.dueDate ? formatIsoDate(checkpoint.dueDate) : "");
+                  }}
+                  variant="outline"
+                  className="h-10 text-[10px] font-black rounded-none uppercase cursor-pointer"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between flex-1">
+              <div className="flex flex-col gap-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Checkpoint Date</span>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-semibold uppercase text-zinc-800 dark:text-zinc-200">{checkpoint.title}</h4>
+                  <Badge suppressHydrationWarning variant="outline" className="text-[8px] font-mono rounded-none uppercase py-0.5 tracking-wider bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+                    {formatLocalDate(checkpoint.dueDate)}
+                  </Badge>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  variant="outline"
+                  className="h-8 text-[9px] font-black rounded-none uppercase cursor-pointer"
+                >
+                  Edit
+                </Button>
+                <Button
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  variant="unstyled"
+                  className="size-8 p-0 text-rose-500/70 hover:text-rose-600 hover:bg-rose-50 dark:text-rose-450 dark:hover:text-rose-400 dark:hover:bg-rose-950/20 rounded-none cursor-pointer flex items-center justify-center"
+                >
+                  {isDeleting ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Checkpoint Note Textarea */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label htmlFor={`note-textarea-${checkpoint.id}`} className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+              Meeting Notes & Remarks
+            </label>
+            <Button
+              onClick={handleSaveNote}
+              disabled={isSavingNote || !isNoteChanged}
+              className="h-8 text-[9px] font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[2px_2px_0px_0px_rgba(var(--primary-rgb),0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none uppercase tracking-wider rounded-none cursor-pointer flex items-center justify-center gap-1"
+            >
+              {isSavingNote ? <Loader2 className="size-3 animate-spin" /> : <Save className="size-3" />}
+              Save Notes
+            </Button>
+          </div>
+          <Textarea
+            id={`note-textarea-${checkpoint.id}`}
+            rows={3}
+            value={localNote}
+            onChange={(e) => setLocalNote(e.target.value)}
+            className="border border-zinc-200 dark:border-zinc-800 focus-visible:ring-primary rounded-none p-3 resize-y bg-white dark:bg-zinc-950 text-xs font-mono font-medium leading-relaxed text-zinc-700 dark:text-zinc-300"
+          />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+interface SupervisorDatesSectionProps {
+  projectId: number;
+  teamId: number;
+  checkpoints: any[];
+  checkpointNotes: any[];
+}
+
+export function SupervisorDatesSection({
+  projectId,
+  teamId,
+  checkpoints,
+  checkpointNotes,
+}: SupervisorDatesSectionProps) {
+  const { refresh } = useRouter();
+  const [isAdding, setIsAdding] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDueDate, setNewDueDate] = useState("");
+  const [isCreating, startCreateTransition] = useTransition();
+
+  const handleAddCheckpoint = () => {
+    if (!newTitle.trim() || !newDueDate) return;
+    startCreateTransition(async () => {
+      try {
+        await createCheckpoint(projectId, newTitle.trim(), newDueDate);
+        toast.success("Checkpoint created successfully!");
+        setNewTitle("");
+        setNewDueDate("");
+        setIsAdding(false);
+        refresh();
+      } catch (err) {
+        toast.error("Failed to create checkpoint.");
+      }
+    });
+  };
+
+  return (
+    <Card className="group relative flex flex-col overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-primary/50 rounded-none">
+      <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.1]">
+        <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+          <pattern id="dates-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" />
+          </pattern>
+          <rect width="100%" height="100%" fill="url(#dates-grid)" />
+        </svg>
+      </div>
+
+      <CardHeader className="border-b border-zinc-100 dark:border-zinc-800 py-3.5 px-6 relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <CardTitle className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+            Project Checkpoints & Meeting Notes
+          </CardTitle>
+        </div>
+        {!isAdding && (
+          <Button
+            onClick={() => setIsAdding(true)}
+            className="h-10 text-xs font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none uppercase tracking-wider rounded-none cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <Plus className="size-3.5" />
+            Add Checkpoint
+          </Button>
+        )}
+      </CardHeader>
+
+      <CardContent className="p-6 pt-4 gap-y-6 relative z-10 flex flex-col">
+        {/* Add Checkpoint Form */}
+        {isAdding && (
+          <div className="flex flex-col gap-4 p-5 border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/5 items-stretch">
+            <h5 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-900 dark:text-zinc-150">Create New Project-wide Checkpoint</h5>
+            <div className="flex flex-col sm:flex-row gap-4 items-end">
+              <div className="flex-1 flex flex-col gap-1">
+                <label htmlFor="new-title" className="text-[8px] font-bold uppercase tracking-wider text-zinc-400">Title</label>
+                <input
+                  id="new-title"
+                  type="text"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="w-full text-xs font-bold uppercase border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2.5 outline-none rounded-none focus:border-primary"
+                />
+              </div>
+              <div className="flex-1 flex flex-col gap-1 w-full sm:w-auto">
+                <label htmlFor="new-due-date" className="text-[8px] font-bold uppercase tracking-wider text-zinc-400">Due Date</label>
+                <input
+                  id="new-due-date"
+                  type="date"
+                  value={newDueDate}
+                  onChange={(e) => setNewDueDate(e.target.value)}
+                  className="w-full text-xs font-bold uppercase border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2.5 outline-none rounded-none focus:border-primary font-mono"
+                />
+              </div>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button
+                  onClick={handleAddCheckpoint}
+                  disabled={isCreating || !newTitle.trim() || !newDueDate}
+                  className="h-10 text-[10px] font-black bg-primary text-primary-foreground hover:bg-primary/90 rounded-none uppercase cursor-pointer flex-1 sm:flex-initial"
+                >
+                  {isCreating ? <Loader2 className="size-3.5 animate-spin" /> : "Create"}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsAdding(false);
+                    setNewTitle("");
+                    setNewDueDate("");
+                  }}
+                  variant="outline"
+                  className="h-10 text-[10px] font-black rounded-none uppercase cursor-pointer flex-1 sm:flex-initial"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Checkpoint list */}
+        <div className="flex flex-col gap-y-6">
+          {checkpoints.length === 0 ? (
+            <p className="text-xs italic text-zinc-400 font-bold uppercase text-center py-8">
+              No checkpoints created for this project yet. Add one above!
+            </p>
+          ) : (
+            checkpoints.map((cp) => {
+              const note = checkpointNotes.find((n) => n.checkpointId === cp.id);
+              return (
+                <CheckpointRow
+                  key={cp.id}
+                  checkpoint={cp}
+                  teamId={teamId}
+                  projectId={projectId}
+                  savedNoteText={note?.notes || ""}
+                  onRefresh={refresh}
+                />
+              );
+            })
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

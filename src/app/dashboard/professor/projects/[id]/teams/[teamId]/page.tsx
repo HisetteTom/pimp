@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { project, team, user, task, livrable, projectEnrollment } from "@/db/schema";
+import { project, team, user, task, livrable, projectEnrollment, checkpoint, checkpointNote } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, and, inArray } from "drizzle-orm";
 import { headers } from "next/headers";
@@ -55,7 +55,7 @@ export default async function SupervisorTeamPage({
 
   const teamMemberIds = teamEnrollments.map((e) => e.userId);
   
-  const [teamMembers, teamTasks, teamLivrables] = await Promise.all([
+  const [teamMembers, teamTasks, teamLivrables, checkpoints, checkpointNotes] = await Promise.all([
     teamMemberIds.length > 0
       ? db.query.user.findMany({ where: inArray(user.id, teamMemberIds) })
       : Promise.resolve([]),
@@ -64,6 +64,13 @@ export default async function SupervisorTeamPage({
     }),
     db.query.livrable.findMany({
       where: eq(livrable.teamId, teamId),
+    }),
+    db.query.checkpoint.findMany({
+      where: eq(checkpoint.projectId, projectId),
+      orderBy: (checkpoint, { asc }) => [asc(checkpoint.dueDate)],
+    }),
+    db.query.checkpointNote.findMany({
+      where: eq(checkpointNote.teamId, teamId),
     }),
   ]);
 
@@ -81,6 +88,8 @@ export default async function SupervisorTeamPage({
         members={teamMembers}
         tasks={teamTasks}
         livrables={teamLivrables}
+        checkpoints={checkpoints}
+        checkpointNotes={checkpointNotes}
       />
     </DashboardLayout>
   );

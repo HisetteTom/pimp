@@ -29,7 +29,6 @@ export const metadata: Metadata = {
 };
 
 import { ThemeProvider } from "@/components/theme-provider";
-import { ModeToggle } from "@/components/mode-toggle";
 
 export default function RootLayout({
   children,
@@ -49,9 +48,6 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <header className="absolute top-4 right-4 z-50">
-            <ModeToggle />
-          </header>
           {children}
         </ThemeProvider>
       </body>

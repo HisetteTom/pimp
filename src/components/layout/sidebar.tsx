@@ -14,13 +14,18 @@ import {
   FileBox,
   FolderRoot,
   Lightbulb,
-  ChevronRight
+  ChevronRight,
+  Sun,
+  Moon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 import { leaveTeam } from "@/app/dashboard/student/actions";
-import { useTransition } from "react";
+import { useTransition, useSyncExternalStore } from "react";
+import { useTheme } from "next-themes";
+
+const emptySubscribe = () => () => {};
 
 const navItems = [
   { href: "/dashboard/student#top", label: "Dashboard", icon: LayoutDashboard },
@@ -38,6 +43,19 @@ export function Sidebar({ team, userProjects }: SidebarProps) {
   const { push } = useRouter();
   const [isPending, startTransition] = useTransition();
   const { data: session } = authClient.useSession();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
+
+  const currentTheme = mounted ? resolvedTheme : "light";
+
+  const toggleTheme = () => {
+    setTheme(currentTheme === "dark" ? "light" : "dark");
+  };
+
   const role = (session?.user as any)?.role;
   const isProfessor = role === "professor";
 
@@ -72,7 +90,7 @@ export function Sidebar({ team, userProjects }: SidebarProps) {
   };
 
   return (
-    <div className="flex h-full flex-col p-6 overflow-y-auto scrollbar-none">
+    <div suppressHydrationWarning className="flex h-full flex-col p-6 overflow-y-auto scrollbar-none">
       <div className="mb-10 flex items-center gap-3 px-2">
         <Link href={dashboardLink} className="hover:opacity-80 transition-all active:scale-95">
           <span className="text-2xl font-black tracking-[0.2em] text-zinc-900 dark:text-zinc-100 leading-none">
@@ -180,10 +198,28 @@ export function Sidebar({ team, userProjects }: SidebarProps) {
             Settings
           </span>
         </Link>
+        <button
+          type="button"
+          onClick={toggleTheme}
+          suppressHydrationWarning
+          className="w-full flex items-center justify-between rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 dark:text-zinc-300 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 cursor-pointer"
+        >
+          <div className="flex items-center gap-3">
+            {currentTheme === "dark" ? (
+              <Sun className="size-4 text-amber-500" />
+            ) : (
+              <Moon className="size-4 text-indigo-500" />
+            )}
+            <span>{currentTheme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+          </div>
+          <span className="text-[9px] uppercase tracking-widest font-black text-zinc-400 dark:text-zinc-500">
+            {currentTheme === "dark" ? "LIGHT" : "DARK"}
+          </span>
+        </button>
         <Button 
-          variant="ghost" 
+          variant="unstyled" 
           onClick={handleLogout}
-          className="w-full justify-start gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-500 dark:hover:bg-red-950 transition-all mt-4"
+          className="w-full justify-start gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-500 dark:hover:bg-red-950 transition-all mt-4 flex items-center"
         >
           <LogOut className="size-4" />
           Logout

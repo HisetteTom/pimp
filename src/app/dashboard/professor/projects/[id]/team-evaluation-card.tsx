@@ -108,7 +108,8 @@ export function TeamEvaluationCard({
 
           <Button
             type="submit"
-            className="w-full h-11 bg-zinc-900 hover:bg-purple-600 text-white font-black uppercase tracking-wider text-[11px] transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-2 rounded-none cursor-pointer"
+            variant="unstyled"
+            className="w-full h-11 border-transparent bg-zinc-900 hover:bg-purple-600 dark:hover:bg-purple-600 hover:text-white text-white font-black uppercase tracking-wider text-[11px] transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-2 rounded-none cursor-pointer"
             disabled={isPending}
           >
             {isPending ? (

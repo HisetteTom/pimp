@@ -186,13 +186,9 @@ export default async function ProfessorProjectDetailPage({ params }: { params: P
                           {t.name}
                         </h3>
                         <div className="flex items-center gap-2 mt-3">
-                          {hasComments ? (
+                          {hasComments && (
                             <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-black uppercase text-[9px] tracking-wider rounded-none px-2.5 py-1">
                               Comments Added
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-black uppercase text-[9px] tracking-wider rounded-none px-2.5 py-1">
-                              Awaiting Comments
                             </Badge>
                           )}
                           <Badge variant="outline" className="border-zinc-300 text-zinc-500 dark:border-zinc-700 bg-transparent font-black uppercase text-[9px] tracking-wider rounded-none px-2.5 py-1">

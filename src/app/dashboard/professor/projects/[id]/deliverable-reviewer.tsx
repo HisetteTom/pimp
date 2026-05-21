@@ -98,10 +98,11 @@ export function DeliverableReviewer({
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
+            variant="unstyled"
             size="sm"
             onClick={() => handleValidate("approved")}
             disabled={isPending}
-            className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white font-black uppercase text-[10px] tracking-wider rounded-none shadow-[2px_2px_0px_0px_rgba(16,185,129,0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer flex items-center gap-1"
+            className="h-8 border-transparent bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-700 text-white hover:text-white font-black uppercase text-[10px] tracking-wider rounded-none shadow-[2px_2px_0px_0px_rgba(16,185,129,0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer flex items-center gap-1"
           >
             {isPending && status === "approved" ? (
               <Loader2 className="size-3 animate-spin" />
@@ -113,10 +114,11 @@ export function DeliverableReviewer({
 
           <Button
             type="button"
+            variant="unstyled"
             size="sm"
             onClick={() => handleValidate("rejected")}
             disabled={isPending}
-            className="h-8 bg-red-600 hover:bg-red-700 text-white font-black uppercase text-[10px] tracking-wider rounded-none shadow-[2px_2px_0px_0px_rgba(239,68,68,0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer flex items-center gap-1"
+            className="h-8 border-transparent bg-red-600 hover:bg-red-700 dark:hover:bg-red-700 text-white hover:text-white font-black uppercase text-[10px] tracking-wider rounded-none shadow-[2px_2px_0px_0px_rgba(239,68,68,0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer flex items-center gap-1"
           >
             {isPending && status === "rejected" ? (
               <Loader2 className="size-3 animate-spin" />
