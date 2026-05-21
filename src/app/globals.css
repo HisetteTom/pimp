@@ -116,3 +116,22 @@
     @apply bg-background text-foreground;
   }
 }
+
+/*Calendrier*/
+.fc {
+  --fc-button-bg-color: var(--secondary);           
+  --fc-button-border-color: #6366f1;      
+  --fc-button-text-color: #ffffff;         
+  --fc-button-hover-bg-color: #4f46e5;     
+  --fc-button-hover-border-color: #4f46e5;
+  --fc-button-active-bg-color: #4338ca;
+  --fc-button-active-border-color: #4338ca;
+  /*jour actuel*/
+  --fc-today-bg-color:oklch(72.855% 0.18223 48.693 / 0.175);
+
+  /*evenements*/
+  --fc-event-bg-color: oklch(0.75 0.2 45);
+  --fc-event-border-color: oklch(72.51% 0.16414 50.756);
+
+  --fc-event-text-color: #ffffff;
+}
