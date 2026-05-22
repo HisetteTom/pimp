@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { SupervisorFeedbackCard } from "./supervisor-feedback-card";
 import { ReadOnlyKanban } from "./read-only-kanban";
+import { ReadOnlyTaskListView } from "./read-only-task-list-view";
 import { DeliverableReviewer } from "../../deliverable-reviewer";
 import { TeamEvaluationTab } from "./team-evaluation-tab";
 import { saveTeamNotes, createCheckpoint, updateCheckpoint, deleteCheckpoint, saveCheckpointNote } from "../../../../actions";
@@ -592,9 +593,13 @@ export function SupervisorWorkspace({
               <LayoutDashboard className="size-4" />
               Overview
             </TabsTrigger>
+            <TabsTrigger value="list" className="data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none h-full px-2 font-semibold uppercase text-xs tracking-widest gap-2">
+              <CheckSquare className="size-4" />
+              List
+            </TabsTrigger>
             <TabsTrigger value="kanban" className="data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none h-full px-2 font-semibold uppercase text-xs tracking-widest gap-2">
               <KanbanIcon className="size-4" />
-              Tasks
+              Kanban
             </TabsTrigger>
             <TabsTrigger value="deliverables" className="data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none h-full px-2 font-semibold uppercase text-xs tracking-widest gap-2">
               <FileUp className="size-4" />
@@ -637,6 +642,22 @@ export function SupervisorWorkspace({
                 teamName={team.name}
                 initialFeedback={team.feedback}
                 type="overview"
+                readOnly={role === "jury"}
+              />
+            </TabsContent>
+
+            <TabsContent value="list" className="mt-0 flex flex-col gap-y-8">
+              <ReadOnlyTaskListView
+                initialTasks={tasks}
+                members={members}
+              />
+              <SupervisorFeedbackCard
+                key={`${team.id}-list-${team.feedback}`}
+                teamId={team.id}
+                projectId={project.id}
+                teamName={team.name}
+                initialFeedback={team.feedback}
+                type="kanban"
                 readOnly={role === "jury"}
               />
             </TabsContent>

@@ -3,7 +3,7 @@
 import { useState, useMemo, useSyncExternalStore } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, User as UserIcon, Clock, ChevronRight } from "lucide-react";
+import { Calendar, User as UserIcon, Clock, ChevronRight, AlertTriangle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -205,6 +205,11 @@ function KanbanCard({ task, members, onClick }: { task: Task; members: any[]; on
 
   const currentStyle = priorityStyles[task.priority] || priorityStyles.medium;
 
+  const isOverdue = useMemo(() => {
+    if (!task.deadline || task.status === "done") return false;
+    return new Date(task.deadline) < new Date();
+  }, [task.deadline, task.status]);
+
   return (
     <Card
       onClick={onClick}
@@ -212,7 +217,13 @@ function KanbanCard({ task, members, onClick }: { task: Task; members: any[]; on
       className={`p-4 border-2 shadow-none rounded-none transition-all cursor-pointer hover:translate-y-[-1px] hover:translate-x-[-1px] ${currentStyle}`}
     >
       <div className="flex flex-col gap-y-3">
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-center w-full">
+          {isOverdue && (
+            <span className="flex items-center gap-1 text-[9px] text-red-500 font-extrabold uppercase bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 px-1.5 py-0.5 rounded-none animate-pulse">
+              <AlertTriangle className="size-3" />
+              Overdue
+            </span>
+          )}
           {task.deadline && (
             <div className="flex items-center gap-1 text-[9px] text-zinc-400 font-bold uppercase ml-auto">
               <Calendar className="size-3" />

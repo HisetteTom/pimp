@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,8 +34,10 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>(() => {
-    if (!task || !task.assignees) return [];
-    return task.assignees.split(",").filter(Boolean);
+    if (!task) return [];
+    if (task.assignees) return task.assignees.split(",").filter(Boolean);
+    if (task.assigneeId) return [task.assigneeId];
+    return [];
   });
 
   if (!task) return null;

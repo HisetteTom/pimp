@@ -1,11 +1,12 @@
 "use server";
 
 import { db } from "@/db";
-import { evaluationCriterion, teamEvaluationScore, team } from "@/db/schema";
+import { evaluationCriterion, teamEvaluationScore, team, projectEnrollment, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { createNotification } from "../actions-notification";
 
 export async function createCriterion(data: {
   projectId: number;
@@ -143,6 +144,8 @@ export async function saveTeamEvaluation(data: {
         }
       })
     );
+
+    // 3. Trigger notification for all team members (Grading notifications disabled for now)
 
     revalidatePath(`/dashboard/professor/projects/${data.projectId}/teams/${data.teamId}`);
     return { success: true };

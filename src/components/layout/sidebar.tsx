@@ -37,9 +37,10 @@ const navItems = [
 interface SidebarProps {
   userProjects?: { id: number; name: string; teamName?: string }[];
   team?: { id: number; projectId: number; name: string; members: any[] };
+  unreadCount?: number;
 }
 
-export function Sidebar({ team, userProjects }: SidebarProps) {
+export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
   const pathname = usePathname();
   const { push } = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -200,9 +201,18 @@ export function Sidebar({ team, userProjects }: SidebarProps) {
       <div className="mt-auto border-t border-zinc-100 dark:border-zinc-800 pt-6 space-y-2">
         <p className="px-3 mb-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account</p>
         <Link href={isStaff ? "/dashboard/professor/profile" : "/dashboard/student/profile"}>
-          <span className="flex items-center gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 dark:text-zinc-300 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900">
-            <User className="size-4" />
-            Profile
+          <span className="flex items-center justify-between rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 dark:text-zinc-300 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <User className="size-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-0.5 text-[8px] font-black text-white leading-none ring-1 ring-white dark:ring-zinc-900 animate-pulse">
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
+              <span>Profile</span>
+            </div>
           </span>
         </Link>
         <Link href={isStaff ? "/dashboard/professor/settings" : "/dashboard/student/settings"}>

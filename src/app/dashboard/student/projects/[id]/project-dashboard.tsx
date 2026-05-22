@@ -9,6 +9,7 @@ import { useMemo, useState, useEffect, useSyncExternalStore } from "react";
 import dynamic from 'next/dynamic';
 import { TaskDialog } from "./task-dialog";
 import { KanbanBoard } from "./kanban-board";
+import { TaskListView } from "./task-list-view";
 import { deleteTask } from "../../actions";
 import { toast } from "sonner";
 
@@ -352,6 +353,28 @@ function StudentKanbanSection({ tasks, project, team, feedback }: StudentKanbanS
   );
 }
 
+interface StudentListSectionProps {
+  tasks: any[];
+  project: any;
+  team: any;
+  feedback: string;
+}
+
+function StudentListSection({ tasks, project, team, feedback }: StudentListSectionProps) {
+  return (
+    <div className="flex flex-col gap-y-8">
+      <TaskListView 
+        key={tasks.length === 0 ? "empty-list" : tasks.map(t => `${t.id}-${t.status}-${t.name}-${t.assigneeId}-${t.assignees || ""}-${t.priority}-${t.deadline}-${t.description}`).join(',')} 
+        initialTasks={tasks} 
+        projectId={project.id} 
+        members={team.members} 
+        teamId={team.id}
+      />
+      <FeedbackSlot title="Tasks" feedback={feedback} />
+    </div>
+  );
+}
+
 interface StudentDeliverablesSectionProps {
   project: any;
   team: any;
@@ -471,6 +494,10 @@ export function ProjectDashboard({
             <LayoutDashboard className="size-4" />
             Overview
           </TabsTrigger>
+          <TabsTrigger value="list" className="data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none h-full px-2 font-semibold uppercase text-xs tracking-widest gap-2">
+            <CheckSquare className="size-4" />
+            List
+          </TabsTrigger>
           <TabsTrigger value="kanban" className="data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none h-full px-2 font-semibold uppercase text-xs tracking-widest gap-2">
             <KanbanIcon className="size-4" />
             Kanban
@@ -496,6 +523,15 @@ export function ProjectDashboard({
               taskStats={taskStats}
               tasksByStatus={tasksByStatus}
               feedback={parsedFeedback.overview}
+            />
+          </TabsContent>
+
+          <TabsContent value="list" className="mt-0">
+            <StudentListSection
+              tasks={tasks}
+              project={project}
+              team={team}
+              feedback={parsedFeedback.kanban}
             />
           </TabsContent>
 

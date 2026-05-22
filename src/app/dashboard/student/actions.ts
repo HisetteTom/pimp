@@ -7,6 +7,7 @@ import { eq, and, count } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { createNotification } from "../actions-notification";
 
 export async function refuseInvitation(projectId: number) {
   const session = await auth.api.getSession({
@@ -84,19 +85,20 @@ export async function createTeam(projectId: number, teamName: string) {
     projectId: projectId,
   }).returning();
 
-  // Assign user to team in this project and make them leader
-  await db.update(projectEnrollment)
-    .set({ teamId: newTeam.id })
-    .where(
-      and(
-        eq(projectEnrollment.userId, session.user.id),
-        eq(projectEnrollment.projectId, projectId)
-      )
-    );
-
-  await db.update(user)
-    .set({ responsabilityId: 1 })
-    .where(eq(user.id, session.user.id));
+  // Assign user to team in this project and make them leader (run updates in parallel)
+  await Promise.all([
+    db.update(projectEnrollment)
+      .set({ teamId: newTeam.id })
+      .where(
+        and(
+          eq(projectEnrollment.userId, session.user.id),
+          eq(projectEnrollment.projectId, projectId)
+        )
+      ),
+    db.update(user)
+      .set({ responsabilityId: 1 })
+      .where(eq(user.id, session.user.id)),
+  ]);
 
   revalidatePath(`/dashboard/student/projects/${projectId}`);
 }
@@ -180,6 +182,33 @@ export async function createTask(data: {
     assignees: data.assignees,
   });
 
+  // Trigger task assigned notifications
+  try {
+    const assigneeIds = new Set<string>();
+    if (data.assignees) {
+      data.assignees.split(",").forEach(id => {
+        const trimmed = id.trim();
+        if (trimmed) assigneeIds.add(trimmed);
+      });
+    }
+    if (data.assigneeId) {
+      assigneeIds.add(data.assigneeId);
+    }
+    await Promise.all(
+      Array.from(assigneeIds).map(assigneeId =>
+        createNotification({
+          userId: assigneeId,
+          title: "New Task Assigned",
+          message: `You have been assigned to task "${data.name}".`,
+          type: "task_assigned",
+          link: `/dashboard/student/projects/${data.projectId}`,
+        })
+      )
+    );
+  } catch (notifErr) {
+    console.error("Failed to trigger task assignment notifications:", notifErr);
+  }
+
   revalidatePath(`/dashboard/student/projects/${data.projectId}`);
 }
 
@@ -235,6 +264,33 @@ export async function updateTask(data: {
       assignees: data.assignees,
     })
     .where(eq(task.id, data.id));
+
+  // Trigger task assigned notifications on update
+  try {
+    const assigneeIds = new Set<string>();
+    if (data.assignees) {
+      data.assignees.split(",").forEach(id => {
+        const trimmed = id.trim();
+        if (trimmed) assigneeIds.add(trimmed);
+      });
+    }
+    if (data.assigneeId) {
+      assigneeIds.add(data.assigneeId);
+    }
+    await Promise.all(
+      Array.from(assigneeIds).map(assigneeId =>
+        createNotification({
+          userId: assigneeId,
+          title: "Task Assigned / Updated",
+          message: `You are assigned to task "${data.name}".`,
+          type: "task_assigned",
+          link: `/dashboard/student/projects/${data.projectId}`,
+        })
+      )
+    );
+  } catch (notifErr) {
+    console.error("Failed to trigger task update notifications:", notifErr);
+  }
 
   revalidatePath(`/dashboard/student/projects/${data.projectId}`);
 }
