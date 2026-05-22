@@ -33,6 +33,7 @@ interface ProjectDashboardProps {
   livrables: any[];
   checkpoints: any[];
   checkpointNotes: any[];
+  initialTab?: string;
 }
 
 const COLORS = ['#000000', '#666666', '#cccccc'];
@@ -432,9 +433,18 @@ export function ProjectDashboard({
   livrables,
   checkpoints,
   checkpointNotes,
+  initialTab,
 }: ProjectDashboardProps) {
   const isClient = useSyncExternalStore(emptySubscribe, () => clientSnapshot, () => serverSnapshot);
   const now = useSyncExternalStore(emptySubscribe, getMountTime, () => null);
+
+  const [activeTab, setActiveTab] = useState(initialTab || "overview");
+
+  useEffect(() => {
+    if (initialTab && ["overview", "list", "kanban", "deliverables", "dates"].includes(initialTab)) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
 
   const timelineProgress = useMemo(() => {
     if (!project.dateStart || !project.dateEnd || !now) return 0;
@@ -488,7 +498,7 @@ export function ProjectDashboard({
 
   return (
     <div className="flex flex-col gap-y-6">
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="w-full justify-start h-12 bg-transparent p-0 gap-8 border-b-2 border-zinc-100 dark:border-zinc-800 rounded-none overflow-x-auto no-scrollbar">
           <TabsTrigger value="overview" className="data-[state=active]:bg-transparent data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none h-full px-2 font-semibold uppercase text-xs tracking-widest gap-2">
             <LayoutDashboard className="size-4" />

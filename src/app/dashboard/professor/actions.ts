@@ -135,6 +135,7 @@ export async function evaluateTeam(teamId: number, grade: string, feedback: stri
       const [teamData] = await db.select().from(team).where(eq(team.id, teamId)).limit(1);
 
       let msg = `The professor updated feedback for your team "${teamData?.name || ''}".`;
+      let tab = "overview";
       
       try {
         if (feedback) {
@@ -142,8 +143,14 @@ export async function evaluateTeam(teamId: number, grade: string, feedback: stri
           if (parsed && typeof parsed === 'object') {
             const parts: string[] = [];
             if (parsed.overview) parts.push("General Overview");
-            if (parsed.kanban || parsed.tasks) parts.push("Tasks & Kanban");
-            if (parsed.deliverables) parts.push("Deliverables");
+            if (parsed.kanban || parsed.tasks) {
+              parts.push("Tasks & Kanban");
+              tab = "kanban";
+            }
+            if (parsed.deliverables) {
+              parts.push("Deliverables");
+              tab = "deliverables";
+            }
             if (parts.length > 0) {
               msg = `The professor updated your team's comments on: ${parts.join(", ")}.`;
             }
@@ -161,7 +168,7 @@ export async function evaluateTeam(teamId: number, grade: string, feedback: stri
               title: "New Supervisor Comments",
               message: msg,
               type: "note_added",
-              link: `/dashboard/student/projects/${projectId}`,
+              link: `/dashboard/student/projects/${projectId}?tab=${tab}`,
             })
           )
         );
@@ -206,7 +213,7 @@ export async function saveTeamNotes(teamId: number, notes: string, projectId: nu
               title: "New Team Note Added",
               message: `The professor added/updated notes for your team "${teamData?.name || ''}".`,
               type: "note_added",
-              link: `/dashboard/student/projects/${projectId}`,
+              link: `/dashboard/student/projects/${projectId}?tab=overview`,
             })
           )
         );
@@ -338,7 +345,7 @@ export async function saveCheckpointNote(checkpointId: number, teamId: number, n
               title: "New Checkpoint Note Added",
               message: `The professor added a note for checkpoint "${cpData?.title || ''}".`,
               type: "note_added",
-              link: `/dashboard/student/projects/${projectId}`,
+              link: `/dashboard/student/projects/${projectId}?tab=dates`,
             })
           )
         );

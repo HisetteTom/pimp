@@ -8,8 +8,15 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { TeamSelection } from "./team-selection";
 import { ProjectDashboard } from "./project-dashboard";
 
-export default async function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProjectPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
+}) {
   const { id } = await params;
+  const { tab } = await searchParams;
   const projectId = parseInt(id);
 
   if (isNaN(projectId)) {
@@ -150,6 +157,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
             livrables={teamLivrables}
             checkpoints={checkpoints}
             checkpointNotes={checkpointNotes}
+            initialTab={tab}
           />
         )}
       </div>

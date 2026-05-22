@@ -201,7 +201,7 @@ export async function createTask(data: {
           title: "New Task Assigned",
           message: `You have been assigned to task "${data.name}".`,
           type: "task_assigned",
-          link: `/dashboard/student/projects/${data.projectId}`,
+          link: `/dashboard/student/projects/${data.projectId}?tab=kanban`,
         })
       )
     );
@@ -284,7 +284,7 @@ export async function updateTask(data: {
           title: "Task Assigned / Updated",
           message: `You are assigned to task "${data.name}".`,
           type: "task_assigned",
-          link: `/dashboard/student/projects/${data.projectId}`,
+          link: `/dashboard/student/projects/${data.projectId}?tab=kanban`,
         })
       )
     );
