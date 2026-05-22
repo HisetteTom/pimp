@@ -1,12 +1,18 @@
 import { ReactNode } from "react";
 import { Sidebar } from "./sidebar";
 
-export function DashboardLayout({ children }: { children: ReactNode }) {
+interface DashboardLayoutProps {
+  children: ReactNode;
+  userProjects?: { id: number; name: string; teamName?: string }[];
+  team?: { id: number; projectId: number; name: string; members: any[] };
+}
+
+export function DashboardLayout({ children, team, userProjects }: DashboardLayoutProps) {
   return (
     <div className="flex h-screen w-full flex-row bg-background overflow-hidden">
       {/* Left Sidebar */}
       <aside className="w-64 border-r bg-card hidden md:block shrink-0">
-        <Sidebar />
+        <Sidebar team={team} userProjects={userProjects} />
       </aside>
 
       {/* Main Content */}

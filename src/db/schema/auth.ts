@@ -1,6 +1,7 @@
 import { pgTable, text, timestamp, boolean, integer, varchar } from "drizzle-orm/pg-core";
 import { project } from "./project";
 import { responsability } from "./responsability";
+import { team } from "./team";
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -14,6 +15,7 @@ export const user = pgTable("user", {
 	displayUsername: text("display_username"),
 	role: text("role"),
 	projectId: integer("project_id").references(() => project.id),
+	teamId: integer("team_id").references(() => team.id),
 	responsabilityId: integer("responsability_id").references(() => responsability.id),
 });
 

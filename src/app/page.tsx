@@ -21,9 +21,8 @@ export default async function HomePage() {
     redirect("/dashboard/student");
   }
 
-  if (session.user.role === "professor") {
-    // redirect("/dashboard/professor");
-    redirect("/dashboard/student"); // Fallback for now
+  if (session.user.role === "professor" || session.user.role === "jury") {
+    redirect("/dashboard/professor");
   }
   
   return null;

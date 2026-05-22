@@ -41,7 +41,7 @@ const initialState: State = {
     email: "",
     password: "",
     username: "",
-    role: "Étudiant",
+    role: "student",
     loading: false,
 };
 
@@ -75,7 +75,7 @@ export function RegisterForm() {
         if (error) {
             alert(error.message);
         } else {
-            push("/dashboard/student");
+            push("/");
         }
         dispatch({ type: "SET_LOADING", value: false });
     };
@@ -97,7 +97,7 @@ export function RegisterForm() {
                             Project Isen Manager Planner
                         </CardTitle>
                         <CardDescription className="text-muted-foreground font-semibold uppercase tracking-wider text-xs">
-                            Inscription Plateforme
+                            Platform Registration
                         </CardDescription>
                     </div>
                 </CardHeader>
@@ -131,7 +131,7 @@ export function RegisterForm() {
                             </div>
                         </div>
                         <div className="space-y-2 sm:col-span-2">
-                            <Label htmlFor="password" className="text-secondary/80 font-bold">Mot de passe</Label>
+                            <Label htmlFor="password" className="text-secondary/80 font-bold">Password</Label>
                             <div className="relative">
                                 <Lock className="absolute left-3 top-3 size-4 text-secondary/40" />
                                 <Input
@@ -145,19 +145,19 @@ export function RegisterForm() {
                             </div>
                         </div>
                         <div className="space-y-2 sm:col-span-2">
-                            <Label htmlFor="role" className="text-secondary/80 font-bold">Votre rôle</Label>
+                            <Label htmlFor="role" className="text-secondary/80 font-bold">Your Role</Label>
                             <Select 
                                 value={state.role} 
                                 onValueChange={(value) => dispatch({ type: "SET_FIELD", field: "role", value })}
                             >
                                 <SelectTrigger className="h-10 pl-10 relative border-2 border-secondary/10 focus:ring-secondary focus:border-secondary hover:border-secondary/30 transition-colors">
                                     <GraduationCap className="absolute left-3 top-3 size-4 text-secondary/40" />
-                                    <SelectValue placeholder="Sélectionnez un rôle" />
+                                    <SelectValue/>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Étudiant" className="focus:bg-secondary/10 focus:text-secondary">Étudiant</SelectItem>
-                                    <SelectItem value="Encadrant" className="focus:bg-secondary/10 focus:text-secondary">Encadrant</SelectItem>
-                                    <SelectItem value="Jury" className="focus:bg-secondary/10 focus:text-secondary">Jury</SelectItem>
+                                    <SelectItem value="student" className="focus:bg-secondary/10 focus:text-secondary">Student</SelectItem>
+                                    <SelectItem value="professor" className="focus:bg-secondary/10 focus:text-secondary">Professor</SelectItem>
+                                    <SelectItem value="jury" className="focus:bg-secondary/10 focus:text-secondary">Jury</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -171,13 +171,13 @@ export function RegisterForm() {
                             {state.loading ? (
                                 <Loader2 className="size-5 animate-spin" />
                             ) : (
-                                "CRÉER MON COMPTE"
+                                "CREATE MY ACCOUNT"
                             )}
                         </Button>
                         <div className="text-sm text-center font-bold">
-                            <span className="text-muted-foreground uppercase tracking-tight">Déjà inscrit ? </span>
+                            <span className="text-muted-foreground uppercase tracking-tight">Already registered? </span>
                             <Link href="/login" className="text-primary hover:text-secondary transition-colors underline decoration-2 underline-offset-4">
-                                SE CONNECTER
+                                SIGN IN
                             </Link>
                         </div>
                     </CardFooter>
