@@ -26,7 +26,7 @@ export interface Deliverable {
   createdAt: Date;
 }
 
-export const FeedbackSlot = ({ title, feedback }: { title: string; feedback?: string | null }) => (
+const FeedbackSlot = ({ title, feedback }: { title: string; feedback?: string | null }) => (
   <div className="border-primary/20 bg-primary/5 mt-[-16px] flex flex-col gap-y-2 rounded-none border-2 p-6">
     <h4 className="text-primary text-[10px] font-semibold tracking-widest uppercase">
       Teacher Feedback - {title}
