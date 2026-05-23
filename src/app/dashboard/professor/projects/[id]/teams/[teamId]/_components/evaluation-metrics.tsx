@@ -1,5 +1,4 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Award } from "lucide-react";
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 interface EvaluationMetricsProps {
   totalScoreInfo: {
@@ -12,17 +11,18 @@ interface EvaluationMetricsProps {
 
 export function EvaluationMetrics({ totalScoreInfo }: EvaluationMetricsProps) {
   return (
-    <Card className="border-2 border-zinc-200 dark:border-zinc-800 bg-card rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] hover:shadow-none transition-shadow">
-      <CardHeader className="flex flex-row items-center justify-between pb-2 gap-y-0">
-        <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Live Score</span>
+    <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-none dark:border-zinc-800">
+      <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
+        <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
+          Live Score
+        </span>
       </CardHeader>
       <CardContent>
-        <div className="text-3xl font-black text-zinc-950 dark:text-zinc-50 font-mono tracking-tighter">
-          {totalScoreInfo.anyAssigned ? totalScoreInfo.currentSum : "--"}
-          <span className="text-zinc-400 font-medium text-lg"> / {totalScoreInfo.maxSum}</span>
+        <div className="font-mono text-3xl font-black tracking-tighter text-zinc-950 dark:text-zinc-50">
+          {totalScoreInfo.anyAssigned ? totalScoreInfo.currentSum : '--'}
+          <span className="text-lg font-medium text-zinc-400"> / {totalScoreInfo.maxSum}</span>
         </div>
-        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mt-1">
-        </p>
+        <p className="mt-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase"></p>
       </CardContent>
     </Card>
   );

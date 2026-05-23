@@ -1,24 +1,28 @@
-import { db } from "@/db";
-import { project, team, user, task, livrable, projectEnrollment } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { eq, inArray } from "drizzle-orm";
-import { headers } from "next/headers";
-import { notFound, redirect } from "next/navigation";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { ProjectStatusSelector } from "./project-status-selector";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ArrowLeft, Clock, Calendar, AlertCircle, ChevronRight, User, Crown } from "lucide-react";
-import { Metadata } from "next";
+import { db } from '@/db';
+import { project, team, user, task, livrable, projectEnrollment } from '@/db/schema';
+import { auth } from '@/lib/auth';
+import { eq, inArray } from 'drizzle-orm';
+import { headers } from 'next/headers';
+import { notFound, redirect } from 'next/navigation';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { ProjectStatusSelector } from './project-status-selector';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { ArrowLeft, Clock, Calendar, AlertCircle, ChevronRight, User, Crown } from 'lucide-react';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Project Groups - Professor Workspace",
-  description: "View and manage enrolled student teams and their project spaces.",
+  title: 'Project Groups - Professor Workspace',
+  description: 'View and manage enrolled student teams and their project spaces.',
 };
 
-export default async function ProfessorProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProfessorProjectDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const projectId = parseInt(id);
 
@@ -30,8 +34,8 @@ export default async function ProfessorProjectDetailPage({ params }: { params: P
     headers: await headers(),
   });
 
-  if (!session || session.user.role !== "professor") {
-    redirect("/login");
+  if (!session || session.user.role !== 'professor') {
+    redirect('/login');
   }
 
   // Fetch project, all projects for sidebar, teams, enrollments and users
@@ -64,13 +68,19 @@ export default async function ProfessorProjectDetailPage({ params }: { params: P
   const userMap = new Map(allUsers.map((u) => [u.id, u]));
 
   // Index members by team ID
-  const membersByTeam = new Map<number, typeof allUsers>();
+  type MemberWithResponsability = typeof user.$inferSelect & {
+    responsabilityId: number | null;
+  };
+  const membersByTeam = new Map<number, MemberWithResponsability[]>();
   for (const e of allEnrollments) {
     if (!e.teamId) continue;
     const u = userMap.get(e.userId);
     if (!u) continue;
     const list = membersByTeam.get(e.teamId) || [];
-    list.push(u);
+    list.push({
+      ...u,
+      responsabilityId: e.responsabilityId,
+    });
     membersByTeam.set(e.teamId, list);
   }
 
@@ -103,7 +113,7 @@ export default async function ProfessorProjectDetailPage({ params }: { params: P
         <div>
           <Link
             href="/dashboard/professor"
-            className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-zinc-400 hover:text-primary transition-colors"
+            className="hover:text-primary inline-flex items-center gap-1.5 text-xs font-black tracking-wider text-zinc-400 uppercase transition-colors"
           >
             <ArrowLeft className="size-3.5" />
             Back to Dashboard
@@ -111,22 +121,26 @@ export default async function ProfessorProjectDetailPage({ params }: { params: P
         </div>
 
         {/* Project Header */}
-        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between border-b border-zinc-150 dark:border-zinc-800 pb-8">
-          <div className="space-y-2.5 max-w-3xl">
-            <h1 className="text-4xl font-semibold tracking-tighter text-zinc-900 dark:text-zinc-100 uppercase leading-none">
+        <div className="border-zinc-150 flex flex-col gap-6 border-b pb-8 lg:flex-row lg:items-start lg:justify-between dark:border-zinc-800">
+          <div className="max-w-3xl space-y-2.5">
+            <h1 className="text-4xl leading-none font-semibold tracking-tighter text-zinc-900 uppercase dark:text-zinc-100">
               {projectData.name}
             </h1>
             <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-              {projectData.description || "No description provided for this project proposal."}
+              {projectData.description || 'No description provided for this project proposal.'}
             </p>
-            <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-bold text-zinc-400 uppercase tracking-widest">
+            <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-bold tracking-widest text-zinc-400 uppercase">
               <span className="flex items-center gap-1.5">
-                <Calendar className="size-4 text-primary" />
-                Start: {projectData.dateStart ? projectData.dateStart.split("-").reverse().join("/") : "TBD"}
+                <Calendar className="text-primary size-4" />
+                Start:{' '}
+                {projectData.dateStart
+                  ? projectData.dateStart.split('-').reverse().join('/')
+                  : 'TBD'}
               </span>
               <span className="flex items-center gap-1.5">
-                <Clock className="size-4 text-primary" />
-                End: {projectData.dateEnd ? projectData.dateEnd.split("-").reverse().join("/") : "TBD"}
+                <Clock className="text-primary size-4" />
+                End:{' '}
+                {projectData.dateEnd ? projectData.dateEnd.split('-').reverse().join('/') : 'TBD'}
               </span>
             </div>
           </div>
@@ -136,17 +150,19 @@ export default async function ProfessorProjectDetailPage({ params }: { params: P
         {/* Teams Overview Section */}
         <div className="space-y-6">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">
+            <h2 className="text-xl font-semibold tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
               Enrolled Teams ({allTeams.length})
             </h2>
             <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
           </div>
 
           {allTeams.length === 0 ? (
-            <div className="p-12 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-none bg-zinc-50/50 dark:bg-zinc-900/10 text-center space-y-3">
-              <AlertCircle className="size-8 text-zinc-400 mx-auto" />
-              <h3 className="text-sm font-semibold uppercase text-zinc-700 dark:text-zinc-300">No Teams Assigned</h3>
-              <p className="text-xs text-zinc-400 font-bold max-w-sm mx-auto uppercase tracking-wide">
+            <div className="space-y-3 rounded-none border-2 border-dashed border-zinc-200 bg-zinc-50/50 p-12 text-center dark:border-zinc-800 dark:bg-zinc-900/10">
+              <AlertCircle className="mx-auto size-8 text-zinc-400" />
+              <h3 className="text-sm font-semibold text-zinc-700 uppercase dark:text-zinc-300">
+                No Teams Assigned
+              </h3>
+              <p className="mx-auto max-w-sm text-xs font-bold tracking-wide text-zinc-400 uppercase">
                 No student teams have registered or enrolled in this project proposal yet.
               </p>
             </div>
@@ -158,86 +174,105 @@ export default async function ProfessorProjectDetailPage({ params }: { params: P
                 const teamLivrables = deliverablesByTeam.get(t.id) || [];
 
                 // Compute task stats
-                const doneTasks = teamTasks.filter((task) => task.status === "done").length;
-                const progressPercent = teamTasks.length > 0 ? Math.round((doneTasks / teamTasks.length) * 100) : 0;
+                const doneTasks = teamTasks.filter((task) => task.status === 'done').length;
+                const progressPercent =
+                  teamTasks.length > 0 ? Math.round((doneTasks / teamTasks.length) * 100) : 0;
 
                 const hasComments = t.feedback && t.feedback.trim().length > 0;
 
                 return (
                   <Card
                     key={t.id}
-                    className="group relative flex flex-col h-full overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-primary/50 justify-between rounded-none"
+                    className="group hover:border-primary/50 relative flex h-full flex-col justify-between overflow-hidden rounded-none border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-950"
                   >
                     {/* SVG grid graphic */}
-                    <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.1]">
+                    <div className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.1]">
                       <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
                         <defs>
-                          <pattern id={`grid-${t.id}`} width="40" height="40" patternUnits="userSpaceOnUse">
-                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                          <pattern
+                            id={`grid-${t.id}`}
+                            width="40"
+                            height="40"
+                            patternUnits="userSpaceOnUse"
+                          >
+                            <path
+                              d="M 40 0 L 0 0 0 40"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="0.5"
+                            />
                           </pattern>
                         </defs>
                         <rect width="100%" height="100%" fill={`url(#grid-${t.id})`} />
                       </svg>
                     </div>
 
-                    <CardHeader className="p-8 pb-4 space-y-4 relative z-10">
+                    <CardHeader className="relative z-10 space-y-4 p-8 pb-4">
                       <div>
-                        <h3 className="text-2xl font-semibold tracking-tighter text-secondary uppercase">
+                        <h3 className="text-secondary text-2xl font-semibold tracking-tighter uppercase">
                           {t.name}
                         </h3>
-                        <div className="flex items-center gap-2 mt-3">
+                        <div className="mt-3 flex items-center gap-2">
                           {hasComments && (
-                            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-black uppercase text-[9px] tracking-wider rounded-none px-2.5 py-1">
+                            <Badge className="rounded-none border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[9px] font-black tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
                               Comments Added
                             </Badge>
                           )}
-                          <Badge variant="outline" className="border-zinc-300 text-zinc-500 dark:border-zinc-700 bg-transparent font-black uppercase text-[9px] tracking-wider rounded-none px-2.5 py-1">
-                            {teamLivrables.length} Deliverable{teamLivrables.length !== 1 ? "s" : ""}
+                          <Badge
+                            variant="outline"
+                            className="rounded-none border-zinc-300 bg-transparent px-2.5 py-1 text-[9px] font-black tracking-wider text-zinc-500 uppercase dark:border-zinc-700"
+                          >
+                            {teamLivrables.length} Deliverable
+                            {teamLivrables.length !== 1 ? 's' : ''}
                           </Badge>
                         </div>
                       </div>
                     </CardHeader>
 
-                    <CardContent className="px-8 pb-8 pt-2 gap-y-6 flex-1 flex flex-col justify-between relative z-10">
+                    <CardContent className="relative z-10 flex flex-1 flex-col justify-between gap-y-6 px-8 pt-2 pb-8">
                       {/* Task Stats & Progress */}
                       <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
-                          <span className="font-mono text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">Progress</span>
-                          <span className="font-mono text-[10px] font-black text-secondary">{progressPercent}%</span>
+                          <span className="font-mono text-[9px] font-black tracking-[0.2em] text-zinc-400 uppercase">
+                            Progress
+                          </span>
+                          <span className="text-secondary font-mono text-[10px] font-black">
+                            {progressPercent}%
+                          </span>
                         </div>
-                        <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
                           <div
-                            className="h-full bg-linear-to-r from-primary/80 to-primary shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] rounded-full transition-all duration-1000 ease-out"
+                            className="from-primary/80 to-primary h-full rounded-full bg-linear-to-r shadow-[0_0_12px_rgba(var(--primary-rgb),0.3)] transition-all duration-1000 ease-out"
                             style={{ width: `${progressPercent}%` }}
                           />
                         </div>
-                        <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-wide">
+                        <p className="text-[9px] font-bold tracking-wide text-zinc-400 uppercase">
                           {doneTasks} of {teamTasks.length} tasks completed
                         </p>
                       </div>
 
                       {/* Team Members List */}
-                      <div className="space-y-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                        <h4 className="font-mono text-[9px] font-semibold uppercase tracking-widest text-zinc-400">
+                      <div className="space-y-3 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+                        <h4 className="font-mono text-[9px] font-semibold tracking-widest text-zinc-400 uppercase">
                           Enrolled Members ({teamMembers.length})
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {teamMembers.length === 0 ? (
-                            <p className="text-xs text-zinc-400 font-bold uppercase italic">
+                            <p className="text-xs font-bold text-zinc-400 uppercase italic">
                               No members enrolled.
                             </p>
                           ) : (
                             teamMembers.map((m) => (
                               <div
                                 key={m.id}
-                                className="flex items-center gap-1.5 px-3 py-1.5 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/10 text-[10px] font-bold text-zinc-700 dark:text-zinc-300 rounded-none uppercase"
+                                className="flex items-center gap-1.5 rounded-none border border-zinc-200 bg-zinc-50/50 px-3 py-1.5 text-[10px] font-bold text-zinc-700 uppercase dark:border-zinc-800 dark:bg-zinc-900/10 dark:text-zinc-300"
                               >
                                 {m.responsabilityId ? (
                                   <Crown className="size-3 text-amber-500" />
                                 ) : (
                                   <User className="size-3 text-zinc-400" />
                                 )}
-                                <span>{m.name || "Unknown"}</span>
+                                <span>{m.name || 'Unknown'}</span>
                               </div>
                             ))
                           )}
@@ -245,9 +280,9 @@ export default async function ProfessorProjectDetailPage({ params }: { params: P
                       </div>
 
                       {/* Action Button */}
-                      <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800">
+                      <div className="border-t border-zinc-100 pt-6 dark:border-zinc-800">
                         <Link href={`/dashboard/professor/projects/${projectId}/teams/${t.id}`}>
-                          <Button className="w-full h-12 text-sm font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none uppercase tracking-wider rounded-none flex items-center justify-center gap-1">
+                          <Button className="bg-primary text-primary-foreground hover:bg-primary/90 flex h-12 w-full items-center justify-center gap-1 rounded-none text-sm font-black tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
                             Open Group Space
                             <ChevronRight className="size-4" />
                           </Button>

@@ -1,26 +1,25 @@
-import { useState, useTransition, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { evaluateTeam } from "../../../../actions";
-import { Loader2, Save } from "lucide-react";
+import { useState, useTransition, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { evaluateTeam } from '../../../../actions';
+import { Loader2, Save } from 'lucide-react';
 
 interface SupervisorFeedbackCardProps {
   teamId: number;
   projectId: number;
   teamName: string;
   initialFeedback?: string | null;
-  type: "overview" | "kanban" | "deliverables";
+  type: 'overview' | 'kanban' | 'deliverables';
   readOnly?: boolean;
 }
 
 export function SupervisorFeedbackCard({
   teamId,
   projectId,
-  teamName,
-  initialFeedback = "",
+  initialFeedback = '',
   type,
   readOnly = false,
 }: SupervisorFeedbackCardProps) {
@@ -29,22 +28,20 @@ export function SupervisorFeedbackCard({
 
   const parsedFeedbacks = useMemo(() => {
     try {
-      if (!initialFeedback) return { overview: "", kanban: "", deliverables: "" };
+      if (!initialFeedback) return { overview: '', kanban: '', deliverables: '' };
       const parsed = JSON.parse(initialFeedback);
       if (parsed && typeof parsed === 'object') {
         return {
-          overview: parsed.overview || "",
-          kanban: parsed.kanban || parsed.tasks || "",
-          deliverables: parsed.deliverables || "",
+          overview: parsed.overview || '',
+          kanban: parsed.kanban || parsed.tasks || '',
+          deliverables: parsed.deliverables || '',
         };
       }
-    } catch (e) {
-      // legacy string fallback
-    }
-    return { overview: initialFeedback || "", kanban: "", deliverables: "" };
+    } catch {}
+    return { overview: initialFeedback || '', kanban: '', deliverables: '' };
   }, [initialFeedback]);
 
-  const currentInitialText = parsedFeedbacks[type] || "";
+  const currentInitialText = parsedFeedbacks[type] || '';
   const [feedback, setFeedback] = useState(currentInitialText);
 
   const handleSave = () => {
@@ -56,11 +53,11 @@ export function SupervisorFeedbackCard({
           [type]: feedback,
         };
         // Passing null for grade since we are completely removing the grading system
-        await evaluateTeam(teamId, null as any, JSON.stringify(updated), projectId);
-        toast.success("Feedback updated successfully!");
+        await evaluateTeam(teamId, null, JSON.stringify(updated), projectId);
+        toast.success('Feedback updated successfully!');
         refresh();
       } catch (err) {
-        toast.error("Failed to update feedback.");
+        toast.error('Failed to update feedback.');
         console.error(err);
       }
     });
@@ -69,18 +66,23 @@ export function SupervisorFeedbackCard({
   const isChanged = feedback !== currentInitialText;
 
   const typeLabels: Record<string, string> = {
-    overview: "General Overview Written Feedback",
-    kanban: "Tasks & Kanban Board Progress Feedback",
-    deliverables: "Deliverables & Submissions Feedback",
+    overview: 'General Overview Written Feedback',
+    kanban: 'Tasks & Kanban Board Progress Feedback',
+    deliverables: 'Deliverables & Submissions Feedback',
   };
 
   return (
-    <Card className="group relative overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-primary/50 rounded-none w-full">
+    <Card className="group hover:border-primary/50 relative w-full overflow-hidden rounded-none border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-950">
       {/* SVG grid graphic */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.1]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.1]">
         <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <pattern id={`feedback-grid-${teamId}-${type}`} width="40" height="40" patternUnits="userSpaceOnUse">
+            <pattern
+              id={`feedback-grid-${teamId}-${type}`}
+              width="40"
+              height="40"
+              patternUnits="userSpaceOnUse"
+            >
               <path d="M 40 0 L 0 0 0 40" fill="none" stroke="currentColor" strokeWidth="0.5" />
             </pattern>
           </defs>
@@ -88,20 +90,23 @@ export function SupervisorFeedbackCard({
         </svg>
       </div>
 
-      <CardHeader className="border-b border-zinc-100 dark:border-zinc-800 py-3.5 px-6 relative z-10">
-        <CardTitle className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+      <CardHeader className="relative z-10 border-b border-zinc-100 px-6 py-3.5 dark:border-zinc-800">
+        <CardTitle className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
           Supervisor Evaluation ({type})
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-6 pt-4 gap-y-0.01 relative z-10 flex flex-col">
+      <CardContent className="gap-y-0.01 relative z-10 flex flex-col p-6 pt-4">
         <div className="space-y-0.5">
-          <label htmlFor={`written-feedback-${type}`} className="text-[10px] font-semibold uppercase tracking-widest text-primary">
+          <label
+            htmlFor={`written-feedback-${type}`}
+            className="text-primary text-[10px] font-semibold tracking-widest uppercase"
+          >
             {typeLabels[type]}
           </label>
           <Textarea
             id={`written-feedback-${type}`}
             rows={5}
-            className="border border-zinc-200 dark:border-zinc-800 focus-visible:ring-primary rounded-none p-3 resize-y bg-zinc-50/50 dark:bg-zinc-900/10 text-sm font-medium"
+            className="focus-visible:ring-primary resize-y rounded-none border border-zinc-200 bg-zinc-50/50 p-3 text-sm font-medium dark:border-zinc-800 dark:bg-zinc-900/10"
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
             disabled={isPending || readOnly}
@@ -112,13 +117,9 @@ export function SupervisorFeedbackCard({
           <Button
             onClick={handleSave}
             disabled={isPending || !isChanged}
-            className="w-full h-12 text-sm font-black bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none uppercase tracking-wider rounded-none cursor-pointer flex items-center justify-center gap-1.5"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 flex h-12 w-full cursor-pointer items-center justify-center gap-1.5 rounded-none text-sm font-black tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
           >
-            {isPending ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Save className="size-4" />
-            )}
+            {isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
             Save {type} Comments
           </Button>
         )}
@@ -126,4 +127,3 @@ export function SupervisorFeedbackCard({
     </Card>
   );
 }
-

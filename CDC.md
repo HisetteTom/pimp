@@ -15,40 +15,41 @@ III. Utilisateurs
 • Encadrant
 • Jury (optionnel)
 IV. Fonctionnalités principales
+
 1. Authentification et gestion des rôles
-• Inscription / connexion avec gestion des rôles : Étudiant, Team Leader, Encadrant,
-Jury (optionnel)
-• Gestion des permissions selon le rôle
+   • Inscription / connexion avec gestion des rôles : Étudiant, Team Leader, Encadrant,
+   Jury (optionnel)
+   • Gestion des permissions selon le rôle
 2. Gestion des projets
-• Création des projets étudiants
-• **Limites : Un projet peut accueillir jusqu'à 8 groupes, avec un maximum de 5 personnes par groupe.**
-• Étudiants / Team Leader : gestion du projet, membres et dates importantes
-• Encadrants : supervision et suivi de l’avancement
-• États possibles : proposé, validé, en cours, en retard, livré, soutenu, clôturé
+   • Création des projets étudiants
+   • **Limites : Un projet peut accueillir jusqu'à 8 groupes, avec un maximum de 5 personnes par groupe.**
+   • Étudiants / Team Leader : gestion du projet, membres et dates importantes
+   • Encadrants : supervision et suivi de l’avancement
+   • États possibles : proposé, validé, en cours, en retard, livré, soutenu, clôturé
 3. Gestion des tâches
-• Création, modification et suivi des tâches
-• Assignation des responsabilités
-• Gestion des priorités et dates limites
-• Statuts : à faire, en cours, terminé
-• Vue Kanban (bonus apprécié)
+   • Création, modification et suivi des tâches
+   • Assignation des responsabilités
+   • Gestion des priorités et dates limites
+   • Statuts : à faire, en cours, terminé
+   • Vue Kanban (bonus apprécié)
 4. Suivi de progression
-• Pourcentage d’avancement
-• Tâches terminées / en retard
-• Respect des jalons (étapes clés)
-• Graphiques simples et calendrier projet
-• Dashboard global pour les encadrants
+   • Pourcentage d’avancement
+   • Tâches terminées / en retard
+   • Respect des jalons (étapes clés)
+   • Graphiques simples et calendrier projet
+   • Dashboard global pour les encadrants
 5. Communication
-• Commentaires
-• Notifications simples
-• Feedback de l’encadrant
+   • Commentaires
+   • Notifications simples
+   • Feedback de l’encadrant
 6. Gestion des livrables
-• Dépôt et mise à jour des livrables
-• Consultation et validation par l’encadrant
-• Commentaires sur les livrables
+   • Dépôt et mise à jour des livrables
+   • Consultation et validation par l’encadrant
+   • Commentaires sur les livrables
 7. Évaluation et soutenance
-• Saisie d’une note globale et/ou évaluation selon une grille de critères
-• Ajout de commentaires du jury ou de l’encadrant
+   • Saisie d’une note globale et/ou évaluation selon une grille de critères
+   • Ajout de commentaires du jury ou de l’encadrant
 8. Bonus
-• Chat collaboratif
-• Notifications temps réel
-• Export PDF / Excel
+   • Chat collaboratif
+   • Notifications temps réel
+   • Export PDF / Excel

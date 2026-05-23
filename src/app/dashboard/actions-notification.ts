@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import { db } from "@/db";
-import { notification } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { eq, and, desc } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
+import { db } from '@/db';
+import { notification } from '@/db/schema';
+import { auth } from '@/lib/auth';
+import { eq, and, desc } from 'drizzle-orm';
+import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 
 export async function getNotifications() {
   const session = await auth.api.getSession({
@@ -13,7 +13,7 @@ export async function getNotifications() {
   });
 
   if (!session) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
   try {
@@ -23,7 +23,7 @@ export async function getNotifications() {
       .where(eq(notification.userId, session.user.id))
       .orderBy(desc(notification.createdAt));
   } catch (error) {
-    console.error("Failed to fetch notifications:", error);
+    console.error('Failed to fetch notifications:', error);
     return [];
   }
 }
@@ -34,25 +34,20 @@ export async function markAsRead(id: number) {
   });
 
   if (!session) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
   try {
     await db
       .update(notification)
       .set({ isRead: true })
-      .where(
-        and(
-          eq(notification.id, id),
-          eq(notification.userId, session.user.id)
-        )
-      );
+      .where(and(eq(notification.id, id), eq(notification.userId, session.user.id)));
 
-    revalidatePath("/dashboard/student/profile");
-    revalidatePath("/dashboard/professor/profile");
+    revalidatePath('/dashboard/student/profile');
+    revalidatePath('/dashboard/professor/profile');
   } catch (error) {
-    console.error("Failed to mark notification as read:", error);
-    throw new Error("Failed to update notification");
+    console.error('Failed to mark notification as read:', error);
+    throw new Error('Failed to update notification');
   }
 }
 
@@ -62,7 +57,7 @@ export async function markAllAsRead() {
   });
 
   if (!session) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
   try {
@@ -71,11 +66,11 @@ export async function markAllAsRead() {
       .set({ isRead: true })
       .where(eq(notification.userId, session.user.id));
 
-    revalidatePath("/dashboard/student/profile");
-    revalidatePath("/dashboard/professor/profile");
+    revalidatePath('/dashboard/student/profile');
+    revalidatePath('/dashboard/professor/profile');
   } catch (error) {
-    console.error("Failed to mark all notifications as read:", error);
-    throw new Error("Failed to update notifications");
+    console.error('Failed to mark all notifications as read:', error);
+    throw new Error('Failed to update notifications');
   }
 }
 
@@ -90,7 +85,7 @@ export async function createNotification({
   userId: string;
   title: string;
   message: string;
-  type: "project_proposed" | "task_assigned" | "comment_added" | "note_added";
+  type: 'project_proposed' | 'task_assigned' | 'comment_added' | 'note_added';
   link?: string;
 }) {
   const session = await auth.api.getSession({
@@ -98,7 +93,7 @@ export async function createNotification({
   });
 
   if (!session) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
 
   try {
@@ -110,6 +105,6 @@ export async function createNotification({
       link,
     });
   } catch (error) {
-    console.error("Failed to create notification:", error);
+    console.error('Failed to create notification:', error);
   }
 }

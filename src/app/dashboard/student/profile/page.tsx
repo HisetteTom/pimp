@@ -1,16 +1,16 @@
-import { db } from "@/db";
-import { project, team, user, projectEnrollment, notification } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { eq, inArray, desc } from "drizzle-orm";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { ProfileView } from "@/components/dashboard/profile-view";
-import { Metadata } from "next";
+import { db } from '@/db';
+import { project, team, user, projectEnrollment, notification } from '@/db/schema';
+import { auth } from '@/lib/auth';
+import { eq, inArray, desc } from 'drizzle-orm';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { ProfileView } from '@/components/dashboard/profile-view';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Profile | Student Dashboard",
-  description: "View your user profile and notifications on PIMP.",
+  title: 'Profile | Student Dashboard',
+  description: 'View your user profile and notifications on PIMP.',
 };
 
 export default async function StudentProfilePage() {
@@ -19,7 +19,7 @@ export default async function StudentProfilePage() {
   });
 
   if (!session) {
-    redirect("/login");
+    redirect('/login');
   }
 
   // Fetch student's enrollments to render active project/team and populate layout sidebar
@@ -47,7 +47,7 @@ export default async function StudentProfilePage() {
 
   // Resolve team members of the active team for the sidebar
   const currentTeam = activeTeams[0];
-  let sidebarMembers: any[] = [];
+  let sidebarMembers: { id: string; name: string; responsabilityId: number | null }[] = [];
 
   if (currentTeam) {
     const teamEnrolled = await db
@@ -55,18 +55,18 @@ export default async function StudentProfilePage() {
       .from(projectEnrollment)
       .where(eq(projectEnrollment.teamId, currentTeam.id));
     const enrolledIds = teamEnrolled.map((e) => e.userId);
-    
+
     if (enrolledIds.length > 0) {
-      const enrolledUsers = await db
-        .select()
-        .from(user)
-        .where(inArray(user.id, enrolledIds));
-        
-      sidebarMembers = enrolledUsers.map((u) => ({
-        id: u.id,
-        name: u.name,
-        responsabilityId: u.responsabilityId,
-      }));
+      const enrolledUsers = await db.select().from(user).where(inArray(user.id, enrolledIds));
+
+      sidebarMembers = enrolledUsers.map((u) => {
+        const enroll = teamEnrolled.find((e) => e.userId === u.id);
+        return {
+          id: u.id,
+          name: u.name,
+          responsabilityId: enroll?.responsabilityId ?? null,
+        };
+      });
     }
   }
 
@@ -94,7 +94,7 @@ export default async function StudentProfilePage() {
     <DashboardLayout team={sidebarTeamData} userProjects={userProjectsSidebarData}>
       <div className="space-y-8">
         <div>
-          <h1 className="text-4xl font-semibold tracking-tighter text-secondary uppercase">
+          <h1 className="text-secondary text-4xl font-semibold tracking-tighter uppercase">
             User Profile
           </h1>
           <p className="text-muted-foreground mt-1 text-sm font-medium tracking-wide">

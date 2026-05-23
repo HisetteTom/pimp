@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
 
 interface Project {
   id: number;
@@ -31,8 +31,8 @@ export function ProjectsSidebar({
   onSelectProject,
 }: ProjectsSidebarProps) {
   return (
-    <div className="lg:col-span-4 space-y-4">
-      <h3 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">
+    <div className="space-y-4 lg:col-span-4">
+      <h3 className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
         Projects Directory
       </h3>
       <div className="space-y-2">
@@ -47,29 +47,29 @@ export function ProjectsSidebar({
               type="button"
               key={p.id}
               onClick={() => onSelectProject(p.id)}
-              className={`w-full text-left p-4 border-2 transition-all duration-200 cursor-pointer flex items-center justify-between ${
+              className={`flex w-full cursor-pointer items-center justify-between border-2 p-4 text-left transition-all duration-200 ${
                 isSelected
-                  ? "border-purple-500/30 bg-purple-500/5 dark:bg-purple-950/10 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]"
-                  : "border-zinc-200 dark:border-zinc-800 bg-card hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                  ? 'border-purple-500/30 bg-purple-500/5 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] dark:bg-purple-950/10'
+                  : 'bg-card border-zinc-200 hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:border-zinc-600 dark:hover:bg-zinc-900'
               }`}
             >
               <div className="space-y-1 truncate pr-2">
-                <h4 className="text-[13px] font-semibold uppercase text-zinc-900 dark:text-zinc-100 truncate">
+                <h4 className="truncate text-[13px] font-semibold text-zinc-900 uppercase dark:text-zinc-100">
                   {p.name}
                 </h4>
-                <p className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                <p className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
                   Status: {p.status}
                 </p>
               </div>
-              <Badge className="bg-purple-600/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-bold text-[9px] shrink-0 uppercase tracking-widest rounded-none px-2 py-0.5">
-                {count} {count > 1 ? "grids" : "grid"}
+              <Badge className="shrink-0 rounded-none border border-purple-500/20 bg-purple-600/10 px-2 py-0.5 text-[9px] font-bold tracking-widest text-purple-600 uppercase dark:text-purple-400">
+                {count} {count > 1 ? 'grids' : 'grid'}
               </Badge>
             </button>
           );
         })}
         {projects.length === 0 && (
-          <div className="p-8 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-800">
-            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+          <div className="border-2 border-dashed border-zinc-200 p-8 text-center dark:border-zinc-800">
+            <p className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
               No active projects found.
             </p>
           </div>

@@ -1,10 +1,6 @@
 {
   "ignore": {
-    "rules": [
-      "deslop/unused-file",
-      "deslop/unused-dependency",
-      "deslop/unused-dev-dependency"
-    ],
+    "rules": ["deslop/unused-file", "deslop/unused-dependency", "deslop/unused-dev-dependency"],
     "overrides": [
       {
         "files": ["src/components/ui/**"],

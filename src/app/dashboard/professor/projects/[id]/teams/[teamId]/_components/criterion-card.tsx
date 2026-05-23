@@ -1,13 +1,12 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { ShieldAlert } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ShieldAlert } from 'lucide-react';
 
 interface CriterionCardProps {
   criterion: {
     id: number;
     name: string;
-    description?: string;
+    description?: string | null;
     maxPoints: number;
   };
   scoreData: {
@@ -28,35 +27,38 @@ export function CriterionCard({
 }: CriterionCardProps) {
   return (
     <Card
-      className={`border-2 rounded-none transition-all ${
+      className={`rounded-none border-2 transition-all ${
         error
-          ? "border-red-500/40 bg-red-500/[0.02]"
+          ? 'border-red-500/40 bg-red-500/[0.02]'
           : scoreData.score !== undefined
-          ? "border-zinc-200 dark:border-zinc-800 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]"
-          : "border-zinc-200 dark:border-zinc-800"
+            ? 'border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] dark:border-zinc-800'
+            : 'border-zinc-200 dark:border-zinc-800'
       } bg-card hover:shadow-none`}
     >
-      <CardHeader className="border-b border-zinc-100 dark:border-zinc-800 py-4 px-6 flex flex-row items-start justify-between gap-4">
+      <CardHeader className="flex flex-row items-start justify-between gap-4 border-b border-zinc-100 px-6 py-4 dark:border-zinc-800">
         <div className="space-y-1">
-          <CardTitle className="text-sm font-semibold uppercase tracking-wider text-zinc-900 dark:text-zinc-50">
+          <CardTitle className="text-sm font-semibold tracking-wider text-zinc-900 uppercase dark:text-zinc-50">
             {criterion.name}
           </CardTitle>
           {criterion.description && (
-            <p className="text-xs font-medium text-zinc-400 dark:text-zinc-500 leading-relaxed max-w-2xl">
+            <p className="max-w-2xl text-xs leading-relaxed font-medium text-zinc-400 dark:text-zinc-500">
               {criterion.description}
             </p>
           )}
         </div>
-        <Badge variant="outline" className="border-zinc-300 dark:border-zinc-700 text-zinc-500 font-bold text-[9px] uppercase tracking-wider rounded-none py-0.5 px-2">
+        <Badge
+          variant="outline"
+          className="rounded-none border-zinc-300 px-2 py-0.5 text-[9px] font-bold tracking-wider text-zinc-500 uppercase dark:border-zinc-700"
+        >
           Max: {criterion.maxPoints} pts
         </Badge>
       </CardHeader>
-      <CardContent className="p-6 grid gap-6 md:grid-cols-4 items-end">
+      <CardContent className="grid items-end gap-6 p-6 md:grid-cols-4">
         {/* Score Input Column */}
-        <div className="md:col-span-1 flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 md:col-span-1">
           <label
             htmlFor={`crit-score-${criterion.id}`}
-            className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1"
+            className="flex items-center gap-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase"
           >
             Score (0-{criterion.maxPoints})
           </label>
@@ -68,17 +70,19 @@ export function CriterionCard({
               step="0.5"
               min="0"
               max={criterion.maxPoints}
-              value={scoreData.score !== undefined ? scoreData.score : ""}
+              value={scoreData.score !== undefined ? scoreData.score : ''}
               onChange={(e) => onScoreChange(criterion.id, e.target.value)}
               placeholder="—"
-              aria-invalid={error ? "true" : undefined}
-              className={`w-full text-sm font-semibold border-2 ${
-                error ? "border-red-500 focus:border-red-600" : "border-zinc-200 dark:border-zinc-800 focus:border-purple-500"
-              } bg-card p-3 outline-none rounded-none font-mono`}
+              aria-invalid={error ? 'true' : undefined}
+              className={`w-full border-2 text-sm font-semibold ${
+                error
+                  ? 'border-red-500 focus:border-red-600'
+                  : 'border-zinc-200 focus:border-purple-500 dark:border-zinc-800'
+              } bg-card rounded-none p-3 font-mono outline-none`}
             />
           </div>
           {error && (
-            <p className="text-[10px] font-bold text-red-500 uppercase tracking-tight flex items-center gap-1 mt-0.5">
+            <p className="mt-0.5 flex items-center gap-1 text-[10px] font-bold tracking-tight text-red-500 uppercase">
               <ShieldAlert className="size-3.5" />
               {error}
             </p>
@@ -86,10 +90,10 @@ export function CriterionCard({
         </div>
 
         {/* Feedback Comment Column */}
-        <div className="md:col-span-3 flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1.5 md:col-span-3">
           <label
             htmlFor={`crit-comment-${criterion.id}`}
-            className="text-[10px] font-bold uppercase tracking-wider text-zinc-400"
+            className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase"
           >
             Comments
           </label>
@@ -97,9 +101,9 @@ export function CriterionCard({
             id={`crit-comment-${criterion.id}`}
             aria-label="Comments"
             type="text"
-            value={scoreData.comment || ""}
+            value={scoreData.comment || ''}
             onChange={(e) => onCommentChange(criterion.id, e.target.value)}
-            className="w-full text-xs font-medium border-2 border-zinc-200 dark:border-zinc-800 focus:border-purple-500 bg-card p-3 outline-none rounded-none"
+            className="bg-card w-full rounded-none border-2 border-zinc-200 p-3 text-xs font-medium outline-none focus:border-purple-500 dark:border-zinc-800"
           />
         </div>
       </CardContent>

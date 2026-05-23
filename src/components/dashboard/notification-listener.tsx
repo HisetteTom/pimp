@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import { getNotifications, markAsRead } from "@/app/dashboard/actions-notification";
+import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { getNotifications, markAsRead } from '@/app/dashboard/actions-notification';
 
 export function NotificationListener() {
   const router = useRouter();
   const { push } = router;
-  
+
   const notifiedIds = useRef<Set<number>>(new Set());
   const tabOpenTime = useRef<number>(0);
   const isRequestingPermission = useRef<boolean>(false);
@@ -16,11 +16,11 @@ export function NotificationListener() {
   useEffect(() => {
     tabOpenTime.current = Date.now();
 
-    if (typeof window === "undefined" || !("Notification" in window)) {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
       return;
     }
 
-    if (Notification.permission === "default" && !isRequestingPermission.current) {
+    if (Notification.permission === 'default' && !isRequestingPermission.current) {
       isRequestingPermission.current = true;
       Notification.requestPermission().then(() => {
         isRequestingPermission.current = false;
@@ -30,12 +30,12 @@ export function NotificationListener() {
 
   // Poll for new notifications
   useEffect(() => {
-    if (typeof window === "undefined" || !("Notification" in window)) {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
       return;
     }
 
     const checkNewNotifications = async () => {
-      if (Notification.permission !== "granted") {
+      if (Notification.permission !== 'granted') {
         return;
       }
 
@@ -65,7 +65,7 @@ export function NotificationListener() {
           newAlerts.forEach((notif) => {
             const n = new Notification(notif.title, {
               body: notif.message,
-              icon: "/favicon.ico", // Fallback standard icon
+              icon: '/favicon.ico', // Fallback standard icon
               tag: `notif-${notif.id}`,
             });
 
@@ -74,7 +74,7 @@ export function NotificationListener() {
               try {
                 await markAsRead(notif.id);
               } catch (err) {
-                console.error("Failed to mark notification as read on click:", err);
+                console.error('Failed to mark notification as read on click:', err);
               }
               if (notif.link) {
                 push(notif.link);
@@ -84,7 +84,7 @@ export function NotificationListener() {
           });
         }
       } catch (error) {
-        console.error("Notification polling failed:", error);
+        console.error('Notification polling failed:', error);
       }
     };
 
@@ -97,4 +97,3 @@ export function NotificationListener() {
 
   return null;
 }
-

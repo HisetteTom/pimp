@@ -1,15 +1,28 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { updateTask, deleteTask } from "../../actions";
-import { toast } from "sonner";
-import { Trash2, Check } from "lucide-react";
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { updateTask, deleteTask } from '../../actions';
+import { toast } from 'sonner';
+import { Trash2, Check } from 'lucide-react';
 
 interface Task {
   id: number;
@@ -17,7 +30,7 @@ interface Task {
   description: string | null;
   status: string;
   priority: string;
-  deadline: string | null;
+  deadline: Date | string | null;
   assigneeId: string | null;
   assignees?: string | null;
 }
@@ -26,16 +39,22 @@ interface TaskDetailDialogProps {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  members: any[];
+  members: { id: string; name: string }[];
   projectId: number;
 }
 
-export function TaskDetailDialog({ task, open, onOpenChange, members, projectId }: TaskDetailDialogProps) {
+export function TaskDetailDialog({
+  task,
+  open,
+  onOpenChange,
+  members,
+  projectId,
+}: TaskDetailDialogProps) {
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>(() => {
     if (!task) return [];
-    if (task.assignees) return task.assignees.split(",").filter(Boolean);
+    if (task.assignees) return task.assignees.split(',').filter(Boolean);
     if (task.assigneeId) return [task.assigneeId];
     return [];
   });
@@ -45,7 +64,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
   // Format date to YYYY-MM-DD for input type="date"
   const formattedDeadline = task.deadline
     ? new Date(task.deadline).toISOString().split('T')[0]
-    : "";
+    : '';
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -53,13 +72,13 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const name = formData.get("name") as string;
-    const description = formData.get("description") as string;
-    const priority = formData.get("priority") as string;
-    const deadlineStr = formData.get("deadline") as string;
+    const name = formData.get('name') as string;
+    const description = formData.get('description') as string;
+    const priority = formData.get('priority') as string;
+    const deadlineStr = formData.get('deadline') as string;
 
     const assigneeId = selectedAssignees.length > 0 ? selectedAssignees[0] : null;
-    const assignees = selectedAssignees.join(",");
+    const assignees = selectedAssignees.join(',');
 
     try {
       await updateTask({
@@ -72,27 +91,27 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
         assignees: assignees || null,
         projectId,
       });
-      toast.success("Task updated");
+      toast.success('Task updated');
       onOpenChange(false);
       setLoading(false);
-    } catch (error) {
-      toast.error("Failed to update task");
+    } catch {
+      toast.error('Failed to update task');
       setLoading(false);
     }
   }
 
   async function handleDelete() {
     if (!task) return;
-    if (!confirm("Are you sure you want to delete this task?")) return;
+    if (!confirm('Are you sure you want to delete this task?')) return;
     setDeleting(true);
 
     try {
       await deleteTask(task.id, projectId);
-      toast.success("Task deleted");
+      toast.success('Task deleted');
       onOpenChange(false);
       setDeleting(false);
-    } catch (error) {
-      toast.error("Failed to delete task");
+    } catch {
+      toast.error('Failed to delete task');
       setDeleting(false);
     }
   }
@@ -102,7 +121,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
       <DialogContent className="sm:max-w-[450px]">
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
-            <DialogTitle className="uppercase tracking-tighter text-lg font-bold">
+            <DialogTitle className="text-lg font-bold tracking-tighter uppercase">
               Task Details
             </DialogTitle>
             <DialogDescription>
@@ -112,7 +131,7 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
 
           <div className="grid gap-4 py-2">
             <div className="grid gap-2">
-              <Label htmlFor="detail-name" className="text-xs uppercase font-bold text-zinc-400">
+              <Label htmlFor="detail-name" className="text-xs font-bold text-zinc-400 uppercase">
                 Task Name
               </Label>
               <Input
@@ -125,13 +144,16 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="detail-description" className="text-xs uppercase font-bold text-zinc-400">
+              <Label
+                htmlFor="detail-description"
+                className="text-xs font-bold text-zinc-400 uppercase"
+              >
                 Description
               </Label>
               <Textarea
                 id="detail-description"
                 name="description"
-                defaultValue={task.description || ""}
+                defaultValue={task.description || ''}
                 rows={3}
                 className="text-xs leading-relaxed"
               />
@@ -139,7 +161,10 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="detail-priority" className="text-xs uppercase font-bold text-zinc-400">
+                <Label
+                  htmlFor="detail-priority"
+                  className="text-xs font-bold text-zinc-400 uppercase"
+                >
                   Priority
                 </Label>
                 <Select name="priority" defaultValue={task.priority}>
@@ -155,7 +180,10 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="detail-deadline" className="text-xs uppercase font-bold text-zinc-400">
+                <Label
+                  htmlFor="detail-deadline"
+                  className="text-xs font-bold text-zinc-400 uppercase"
+                >
                   Deadline
                 </Label>
                 <Input
@@ -168,10 +196,10 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-xs uppercase font-bold text-zinc-400">
+              <Label className="text-xs font-bold text-zinc-400 uppercase">
                 Assigned Team Members
               </Label>
-              <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 max-h-[160px] overflow-y-auto space-y-1 bg-zinc-50/50 dark:bg-zinc-900/50">
+              <div className="max-h-[160px] space-y-1 overflow-y-auto rounded-lg border border-zinc-200 bg-zinc-50/50 p-2 dark:border-zinc-800 dark:bg-zinc-900/50">
                 {members.map((member) => {
                   const isAssigned = selectedAssignees.includes(member.id);
                   return (
@@ -179,69 +207,82 @@ export function TaskDetailDialog({ task, open, onOpenChange, members, projectId 
                       key={member.id}
                       type="button"
                       onClick={() => {
-                        setSelectedAssignees(prev =>
+                        setSelectedAssignees((prev) =>
                           prev.includes(member.id)
-                            ? prev.filter(id => id !== member.id)
-                            : [...prev, member.id]
+                            ? prev.filter((id) => id !== member.id)
+                            : [...prev, member.id],
                         );
                       }}
-                      className={`w-full flex items-center justify-between p-2 rounded transition-all text-left group ${isAssigned
-                        ? "bg-primary/10 text-primary border-2 border-primary/20"
-                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-transparent"
-                        }`}
+                      className={`group flex w-full items-center justify-between rounded p-2 text-left transition-all ${
+                        isAssigned
+                          ? 'bg-primary/10 text-primary border-primary/20 border-2'
+                          : 'border border-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                      }`}
                     >
                       <div className="flex items-center gap-2">
-                        <div className={`size-6 rounded-full flex items-center justify-center text-[10px] font-bold uppercase transition-all ${isAssigned
-                          ? "bg-primary text-primary-foreground scale-105"
-                          : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
-                          }`}>
-                          {member.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                        <div
+                          className={`flex size-6 items-center justify-center rounded-full text-[10px] font-bold uppercase transition-all ${
+                            isAssigned
+                              ? 'bg-primary text-primary-foreground scale-105'
+                              : 'bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'
+                          }`}
+                        >
+                          {member.name
+                            .split(' ')
+                            .map((n: string) => n[0])
+                            .join('')
+                            .slice(0, 2)}
                         </div>
                         <span className="text-xs font-semibold">{member.name}</span>
                       </div>
-                      <div className={`size-4 rounded border flex items-center justify-center transition-all ${isAssigned
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-zinc-300 dark:border-zinc-600 group-hover:border-zinc-400"
-                        }`}>
+                      <div
+                        className={`flex size-4 items-center justify-center rounded border transition-all ${
+                          isAssigned
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-zinc-300 group-hover:border-zinc-400 dark:border-zinc-600'
+                        }`}
+                      >
                         {isAssigned && <Check className="size-2.5 stroke-[3]" />}
                       </div>
                     </button>
                   );
                 })}
                 {members.length === 0 && (
-                  <p className="text-xs italic text-zinc-400 text-center py-4">No team members available.</p>
+                  <p className="py-4 text-center text-xs text-zinc-400 italic">
+                    No team members available.
+                  </p>
                 )}
               </div>
             </div>
           </div>
 
-          <DialogFooter className="flex items-center justify-between gap-2 border-t pt-4 border-zinc-100 dark:border-zinc-800">
+          <DialogFooter className="flex items-center justify-between gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
             <Button
               type="button"
               variant="ghost"
               onClick={handleDelete}
               disabled={deleting || loading}
-              className="text-destructive hover:bg-destructive/10 font-bold uppercase tracking-wider text-xs p-2"
+              className="text-destructive hover:bg-destructive/10 p-2 text-xs font-bold tracking-wider uppercase"
             >
-              <Trash2 className="size-4 mr-1.5" />
+              <Trash2 className="mr-1.5 size-4" />
               Delete
             </Button>
-            <div className="flex gap-2 ml-auto">
+            <div className="ml-auto flex gap-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={loading || deleting}
-                className="font-bold uppercase tracking-wider text-xs"
+                className="text-xs font-bold tracking-wider uppercase"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={loading || deleting}
-                className="font-bold uppercase tracking-wider text-xs shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)]"
+                className="text-xs font-bold tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)]"
               >
-                {loading ? "Saving..." : "Save Changes"}
+                {loading ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </DialogFooter>

@@ -1,16 +1,16 @@
-import { db } from "@/db";
-import { project, notification } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { eq, desc } from "drizzle-orm";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { ProfileView } from "@/components/dashboard/profile-view";
-import { Metadata } from "next";
+import { db } from '@/db';
+import { project, notification } from '@/db/schema';
+import { auth } from '@/lib/auth';
+import { eq, desc } from 'drizzle-orm';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { ProfileView } from '@/components/dashboard/profile-view';
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Profile | Professor Dashboard",
-  description: "View your user profile and notifications on PIMP.",
+  title: 'Profile | Professor Dashboard',
+  description: 'View your user profile and notifications on PIMP.',
 };
 
 export default async function ProfessorProfilePage() {
@@ -18,8 +18,8 @@ export default async function ProfessorProfilePage() {
     headers: await headers(),
   });
 
-  if (!session || session.user.role !== "professor") {
-    redirect("/login");
+  if (!session || session.user.role !== 'professor') {
+    redirect('/login');
   }
 
   // Fetch projects and notifications in parallel
@@ -41,7 +41,7 @@ export default async function ProfessorProfilePage() {
     <DashboardLayout userProjects={userProjectsSidebarData}>
       <div className="space-y-8">
         <div>
-          <h1 className="text-4xl font-semibold tracking-tighter text-secondary uppercase">
+          <h1 className="text-secondary text-4xl font-semibold tracking-tighter uppercase">
             User Profile
           </h1>
         </div>

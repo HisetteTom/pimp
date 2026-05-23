@@ -1,13 +1,13 @@
-import { client } from "./seed/db";
-import { cleanDatabase } from "./seed/clean";
-import { seedUsers } from "./seed/users";
-import { seedProjects } from "./seed/projects";
-import { seedTeams } from "./seed/teams";
-import { seedTasks } from "./seed/tasks";
+import { client } from './seed/db';
+import { cleanDatabase } from './seed/clean';
+import { seedUsers } from './seed/users';
+import { seedProjects } from './seed/projects';
+import { seedTeams } from './seed/teams';
+import { seedTasks } from './seed/tasks';
 
 async function main() {
-  console.log("Seeding database...");
-  
+  console.log('Seeding database...');
+
   // 1. Clean all existing tables
   // eslint-disable-next-line react-doctor/async-parallel
   await cleanDatabase();
@@ -31,13 +31,13 @@ async function main() {
     enrollmentsToInsert,
   });
 
-  console.log("Seeding completed successfully!");
+  console.log('Seeding completed successfully!');
   await client.end();
   process.exit(0);
 }
 
 main().catch(async (err) => {
-  console.error("Seeding failed:", err);
+  console.error('Seeding failed:', err);
   await client.end();
   process.exit(1);
 });

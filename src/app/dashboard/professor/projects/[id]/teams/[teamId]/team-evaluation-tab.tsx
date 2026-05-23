@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState, useTransition, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Loader2, Save } from "lucide-react";
-import { saveTeamEvaluation } from "../../../../evaluation-actions";
-import { EvaluationMetrics } from "./_components/evaluation-metrics";
-import { EvaluationCriteriaGrid } from "./_components/evaluation-criteria-grid";
-import { GlobalRemarksCard } from "./_components/global-remarks-card";
+import { useState, useTransition, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Loader2, Save } from 'lucide-react';
+import { saveTeamEvaluation } from '../../../../evaluation-actions';
+import { EvaluationMetrics } from './_components/evaluation-metrics';
+import { EvaluationCriteriaGrid } from './_components/evaluation-criteria-grid';
+import { GlobalRemarksCard } from './_components/global-remarks-card';
 
 interface TeamEvaluationTabProps {
   projectId: number;
   teamId: number;
-  criteria: any[];
-  initialScores: any[];
-  team: any;
+  criteria: { id: number; name: string; description?: string | null; maxPoints: number }[];
+  initialScores: { criterionId: number; score?: number | null; comment?: string | null }[];
+  team: { feedback?: string | null; notes?: string | null; grade?: string | null };
   role: string;
 }
 
@@ -25,7 +25,6 @@ export function TeamEvaluationTab({
   criteria,
   initialScores,
   team,
-  role,
 }: TeamEvaluationTabProps) {
   const { refresh } = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -37,24 +36,24 @@ export function TeamEvaluationTab({
       const match = initialScores.find((s) => s.criterionId === c.id);
       initialMap[c.id] = {
         score: match?.score !== null && match?.score !== undefined ? match.score : undefined,
-        comment: match?.comment || "",
+        comment: match?.comment || '',
       };
     });
     return initialMap;
   });
 
   // Initialize global values
-  const [juryFeedback, setJuryFeedback] = useState(team.feedback || "");
-  const [supervisorNotes, setSupervisorNotes] = useState(team.notes || "");
+  const [juryFeedback, setJuryFeedback] = useState(team.feedback || '');
+  const [supervisorNotes, setSupervisorNotes] = useState(team.notes || '');
 
   // Handle score change
   const handleScoreChange = (criterionId: number, value: string) => {
-    const numVal = value === "" ? undefined : parseFloat(value);
+    const numVal = value === '' ? undefined : parseFloat(value);
     setScores((prev) => ({
       ...prev,
       [criterionId]: {
         ...prev[criterionId],
-        score: isNaN(numVal as any) ? undefined : numVal,
+        score: numVal === undefined || isNaN(numVal) ? undefined : numVal,
       },
     }));
   };
@@ -89,13 +88,13 @@ export function TeamEvaluationTab({
       currentSum,
       maxSum,
       anyAssigned,
-      percentage: maxSum > 0 ? ((currentSum / maxSum) * 100).toFixed(1) : "0",
+      percentage: maxSum > 0 ? ((currentSum / maxSum) * 100).toFixed(1) : '0',
     };
   }, [criteria, scores]);
 
   // Auto-calculated global grade normalized to /20
   const globalGrade = useMemo(() => {
-    if (!totalScoreInfo.anyAssigned || totalScoreInfo.maxSum === 0) return "";
+    if (!totalScoreInfo.anyAssigned || totalScoreInfo.maxSum === 0) return '';
     const normalized = (totalScoreInfo.currentSum / totalScoreInfo.maxSum) * 20;
     return `${parseFloat(normalized.toFixed(2))}/20`;
   }, [totalScoreInfo]);
@@ -107,7 +106,7 @@ export function TeamEvaluationTab({
       const scoreObj = scores[c.id];
       if (scoreObj && scoreObj.score !== undefined) {
         if (scoreObj.score < 0) {
-          errors[c.id] = "Score cannot be negative";
+          errors[c.id] = 'Score cannot be negative';
         } else if (scoreObj.score > c.maxPoints) {
           errors[c.id] = `Score cannot exceed maximum of ${c.maxPoints}`;
         }
@@ -121,7 +120,7 @@ export function TeamEvaluationTab({
   // Handle Save Action
   const handleSave = () => {
     if (hasErrors) {
-      toast.error("Please fix validation errors before saving.");
+      toast.error('Please fix validation errors before saving.');
       return;
     }
 
@@ -137,15 +136,15 @@ export function TeamEvaluationTab({
           teamId,
           projectId,
           scores: payloadScores,
-          globalGradeStr: globalGrade, // Drizzle grade field in team schema is text
+          globalGrade: globalGrade, // Drizzle grade field in team schema is text
           juryFeedback,
           supervisorNotes,
-        } as any);
+        });
 
-        toast.success("Team evaluation grid saved successfully!");
+        toast.success('Team evaluation grid saved successfully!');
         refresh();
       } catch (err) {
-        toast.error("Failed to save team evaluation.");
+        toast.error('Failed to save team evaluation.');
         console.error(err);
       }
     });
@@ -175,17 +174,13 @@ export function TeamEvaluationTab({
       />
 
       {/* Save Button */}
-      <div className="pt-4 flex justify-end">
+      <div className="flex justify-end pt-4">
         <Button
           onClick={handleSave}
           disabled={isPending || hasErrors}
-          className="w-full sm:w-auto px-6 py-2.5 text-xs font-bold bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all uppercase tracking-widest rounded-none cursor-pointer flex items-center justify-center gap-2"
+          className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-none bg-zinc-900 px-6 py-2.5 text-xs font-bold tracking-widest text-white uppercase transition-all hover:bg-zinc-800 sm:w-auto dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
         >
-          {isPending ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Save className="size-4" />
-          )}
+          {isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
           Save Evaluation Grid
         </Button>
       </div>

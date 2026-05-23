@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { evaluateTeam } from "../../actions";
-import { Loader2, Award, FileEdit } from "lucide-react";
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { evaluateTeam } from '../../actions';
+import { Loader2, FileEdit } from 'lucide-react';
 
 interface TeamEvaluationCardProps {
   teamId: number;
@@ -23,20 +23,20 @@ export function TeamEvaluationCard({
   teamId,
   projectId,
   teamName,
-  initialGrade = "",
-  initialFeedback = "",
+  initialGrade = '',
+  initialFeedback = '',
 }: TeamEvaluationCardProps) {
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
 
-  const [grade, setGrade] = useState(initialGrade || "");
-  const [feedback, setFeedback] = useState(initialFeedback || "");
+  const [grade, setGrade] = useState(initialGrade || '');
+  const [feedback, setFeedback] = useState(initialFeedback || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (grade && (parseFloat(grade) < 0 || parseFloat(grade) > 20)) {
-      toast.error("Grade must be between 0 and 20");
+      toast.error('Grade must be between 0 and 20');
       return;
     }
 
@@ -46,7 +46,7 @@ export function TeamEvaluationCard({
         toast.success(`Successfully updated evaluation for ${teamName}`);
         refresh();
       } catch (err) {
-        toast.error("Failed to save evaluation");
+        toast.error('Failed to save evaluation');
         console.error(err);
       }
     });
@@ -55,32 +55,39 @@ export function TeamEvaluationCard({
   const isEvaluated = initialGrade || initialFeedback;
 
   return (
-    <Card className={`border-2 rounded-none transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.03)] hover:shadow-none ${isEvaluated ? "border-purple-500/30 bg-purple-500/[0.01]" : "border-zinc-200 dark:border-zinc-800"}`}>
-      <CardHeader className="border-b border-zinc-100 dark:border-zinc-800 pb-4">
+    <Card
+      className={`rounded-none border-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.03)] transition-all hover:shadow-none ${isEvaluated ? 'border-purple-500/30 bg-purple-500/[0.01]' : 'border-zinc-200 dark:border-zinc-800'}`}
+    >
+      <CardHeader className="border-b border-zinc-100 pb-4 dark:border-zinc-800">
         <div className="flex items-center gap-2">
-          <CardTitle className="text-sm font-black uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
+          <CardTitle className="text-sm font-black tracking-wider text-zinc-800 uppercase dark:text-zinc-200">
             Team Evaluation
           </CardTitle>
         </div>
-        <CardDescription className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+        <CardDescription className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">
           Input the final cohort grade out of 20 and review comments.
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-5">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor={`grade-${teamId}`} className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            <Label
+              htmlFor={`grade-${teamId}`}
+              className="text-[10px] font-black tracking-widest text-zinc-500 uppercase"
+            >
               Grade (Score / 20)
             </Label>
             <div className="relative">
-              <span className="absolute left-3.5 top-3 text-[13px] font-black text-zinc-400">/20</span>
+              <span className="absolute top-3 left-3.5 text-[13px] font-black text-zinc-400">
+                /20
+              </span>
               <Input
                 id={`grade-${teamId}`}
                 type="number"
                 step="0.25"
                 min="0"
                 max="20"
-                className="pl-12 h-11 border-2 focus-visible:ring-purple-500 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors rounded-none font-bold"
+                className="h-11 rounded-none border-2 border-zinc-200 pl-12 font-bold transition-colors hover:border-zinc-300 focus-visible:ring-purple-500 dark:border-zinc-800 dark:hover:border-zinc-700"
                 value={grade}
                 onChange={(e) => setGrade(e.target.value)}
                 disabled={isPending}
@@ -89,15 +96,18 @@ export function TeamEvaluationCard({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor={`feedback-${teamId}`} className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
+            <Label
+              htmlFor={`feedback-${teamId}`}
+              className="text-[10px] font-black tracking-widest text-zinc-500 uppercase"
+            >
               Professor Feedback
             </Label>
             <div className="relative">
-              <FileEdit className="absolute left-3 top-3.5 size-4 text-zinc-400" />
+              <FileEdit className="absolute top-3.5 left-3 size-4 text-zinc-400" />
               <Textarea
                 id={`feedback-${teamId}`}
                 rows={3}
-                className="pl-10 border-2 focus-visible:ring-purple-500 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors rounded-none p-3 resize-none text-sm"
+                className="resize-none rounded-none border-2 border-zinc-200 p-3 pl-10 text-sm transition-colors hover:border-zinc-300 focus-visible:ring-purple-500 dark:border-zinc-800 dark:hover:border-zinc-700"
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
                 disabled={isPending}
@@ -108,7 +118,7 @@ export function TeamEvaluationCard({
           <Button
             type="submit"
             variant="unstyled"
-            className="w-full h-11 border-transparent bg-zinc-900 hover:bg-purple-600 dark:hover:bg-purple-600 hover:text-white text-white font-black uppercase tracking-wider text-[11px] transition-all shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none flex items-center justify-center gap-2 rounded-none cursor-pointer"
+            className="flex h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-none border-transparent bg-zinc-900 text-[11px] font-black tracking-wider text-white uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] transition-all hover:bg-purple-600 hover:text-white active:translate-x-[2px] active:translate-y-[2px] active:shadow-none dark:hover:bg-purple-600"
             disabled={isPending}
           >
             {isPending ? (
@@ -117,7 +127,7 @@ export function TeamEvaluationCard({
                 Saving…
               </>
             ) : (
-              "Save Evaluation"
+              'Save Evaluation'
             )}
           </Button>
         </form>

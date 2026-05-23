@@ -16,17 +16,14 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] gap-y-4 p-8 text-center">
-      <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 uppercase">
+    <div className="flex min-h-[400px] flex-col items-center justify-center gap-y-4 p-8 text-center">
+      <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
         Something went wrong!
       </h2>
-      <p className="text-zinc-500 dark:text-zinc-400 font-medium italic mb-4">
+      <p className="mb-4 font-medium text-zinc-500 italic dark:text-zinc-400">
         {error.message || 'An unexpected error occurred while loading this page.'}
       </p>
-      <Button
-        onClick={() => reset()}
-        className="font-semibold uppercase tracking-wider"
-      >
+      <Button onClick={() => reset()} className="font-semibold tracking-wider uppercase">
         Try again
       </Button>
     </div>

@@ -1,42 +1,38 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  CheckSquare, 
-  MessageSquare, 
-  User, 
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import {
+  LayoutDashboard,
+  CheckSquare,
+  User,
   LogOut,
   Settings,
   LogOut as LeaveIcon,
-  Kanban as KanbanIcon,
-  FileBox,
   FolderRoot,
   Lightbulb,
   ChevronRight,
   Sun,
   Moon,
-  Crown
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { authClient } from "@/lib/auth-client";
-import { leaveTeam } from "@/app/dashboard/student/actions";
-import { useTransition, useSyncExternalStore } from "react";
-import { useTheme } from "next-themes";
+  Crown,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { authClient } from '@/lib/auth-client';
+import { leaveTeam } from '@/app/dashboard/student/actions';
+import { useTransition, useSyncExternalStore } from 'react';
+import { useTheme } from 'next-themes';
 
 const emptySubscribe = () => () => {};
 
-const navItems = [
-  { href: "/dashboard/student#top", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/student#my-projects", label: "My Projects", icon: FolderRoot },
-  { href: "/dashboard/student#proposals", label: "Proposals", icon: Lightbulb },
-];
-
 interface SidebarProps {
   userProjects?: { id: number; name: string; teamName?: string }[];
-  team?: { id: number; projectId: number; name: string; members: any[] };
+  team?: {
+    id: number;
+    projectId: number;
+    name: string;
+    members: { id: string; name: string; responsabilityId: number | null }[];
+  };
   unreadCount?: number;
 }
 
@@ -45,41 +41,51 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
   const { push } = useRouter();
   const [isPending, startTransition] = useTransition();
   const { data: session } = authClient.useSession();
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const mounted = useSyncExternalStore(
     emptySubscribe,
     () => true,
-    () => false
+    () => false,
   );
 
-  const currentTheme = mounted ? resolvedTheme : "light";
+  const currentTheme = mounted ? resolvedTheme : 'light';
 
   const toggleTheme = () => {
-    setTheme(currentTheme === "dark" ? "light" : "dark");
+    setTheme(currentTheme === 'dark' ? 'light' : 'dark');
   };
 
-  const role = (session?.user as any)?.role;
-  const isProfessor = role === "professor";
-  const isJury = role === "jury";
+  const role = session?.user ? (session.user as { role?: string }).role : undefined;
+  const isProfessor = role === 'professor';
+  const isJury = role === 'jury';
   const isStaff = isProfessor || isJury;
 
-  const navItems = isStaff ? [
-    { href: "/dashboard/professor#top", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard/professor#projects", label: "All Projects", icon: FolderRoot },
-    ...(isProfessor ? [{ href: "/dashboard/professor/evaluation-setup", label: "Evaluation Setup", icon: CheckSquare }] : []),
-  ] : [
-    { href: "/dashboard/student#top", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard/student#my-projects", label: "My Projects", icon: FolderRoot },
-    { href: "/dashboard/student#proposals", label: "Proposals", icon: Lightbulb },
-  ];
+  const navItems = isStaff
+    ? [
+        { href: '/dashboard/professor#top', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/dashboard/professor#projects', label: 'All Projects', icon: FolderRoot },
+        ...(isProfessor
+          ? [
+              {
+                href: '/dashboard/professor/evaluation-setup',
+                label: 'Evaluation Setup',
+                icon: CheckSquare,
+              },
+            ]
+          : []),
+      ]
+    : [
+        { href: '/dashboard/student#top', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/dashboard/student#my-projects', label: 'My Projects', icon: FolderRoot },
+        { href: '/dashboard/student#proposals', label: 'Proposals', icon: Lightbulb },
+      ];
 
-  const dashboardLink = isStaff ? "/dashboard/professor" : "/dashboard/student";
+  const dashboardLink = isStaff ? '/dashboard/professor' : '/dashboard/student';
 
   const handleLogout = async () => {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          push("/login");
+          push('/login');
         },
       },
     });
@@ -87,7 +93,7 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
 
   const handleLeaveTeam = () => {
     if (!team) return;
-    if (confirm("Are you sure you want to leave this team?")) {
+    if (confirm('Are you sure you want to leave this team?')) {
       startTransition(async () => {
         await leaveTeam(team.projectId);
       });
@@ -95,50 +101,73 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
   };
 
   return (
-    <div suppressHydrationWarning className="flex h-full flex-col p-6 overflow-y-auto scrollbar-none">
+    <div
+      suppressHydrationWarning
+      className="flex h-full scrollbar-none flex-col overflow-y-auto p-6"
+    >
       <div className="mb-10 flex items-center gap-3 px-2">
-        <Link href={dashboardLink} className="hover:opacity-80 transition-all active:scale-95">
-          <span className="text-2xl font-black tracking-[0.2em] text-zinc-900 dark:text-zinc-100 leading-none">
+        <Link href={dashboardLink} className="transition-all hover:opacity-80 active:scale-95">
+          <span className="text-2xl leading-none font-black tracking-[0.2em] text-zinc-900 dark:text-zinc-100">
             PIMP
           </span>
         </Link>
       </div>
 
       <nav className="flex-1 space-y-1.5">
-        <p className="px-3 mb-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Navigation</p>
+        <p className="mb-2 px-3 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
+          Navigation
+        </p>
         {navItems.map((item) => (
           <Link key={item.href} href={item.href}>
             <span
               className={cn(
-                "flex items-center gap-3 rounded-none border-l-2 px-3 py-3 text-[13px] font-black uppercase tracking-tight transition-all cursor-pointer",
-                pathname === item.href 
-                  ? "border-purple-600 bg-purple-500/10 text-purple-600 shadow-[inset_4px_0px_12px_rgba(168,85,247,0.05)]" 
-                  : "border-transparent text-zinc-700 dark:text-zinc-300 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900"
+                'flex cursor-pointer items-center gap-3 rounded-none border-l-2 px-3 py-3 text-[13px] font-black tracking-tight uppercase transition-all',
+                pathname === item.href
+                  ? 'border-purple-600 bg-purple-500/10 text-purple-600 shadow-[inset_4px_0px_12px_rgba(168,85,247,0.05)]'
+                  : 'border-transparent text-zinc-700 hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900',
               )}
             >
-              <item.icon className={cn("size-4", pathname === item.href ? "text-purple-600" : "group-hover:text-white dark:group-hover:text-zinc-900")} />
+              <item.icon
+                className={cn(
+                  'size-4',
+                  pathname === item.href
+                    ? 'text-purple-600'
+                    : 'group-hover:text-white dark:group-hover:text-zinc-900',
+                )}
+              />
               {item.label}
             </span>
           </Link>
         ))}
 
         {userProjects && userProjects.length > 0 && (
-          <div className="pt-8 space-y-4">
-            <p className="px-3 text-[10px] font-black text-zinc-400 uppercase tracking-widest">
-              {isStaff ? "All Projects" : "Active Projects"}
+          <div className="space-y-4 pt-8">
+            <p className="px-3 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
+              {isStaff ? 'All Projects' : 'Active Projects'}
             </p>
             <div className="space-y-1">
               {userProjects.map((p) => (
-                <Link key={p.id} href={isStaff ? `/dashboard/professor/projects/${p.id}` : `/dashboard/student/projects/${p.id}`}>
-                  <div className={cn(
-                    "group flex flex-col px-3 py-2 border-l-2 transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900",
-                    pathname.includes(`/projects/${p.id}`) ? "border-purple-600 bg-purple-500/5" : "border-transparent"
-                  )}>
+                <Link
+                  key={p.id}
+                  href={
+                    isStaff
+                      ? `/dashboard/professor/projects/${p.id}`
+                      : `/dashboard/student/projects/${p.id}`
+                  }
+                >
+                  <div
+                    className={cn(
+                      'group flex flex-col border-l-2 px-3 py-2 transition-all hover:bg-zinc-50 dark:hover:bg-zinc-900',
+                      pathname.includes(`/projects/${p.id}`)
+                        ? 'border-purple-600 bg-purple-500/5'
+                        : 'border-transparent',
+                    )}
+                  >
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-black uppercase truncate text-zinc-700 dark:text-zinc-300">
+                      <span className="truncate text-[11px] font-black text-zinc-700 uppercase dark:text-zinc-300">
                         {p.name}
                       </span>
-                      <ChevronRight className="size-3 text-zinc-300 group-hover:text-orange-500 transition-colors" />
+                      <ChevronRight className="size-3 text-zinc-300 transition-colors group-hover:text-orange-500" />
                     </div>
                     {p.teamName && (
                       <span className="text-[9px] font-bold text-zinc-400 uppercase italic">
@@ -153,31 +182,39 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
         )}
 
         {!isStaff && team && (
-          <div className="pt-8 space-y-4">
-            <div className="px-3 space-y-1">
-              <p className="text-[13px] font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tight">
+          <div className="space-y-4 pt-8">
+            <div className="space-y-1 px-3">
+              <p className="text-[13px] font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
                 Team: {team.name}
               </p>
             </div>
-            
+
             <div className="space-y-1">
-              <p className="px-3 mb-2 text-[9px] font-bold text-zinc-400 uppercase tracking-tighter">Members</p>
+              <p className="mb-2 px-3 text-[9px] font-bold tracking-tighter text-zinc-400 uppercase">
+                Members
+              </p>
               {team.members.map((member) => (
-                <div 
-                  key={member.id} 
-                  className="flex items-center gap-3 px-3 py-2 text-[12px] font-bold text-zinc-600 dark:text-zinc-400 border-l-2 border-transparent"
+                <div
+                  key={member.id}
+                  className="flex items-center gap-3 border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-600 dark:text-zinc-400"
                 >
                   <div className="relative">
-                    <div className="size-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-black border border-zinc-200 dark:border-zinc-700">
+                    <div className="flex size-6 items-center justify-center rounded-full border border-zinc-200 bg-zinc-100 text-[10px] font-black dark:border-zinc-700 dark:bg-zinc-800">
                       {member.name.charAt(0)}
                     </div>
                     {member.responsabilityId === 1 && (
-                      <div className="absolute -top-1 -right-1 bg-amber-500 rounded-full p-0.5 border border-white dark:border-zinc-950 shadow-sm">
+                      <div className="absolute -top-1 -right-1 rounded-full border border-white bg-amber-500 p-0.5 shadow-sm dark:border-zinc-950">
                         <Crown className="size-2 text-white" />
                       </div>
                     )}
                   </div>
-                  <span className={cn("truncate", member.responsabilityId === 1 && "text-zinc-900 dark:text-zinc-100 font-black")}>
+                  <span
+                    className={cn(
+                      'truncate',
+                      member.responsabilityId === 1 &&
+                        'font-black text-zinc-900 dark:text-zinc-100',
+                    )}
+                  >
                     {member.name}
                   </span>
                 </div>
@@ -185,11 +222,11 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
             </div>
 
             <div className="px-3 pt-2">
-              <button 
+              <button
                 type="button"
                 onClick={handleLeaveTeam}
                 disabled={isPending}
-                className="w-full text-[10px] font-black text-red-500 hover:text-white hover:bg-red-500 py-2 border border-red-200 dark:border-red-900/50 rounded uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                className="flex w-full items-center justify-center gap-2 rounded border border-red-200 py-2 text-[10px] font-black tracking-widest text-red-500 uppercase transition-all hover:bg-red-500 hover:text-white active:scale-[0.98] dark:border-red-900/50"
               >
                 <LeaveIcon className="size-3" />
                 Leave Team
@@ -199,15 +236,17 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
         )}
       </nav>
 
-      <div className="mt-auto border-t border-zinc-100 dark:border-zinc-800 pt-6 space-y-2">
-        <p className="px-3 mb-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Account</p>
-        <Link href={isStaff ? "/dashboard/professor/profile" : "/dashboard/student/profile"}>
-          <span className="flex items-center justify-between rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 dark:text-zinc-300 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900">
+      <div className="mt-auto space-y-2 border-t border-zinc-100 pt-6 dark:border-zinc-800">
+        <p className="mb-2 px-3 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
+          Account
+        </p>
+        <Link href={isStaff ? '/dashboard/professor/profile' : '/dashboard/student/profile'}>
+          <span className="flex items-center justify-between rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900">
             <div className="flex items-center gap-3">
               <div className="relative">
                 <User className="size-4" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-red-500 px-0.5 text-[8px] font-black text-white leading-none ring-1 ring-white dark:ring-zinc-900 animate-pulse">
+                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 min-w-[14px] animate-pulse items-center justify-center rounded-full bg-red-500 px-0.5 text-[8px] leading-none font-black text-white ring-1 ring-white dark:ring-zinc-900">
                     {unreadCount}
                   </span>
                 )}
@@ -216,8 +255,8 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
             </div>
           </span>
         </Link>
-        <Link href={isStaff ? "/dashboard/professor/settings" : "/dashboard/student/settings"}>
-          <span className="flex items-center gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 dark:text-zinc-300 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900">
+        <Link href={isStaff ? '/dashboard/professor/settings' : '/dashboard/student/settings'}>
+          <span className="flex items-center gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900">
             <Settings className="size-4" />
             Settings
           </span>
@@ -226,24 +265,24 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
           type="button"
           onClick={toggleTheme}
           suppressHydrationWarning
-          className="w-full flex items-center justify-between rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 dark:text-zinc-300 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-900 cursor-pointer"
+          className="flex w-full cursor-pointer items-center justify-between rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900"
         >
           <div className="flex items-center gap-3">
-            {currentTheme === "dark" ? (
+            {currentTheme === 'dark' ? (
               <Sun className="size-4 text-amber-500" />
             ) : (
               <Moon className="size-4 text-indigo-500" />
             )}
-            <span>{currentTheme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+            <span>{currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
           </div>
-          <span className="text-[9px] uppercase tracking-widest font-black text-zinc-400 dark:text-zinc-500">
-            {currentTheme === "dark" ? "LIGHT" : "DARK"}
+          <span className="text-[9px] font-black tracking-widest text-zinc-400 uppercase dark:text-zinc-500">
+            {currentTheme === 'dark' ? 'LIGHT' : 'DARK'}
           </span>
         </button>
-        <Button 
-          variant="unstyled" 
+        <Button
+          variant="unstyled"
           onClick={handleLogout}
-          className="w-full justify-start gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-red-500 hover:bg-red-50 hover:text-red-600 hover:border-red-500 dark:hover:bg-red-950 transition-all mt-4 flex items-center"
+          className="mt-4 flex w-full items-center justify-start gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-red-500 transition-all hover:border-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
         >
           <LogOut className="size-4" />
           Logout
