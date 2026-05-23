@@ -1,9 +1,9 @@
-import { Metadata } from "next";
-import { RegisterForm } from "./register-form";
+import { Metadata } from 'next';
+import { RegisterForm } from './register-form';
 
 export const metadata: Metadata = {
-  title: "Inscription",
-  description: "Créez votre compte PIMP pour rejoindre la plateforme de gestion de projets.",
+  title: 'Inscription',
+  description: 'Créez votre compte PIMP pour rejoindre la plateforme de gestion de projets.',
 };
 
 export default function RegisterPage() {

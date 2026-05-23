@@ -1,0 +1,61 @@
+import { db } from '@/db';
+import { project, notification } from '@/db/schema';
+import { auth } from '@/lib/auth';
+import { eq, desc } from 'drizzle-orm';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { ProfileView } from '@/components/dashboard/profile-view';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Profile | Professor Dashboard',
+  description: 'View your user profile and notifications on PIMP.',
+};
+
+export default async function ProfessorProfilePage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session || session.user.role !== 'professor') {
+    redirect('/login');
+  }
+
+  // Fetch projects and notifications in parallel
+  const [allProjects, userNotifications] = await Promise.all([
+    db.select().from(project),
+    db
+      .select()
+      .from(notification)
+      .where(eq(notification.userId, session.user.id))
+      .orderBy(desc(notification.createdAt)),
+  ]);
+
+  const userProjectsSidebarData = allProjects.map((p) => ({
+    id: p.id,
+    name: p.name,
+  }));
+
+  return (
+    <DashboardLayout userProjects={userProjectsSidebarData}>
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-secondary text-4xl font-semibold tracking-tighter uppercase">
+            User Profile
+          </h1>
+        </div>
+
+        <ProfileView
+          user={{
+            id: session.user.id,
+            name: session.user.name,
+            email: session.user.email,
+            role: session.user.role,
+          }}
+          initialNotifications={userNotifications}
+        />
+      </div>
+    </DashboardLayout>
+  );
+}

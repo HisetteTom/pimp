@@ -1,11 +1,22 @@
-import { db } from "@/db";
-import { project, team, user, task, livrable, projectEnrollment, checkpoint, checkpointNote, evaluationCriterion, teamEvaluationScore } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { eq, and, inArray } from "drizzle-orm";
-import { headers } from "next/headers";
-import { notFound, redirect } from "next/navigation";
-import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { SupervisorWorkspace } from "./supervisor-workspace";
+import { db } from '@/db';
+import {
+  project,
+  team,
+  user,
+  task,
+  livrable,
+  projectEnrollment,
+  checkpoint,
+  checkpointNote,
+  evaluationCriterion,
+  teamEvaluationScore,
+} from '@/db/schema';
+import { auth } from '@/lib/auth';
+import { eq, and, inArray } from 'drizzle-orm';
+import { headers } from 'next/headers';
+import { notFound, redirect } from 'next/navigation';
+import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import { SupervisorWorkspace } from './supervisor-workspace';
 
 export default async function SupervisorTeamPage({
   params,
@@ -25,8 +36,8 @@ export default async function SupervisorTeamPage({
   });
 
   const role = session?.user?.role;
-  if (!session || (role !== "professor" && role !== "jury")) {
-    redirect("/login");
+  if (!session || (role !== 'professor' && role !== 'jury')) {
+    redirect('/login');
   }
 
   const [projectData, allProjects, teamData] = await Promise.all([
@@ -47,16 +58,19 @@ export default async function SupervisorTeamPage({
   const teamEnrollments = await db
     .select()
     .from(projectEnrollment)
-    .where(
-      and(
-        eq(projectEnrollment.projectId, projectId),
-        eq(projectEnrollment.teamId, teamId)
-      )
-    );
+    .where(and(eq(projectEnrollment.projectId, projectId), eq(projectEnrollment.teamId, teamId)));
 
   const teamMemberIds = teamEnrollments.map((e) => e.userId);
-  
-  const [teamMembers, teamTasks, teamLivrables, checkpoints, checkpointNotes, criteriaData, scoresData] = await Promise.all([
+
+  const [
+    teamMembers,
+    teamTasks,
+    teamLivrables,
+    checkpoints,
+    checkpointNotes,
+    criteriaData,
+    scoresData,
+  ] = await Promise.all([
     teamMemberIds.length > 0
       ? db.query.user.findMany({ where: inArray(user.id, teamMemberIds) })
       : Promise.resolve([]),
@@ -87,12 +101,20 @@ export default async function SupervisorTeamPage({
     name: p.name,
   }));
 
+  const membersWithResponsability = teamMembers.map((m) => {
+    const enroll = teamEnrollments.find((e) => e.userId === m.id);
+    return {
+      ...m,
+      responsabilityId: enroll?.responsabilityId ?? null,
+    };
+  });
+
   return (
     <DashboardLayout userProjects={userProjectsData}>
       <SupervisorWorkspace
         project={projectData}
         team={teamData}
-        members={teamMembers}
+        members={membersWithResponsability}
         tasks={teamTasks}
         livrables={teamLivrables}
         checkpoints={checkpoints}

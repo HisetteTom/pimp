@@ -1,27 +1,29 @@
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { NotificationListener } from '@/components/dashboard/notification-listener';
 
-export default async function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
   if (!session) {
-    redirect("/login");
+    redirect('/login');
   }
 
   const user = session.user;
 
   // Role based redirection
- 
-  if (user.role !== "student" && user.role !== "professor" && user.role !== "jury") {
-    redirect("/login");
+
+  if (user.role !== 'student' && user.role !== 'professor' && user.role !== 'jury') {
+    redirect('/login');
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <NotificationListener />
+      {children}
+    </>
+  );
 }

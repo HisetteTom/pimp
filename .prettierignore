@@ -1,0 +1,12 @@
+.next
+node_modules
+dist
+out
+build
+*.tsbuildinfo
+next-env.d.ts
+public
+coverage
+.agents
+.antigravity
+.github

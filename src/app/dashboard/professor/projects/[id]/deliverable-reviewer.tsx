@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { validateDeliverable } from "../../actions";
-import { Loader2, ExternalLink, CheckSquare, XCircle, AlertCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { validateDeliverable } from '../../actions';
+import { Loader2, ExternalLink, CheckSquare, XCircle, AlertCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface DeliverableReviewerProps {
   deliverableId: number;
@@ -24,16 +24,16 @@ export function DeliverableReviewer({
   deliverableId,
   projectId,
   deliverableName,
-  deliverableSource = "",
+  deliverableSource = '',
   initialStatus,
-  initialFeedback = "",
+  initialFeedback = '',
   readOnly = false,
 }: DeliverableReviewerProps) {
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
 
-  const [status, setStatus] = useState(initialStatus || "pending");
-  const [feedback, setFeedback] = useState(initialFeedback || "");
+  const [status, setStatus] = useState(initialStatus || 'pending');
+  const [feedback, setFeedback] = useState(initialFeedback || '');
 
   const handleValidate = (newStatus: string) => {
     startTransition(async () => {
@@ -43,7 +43,7 @@ export function DeliverableReviewer({
         toast.success(`Deliverable "${deliverableName}" marked as ${newStatus}`);
         refresh();
       } catch (err) {
-        toast.error("Failed to update deliverable status");
+        toast.error('Failed to update deliverable status');
         console.error(err);
       }
     });
@@ -51,20 +51,32 @@ export function DeliverableReviewer({
 
   const getStatusBadge = (s: string) => {
     switch (s) {
-      case "approved":
-        return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white font-black uppercase text-[9px] tracking-wider rounded-none">Approved</Badge>;
-      case "rejected":
-        return <Badge className="bg-red-500 hover:bg-red-600 text-white font-black uppercase text-[9px] tracking-wider rounded-none">Rejected</Badge>;
+      case 'approved':
+        return (
+          <Badge className="rounded-none bg-emerald-500 text-[9px] font-black tracking-wider text-white uppercase hover:bg-emerald-600">
+            Approved
+          </Badge>
+        );
+      case 'rejected':
+        return (
+          <Badge className="rounded-none bg-red-500 text-[9px] font-black tracking-wider text-white uppercase hover:bg-red-600">
+            Rejected
+          </Badge>
+        );
       default:
-        return <Badge className="bg-amber-500 hover:bg-amber-600 text-white font-black uppercase text-[9px] tracking-wider rounded-none">Pending Review</Badge>;
+        return (
+          <Badge className="rounded-none bg-amber-500 text-[9px] font-black tracking-wider text-white uppercase hover:bg-amber-600">
+            Pending Review
+          </Badge>
+        );
     }
   };
 
   return (
-    <div className="p-4 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/20 space-y-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.02)] transition-colors hover:border-zinc-300 dark:hover:border-zinc-700">
+    <div className="space-y-4 border border-zinc-200 bg-zinc-50/50 p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.02)] transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/20 dark:hover:border-zinc-700">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h4 className="text-xs font-semibold uppercase tracking-tight text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+          <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-tight text-zinc-800 uppercase dark:text-zinc-200">
             {deliverableName}
             {getStatusBadge(status)}
           </h4>
@@ -73,7 +85,7 @@ export function DeliverableReviewer({
               href={deliverableSource}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-600 hover:text-purple-700 underline decoration-2 underline-offset-2 mt-1 uppercase"
+              className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-purple-600 uppercase underline decoration-2 underline-offset-2 hover:text-purple-700"
             >
               <ExternalLink className="size-3" />
               Open Submission Resource
@@ -84,13 +96,16 @@ export function DeliverableReviewer({
 
       <div className="space-y-3 pt-1">
         <div className="space-y-1.5">
-          <Label htmlFor={`deliv-feed-${deliverableId}`} className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+          <Label
+            htmlFor={`deliv-feed-${deliverableId}`}
+            className="text-[9px] font-black tracking-widest text-zinc-400 uppercase"
+          >
             Review Comments / Feedback
           </Label>
           <Textarea
             id={`deliv-feed-${deliverableId}`}
             rows={2}
-            className="border-2 focus-visible:ring-purple-500 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors rounded-none p-2 resize-none text-xs bg-card"
+            className="bg-card resize-none rounded-none border-2 border-zinc-200 p-2 text-xs transition-colors hover:border-zinc-300 focus-visible:ring-purple-500 dark:border-zinc-800 dark:hover:border-zinc-700"
             value={feedback}
             onChange={(e) => setFeedback(e.target.value)}
             disabled={isPending || readOnly}
@@ -103,11 +118,11 @@ export function DeliverableReviewer({
               type="button"
               variant="unstyled"
               size="sm"
-              onClick={() => handleValidate("approved")}
+              onClick={() => handleValidate('approved')}
               disabled={isPending}
-              className="h-8 border-transparent bg-emerald-600 hover:bg-emerald-700 dark:hover:bg-emerald-700 text-white hover:text-white font-black uppercase text-[10px] tracking-wider rounded-none shadow-[2px_2px_0px_0px_rgba(16,185,129,0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer flex items-center gap-1"
+              className="flex h-8 cursor-pointer items-center gap-1 rounded-none border-transparent bg-emerald-600 text-[10px] font-black tracking-wider text-white uppercase shadow-[2px_2px_0px_0px_rgba(16,185,129,0.2)] hover:bg-emerald-700 hover:text-white active:translate-x-[1px] active:translate-y-[1px] active:shadow-none dark:hover:bg-emerald-700"
             >
-              {isPending && status === "approved" ? (
+              {isPending && status === 'approved' ? (
                 <Loader2 className="size-3 animate-spin" />
               ) : (
                 <CheckSquare className="size-3" />
@@ -119,11 +134,11 @@ export function DeliverableReviewer({
               type="button"
               variant="unstyled"
               size="sm"
-              onClick={() => handleValidate("rejected")}
+              onClick={() => handleValidate('rejected')}
               disabled={isPending}
-              className="h-8 border-transparent bg-red-600 hover:bg-red-700 dark:hover:bg-red-700 text-white hover:text-white font-black uppercase text-[10px] tracking-wider rounded-none shadow-[2px_2px_0px_0px_rgba(239,68,68,0.2)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none cursor-pointer flex items-center gap-1"
+              className="flex h-8 cursor-pointer items-center gap-1 rounded-none border-transparent bg-red-600 text-[10px] font-black tracking-wider text-white uppercase shadow-[2px_2px_0px_0px_rgba(239,68,68,0.2)] hover:bg-red-700 hover:text-white active:translate-x-[1px] active:translate-y-[1px] active:shadow-none dark:hover:bg-red-700"
             >
-              {isPending && status === "rejected" ? (
+              {isPending && status === 'rejected' ? (
                 <Loader2 className="size-3 animate-spin" />
               ) : (
                 <XCircle className="size-3" />
@@ -131,16 +146,16 @@ export function DeliverableReviewer({
               Reject
             </Button>
 
-            {status !== "pending" && (
+            {status !== 'pending' && (
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => handleValidate("pending")}
+                onClick={() => handleValidate('pending')}
                 disabled={isPending}
-                className="h-8 border-2 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-600 dark:text-zinc-400 font-bold uppercase text-[10px] tracking-wider rounded-none cursor-pointer flex items-center gap-1"
+                className="flex h-8 cursor-pointer items-center gap-1 rounded-none border-2 border-zinc-200 text-[10px] font-bold tracking-wider text-zinc-600 uppercase hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900"
               >
-                {isPending && status === "pending" ? (
+                {isPending && status === 'pending' ? (
                   <Loader2 className="size-3 animate-spin" />
                 ) : (
                   <AlertCircle className="size-3" />

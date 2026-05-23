@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -56,17 +56,17 @@
   --card-foreground: oklch(0.2 0.05 280);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2 0.05 280);
-  
+
   /* Primary: Solid Orange */
-  --primary: oklch(0.7 0.2 45); 
+  --primary: oklch(0.7 0.2 45);
   --primary-rgb: 255, 120, 0; /* Approximate for shadows */
   --primary-foreground: oklch(1 0 0);
-  
+
   /* Secondary: Solid Purple */
   --secondary: oklch(0.5 0.2 280);
   --secondary-rgb: 130, 0, 255; /* Approximate for shadows */
   --secondary-foreground: oklch(1 0 0);
-  
+
   --muted: oklch(0.95 0.01 280);
   --muted-foreground: oklch(0.4 0.05 280);
   --accent: oklch(0.9 0.05 45 / 0.1);
@@ -75,7 +75,7 @@
   --border: oklch(0.9 0.02 280);
   --input: oklch(0.9 0.02 280);
   --ring: oklch(0.7 0.2 45);
-  
+
   --radius: 0.75rem;
 }
 
@@ -87,17 +87,17 @@
   --card-foreground: oklch(0.95 0.02 280);
   --popover: oklch(0.18 0.03 280);
   --popover-foreground: oklch(0.95 0.02 280);
-  
+
   /* Primary: Solid Orange */
   --primary: oklch(0.75 0.2 45);
   --primary-rgb: 255, 140, 20;
   --primary-foreground: oklch(0.1 0.05 280);
-  
+
   /* Secondary: Solid Purple */
   --secondary: oklch(0.6 0.2 280);
   --secondary-rgb: 150, 50, 255;
   --secondary-foreground: oklch(1 0 0);
-  
+
   --muted: oklch(0.25 0.03 280);
   --muted-foreground: oklch(0.7 0.02 280);
   --accent: oklch(0.3 0.1 45 / 0.2);

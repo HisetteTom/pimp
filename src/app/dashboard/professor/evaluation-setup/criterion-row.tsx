@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Edit2, Trash, Check, Loader2 } from "lucide-react";
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Edit2, Trash, Check, Loader2 } from 'lucide-react';
 
 interface Criterion {
   id: number;
@@ -49,22 +49,28 @@ export function CriterionRow({
 }: CriterionRowProps) {
   if (isEditing) {
     return (
-      <Card className="border-2 border-zinc-200 dark:border-zinc-800 rounded-none bg-card shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
-        <CardContent className="pt-6 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="sm:col-span-3 space-y-1.5">
-              <Label htmlFor={`edit-name-${criterion.id}`} className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+      <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] dark:border-zinc-800">
+        <CardContent className="space-y-4 pt-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <div className="space-y-1.5 sm:col-span-3">
+              <Label
+                htmlFor={`edit-name-${criterion.id}`}
+                className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase"
+              >
                 Criterion Name
               </Label>
               <Input
                 id={`edit-name-${criterion.id}`}
                 value={editName}
                 onChange={(e) => onNameChange(e.target.value)}
-                className="rounded-none border-2 border-zinc-200 dark:border-zinc-800 focus-visible:ring-0 focus-visible:border-purple-500 h-9 font-semibold"
+                className="h-9 rounded-none border-2 border-zinc-200 font-semibold focus-visible:border-purple-500 focus-visible:ring-0 dark:border-zinc-800"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor={`edit-points-${criterion.id}`} className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+              <Label
+                htmlFor={`edit-points-${criterion.id}`}
+                className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase"
+              >
                 Max Points
               </Label>
               <Input
@@ -73,12 +79,15 @@ export function CriterionRow({
                 min="1"
                 value={editMaxPoints}
                 onChange={(e) => onMaxPointsChange(parseInt(e.target.value) || 0)}
-                className="rounded-none border-2 border-zinc-200 dark:border-zinc-800 focus-visible:ring-0 focus-visible:border-purple-500 h-9 font-semibold"
+                className="h-9 rounded-none border-2 border-zinc-200 font-semibold focus-visible:border-purple-500 focus-visible:ring-0 dark:border-zinc-800"
               />
             </div>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor={`edit-desc-${criterion.id}`} className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+            <Label
+              htmlFor={`edit-desc-${criterion.id}`}
+              className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase"
+            >
               Description (Optional)
             </Label>
             <Textarea
@@ -86,7 +95,7 @@ export function CriterionRow({
               value={editDescription}
               onChange={(e) => onDescriptionChange(e.target.value)}
               rows={2}
-              className="rounded-none border-2 border-zinc-200 dark:border-zinc-800 focus-visible:ring-0 focus-visible:border-purple-500 font-medium text-xs resize-none"
+              className="resize-none rounded-none border-2 border-zinc-200 text-xs font-medium focus-visible:border-purple-500 focus-visible:ring-0 dark:border-zinc-800"
             />
           </div>
           <div className="flex items-center gap-3">
@@ -94,7 +103,7 @@ export function CriterionRow({
               variant="unstyled"
               onClick={onUpdate}
               disabled={isPending}
-              className="flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 active:scale-95 transition-all h-9"
+              className="flex h-9 items-center justify-center gap-2 bg-zinc-900 px-4 py-2 text-xs font-bold tracking-wider text-white uppercase transition-all hover:bg-zinc-800 active:scale-95 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
             >
               {isPending ? (
                 <Loader2 className="size-3 animate-spin" />
@@ -104,8 +113,9 @@ export function CriterionRow({
               Save Changes
             </Button>
             <button
+              type="button"
               onClick={onCancelEdit}
-              className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer"
+              className="cursor-pointer px-4 py-2 text-xs font-bold tracking-wider text-zinc-500 uppercase hover:text-zinc-900 dark:hover:text-zinc-100"
             >
               Cancel
             </button>
@@ -116,35 +126,35 @@ export function CriterionRow({
   }
 
   return (
-    <div className="border-2 border-zinc-200 dark:border-zinc-800 bg-card p-5 flex items-start justify-between gap-4 transition-all hover:border-zinc-400 dark:hover:border-zinc-600">
+    <div className="bg-card flex items-start justify-between gap-4 border-2 border-zinc-200 p-5 transition-all hover:border-zinc-400 dark:border-zinc-800 dark:hover:border-zinc-600">
       <div className="space-y-1.5 pr-2">
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <h4 className="text-[13px] font-semibold uppercase text-zinc-900 dark:text-zinc-100">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h4 className="text-[13px] font-semibold text-zinc-900 uppercase dark:text-zinc-100">
             {criterion.name}
           </h4>
-          <Badge className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 font-bold text-[9px] uppercase tracking-wider rounded-none px-2.5 py-0.5">
+          <Badge className="rounded-none border border-zinc-200 bg-zinc-100 px-2.5 py-0.5 text-[9px] font-bold tracking-wider text-zinc-700 uppercase dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
             Score Max: {criterion.maxPoints} pts
           </Badge>
         </div>
         {criterion.description && (
-          <p className="text-xs font-medium text-zinc-500">
-            {criterion.description}
-          </p>
+          <p className="text-xs font-medium text-zinc-500">{criterion.description}</p>
         )}
       </div>
 
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex shrink-0 items-center gap-1">
         <button
+          type="button"
           onClick={onStartEdit}
           title="Edit Criterion"
-          className="size-8 rounded border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 flex items-center justify-center transition-all cursor-pointer"
+          className="flex size-8 cursor-pointer items-center justify-center rounded border border-zinc-200 text-zinc-500 transition-all hover:bg-zinc-50 hover:text-zinc-900 dark:border-zinc-800 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
         >
           <Edit2 className="size-3.5" />
         </button>
         <button
+          type="button"
           onClick={onDelete}
           title="Delete Criterion"
-          className="size-8 rounded border border-rose-200 text-rose-500/80 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all cursor-pointer"
+          className="flex size-8 cursor-pointer items-center justify-center rounded border border-rose-200 text-rose-500/80 transition-all hover:bg-rose-50 hover:text-rose-600"
         >
           <Trash className="size-3.5" />
         </button>
