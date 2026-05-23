@@ -33,7 +33,7 @@ export interface Task {
   assignees?: string | null;
 }
 
-export interface PieGradientProps {
+interface PieGradientProps {
   cx?: number;
   cy?: number;
   innerRadius?: number;
@@ -49,7 +49,7 @@ export interface PieGradientProps {
 
 const emptySubscribe = () => () => {};
 
-export const PieGradient = (props: PieGradientProps) => {
+const PieGradient = (props: PieGradientProps) => {
   const entryName = props.payload?.name || '';
   const colorMap: Record<string, string> = {
     'To Do': '#a1a1aa',

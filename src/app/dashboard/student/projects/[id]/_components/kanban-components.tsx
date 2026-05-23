@@ -19,7 +19,7 @@ export interface Task {
 
 const emptySubscribe = () => () => {};
 
-export function ClientDate({ date }: { date: string | Date }) {
+function ClientDate({ date }: { date: string | Date }) {
   const isClient = useSyncExternalStore(
     emptySubscribe,
     () => true,

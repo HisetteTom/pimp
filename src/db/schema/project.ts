@@ -1,5 +1,4 @@
-import { pgTable, integer, date, text, AnyPgColumn } from 'drizzle-orm/pg-core';
-import { task } from './task';
+import { pgTable, integer, date, text } from 'drizzle-orm/pg-core';
 
 export const project = pgTable('project', {
   id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
@@ -8,7 +7,6 @@ export const project = pgTable('project', {
   status: text('status').notNull().default('proposed'), // proposed, validated, ongoing, late, delivered, presented, closed
   dateStart: date('date-start'),
   dateEnd: date('date-end'),
-  taskId: integer('task_id').references((): AnyPgColumn => task.id),
   maxGroups: integer('max_groups').notNull().default(8),
   maxMembersPerGroup: integer('max_members_per_group').notNull().default(5),
 });
