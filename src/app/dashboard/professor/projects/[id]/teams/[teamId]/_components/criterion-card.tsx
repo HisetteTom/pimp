@@ -63,6 +63,7 @@ export function CriterionCard({
           <div className="relative">
             <input
               id={`crit-score-${criterion.id}`}
+              aria-label="Score"
               type="number"
               step="0.5"
               min="0"
@@ -94,6 +95,7 @@ export function CriterionCard({
           </label>
           <input
             id={`crit-comment-${criterion.id}`}
+            aria-label="Comments"
             type="text"
             value={scoreData.comment || ""}
             onChange={(e) => onCommentChange(criterion.id, e.target.value)}

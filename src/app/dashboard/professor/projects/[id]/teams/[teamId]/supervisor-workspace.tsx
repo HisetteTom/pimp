@@ -454,6 +454,7 @@ export function SupervisorNotesEditor({ teamId, projectId, initialNotes, readOnl
             <div className="flex-1 max-w-md">
               <input
                 type="text"
+                aria-label="New Section Title"
                 value={newSectionTitle}
                 onChange={(e) => setNewSectionTitle(e.target.value)}
                 className="w-full text-xs font-bold uppercase border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2.5 outline-none rounded-none focus:border-primary"
@@ -481,6 +482,7 @@ export function SupervisorNotesEditor({ teamId, projectId, initialNotes, readOnl
                 <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-2">
                   <input
                     type="text"
+                    aria-label="Section Title"
                     value={section.title}
                     onChange={(e) => handleUpdateSectionTitle(section.id, e.target.value)}
                     disabled={readOnly}
@@ -854,12 +856,14 @@ function CheckpointRow({ checkpoint, teamId, projectId, savedNoteText, onRefresh
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               <input
                 type="text"
+                aria-label="Checkpoint Title"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
                 className="flex-1 text-xs font-bold uppercase border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2.5 outline-none rounded-none focus:border-primary"
               />
               <input
                 type="date"
+                aria-label="Checkpoint Due Date"
                 value={editDueDate}
                 onChange={(e) => setEditDueDate(e.target.value)}
                 className="text-xs font-bold uppercase border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2.5 outline-none rounded-none focus:border-primary font-mono"
@@ -1026,6 +1030,7 @@ export function SupervisorDatesSection({
                 <input
                   id="new-title"
                   type="text"
+                  aria-label="New Checkpoint Title"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   className="w-full text-xs font-bold uppercase border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2.5 outline-none rounded-none focus:border-primary"
@@ -1036,6 +1041,7 @@ export function SupervisorDatesSection({
                 <input
                   id="new-due-date"
                   type="date"
+                  aria-label="New Checkpoint Due Date"
                   value={newDueDate}
                   onChange={(e) => setNewDueDate(e.target.value)}
                   className="w-full text-xs font-bold uppercase border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-2.5 outline-none rounded-none focus:border-primary font-mono"

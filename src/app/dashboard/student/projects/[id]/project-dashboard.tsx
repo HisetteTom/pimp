@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LayoutDashboard, CheckSquare, FileUp, Kanban as KanbanIcon, Clock, Trash2, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMemo, useState, useEffect, useSyncExternalStore } from "react";
+import { useMemo, useState, useEffect, useSyncExternalStore, useRef } from "react";
 import dynamic from 'next/dynamic';
 import { TaskDialog } from "./task-dialog";
 import { KanbanBoard } from "./kanban-board";
@@ -439,12 +439,14 @@ export function ProjectDashboard({
   const now = useSyncExternalStore(emptySubscribe, getMountTime, () => null);
 
   const [activeTab, setActiveTab] = useState(initialTab || "overview");
+  const prevInitialTab = useRef(initialTab);
 
-  useEffect(() => {
+  if (initialTab !== prevInitialTab.current) {
+    prevInitialTab.current = initialTab;
     if (initialTab && ["overview", "list", "kanban", "deliverables", "dates"].includes(initialTab)) {
       setActiveTab(initialTab);
     }
-  }, [initialTab]);
+  }
 
   const timelineProgress = useMemo(() => {
     if (!project.dateStart || !project.dateEnd || !now) return 0;

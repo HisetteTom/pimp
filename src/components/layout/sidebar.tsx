@@ -186,6 +186,7 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
 
             <div className="px-3 pt-2">
               <button 
+                type="button"
                 onClick={handleLeaveTeam}
                 disabled={isPending}
                 className="w-full text-[10px] font-black text-red-500 hover:text-white hover:bg-red-500 py-2 border border-red-200 dark:border-red-900/50 rounded uppercase tracking-widest transition-all flex items-center justify-center gap-2 active:scale-[0.98]"

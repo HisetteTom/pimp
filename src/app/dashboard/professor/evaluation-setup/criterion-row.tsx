@@ -104,6 +104,7 @@ export function CriterionRow({
               Save Changes
             </Button>
             <button
+              type="button"
               onClick={onCancelEdit}
               className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer"
             >
@@ -135,6 +136,7 @@ export function CriterionRow({
 
       <div className="flex items-center gap-1 shrink-0">
         <button
+          type="button"
           onClick={onStartEdit}
           title="Edit Criterion"
           className="size-8 rounded border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-900 flex items-center justify-center transition-all cursor-pointer"
@@ -142,6 +144,7 @@ export function CriterionRow({
           <Edit2 className="size-3.5" />
         </button>
         <button
+          type="button"
           onClick={onDelete}
           title="Delete Criterion"
           className="size-8 rounded border border-rose-200 text-rose-500/80 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all cursor-pointer"

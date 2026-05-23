@@ -271,26 +271,19 @@ function SortableTaskCard({ task, members, onSelect }: { task: Task; members: an
   };
 
   return (
-    <div 
+    <button 
+      type="button"
       ref={setNodeRef} 
       style={style} 
       {...attributes} 
       {...listeners}
-      role="button"
-      tabIndex={0}
       onClick={(e) => {
         onSelect(task);
       }}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect(task);
-        }
-      }}
-      className="focus:outline-none cursor-pointer w-full text-left"
+      className="focus:outline-none cursor-pointer w-full text-left bg-transparent border-0 p-0 block"
     >
       <KanbanCard task={task} members={members} />
-    </div>
+    </button>
   );
 }
 

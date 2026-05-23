@@ -38,6 +38,7 @@ export function CriterionBuilderCard({
             New Criterion Builder
           </CardTitle>
           <button
+            type="button"
             onClick={onCancel}
             className="text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer"
           >
@@ -99,6 +100,7 @@ export function CriterionBuilderCard({
             Save Grid Element
           </Button>
           <button
+            type="button"
             onClick={onCancel}
             className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 cursor-pointer"
           >

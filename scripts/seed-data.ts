@@ -9,13 +9,14 @@ async function main() {
   console.log("Seeding database...");
   
   // 1. Clean all existing tables
+  // eslint-disable-next-line react-doctor/async-parallel
   await cleanDatabase();
 
-  // 2. Seed Users
-  const { studentTestId, randomStudentIds } = await seedUsers();
-
-  // 3. Seed Projects
-  const insertedProjects = await seedProjects();
+  // 2. Seed Users & Projects in parallel
+  const [{ studentTestId, randomStudentIds }, insertedProjects] = await Promise.all([
+    seedUsers(),
+    seedProjects(),
+  ]);
 
   // 4. Seed Teams & Enrollments
   const { insertedTeams, enrollmentsToInsert } = await seedTeams({

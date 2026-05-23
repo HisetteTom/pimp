@@ -15,8 +15,9 @@ export default async function ProjectPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ tab?: string }>;
 }) {
-  const { id } = await params;
-  const { tab } = await searchParams;
+  const [resolvedParams, resolvedSearchParams] = await Promise.all([params, searchParams]);
+  const { id } = resolvedParams;
+  const { tab } = resolvedSearchParams;
   const projectId = parseInt(id);
 
   if (isNaN(projectId)) {

@@ -1,4 +1,4 @@
-import { diagnose } from "react-doctor/api";
+import { execSync } from "child_process";
 import { readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
@@ -6,17 +6,21 @@ async function run() {
   console.log("Running react-doctor diagnosis...");
   
   try {
-    const result = await diagnose(".");
+    // Run CLI directly and parse JSON output to isolate from node_modules imports
+    const stdout = execSync("bunx react-doctor@latest --json", { encoding: "utf-8" });
     
-    const scoreObj = result.score;
-    if (!scoreObj) {
-      console.error("No score returned from react-doctor.");
+    const jsonStart = stdout.indexOf("{");
+    if (jsonStart === -1) {
+      console.error("Invalid output: JSON object not found.");
       process.exit(1);
     }
-
-    const score = typeof scoreObj === "object" ? scoreObj.score : scoreObj;
+    
+    const jsonStr = stdout.substring(jsonStart);
+    const report = JSON.parse(jsonStr);
+    
+    const score = report.summary?.score;
     if (typeof score !== "number") {
-      console.error("Failed to get a numeric score from react-doctor.", scoreObj);
+      console.error("Failed to get a numeric score from react-doctor report.", report);
       process.exit(1);
     }
 

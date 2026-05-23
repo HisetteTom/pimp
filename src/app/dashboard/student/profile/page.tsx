@@ -107,7 +107,7 @@ export default async function StudentProfilePage() {
             id: session.user.id,
             name: session.user.name,
             email: session.user.email,
-            role: session.user.role,
+            role: session.user.role ?? null,
           }}
           initialNotifications={userNotifications}
         />

@@ -44,6 +44,7 @@ export function ProjectsSidebar({
 
           return (
             <button
+              type="button"
               key={p.id}
               onClick={() => onSelectProject(p.id)}
               className={`w-full text-left p-4 border-2 transition-all duration-200 cursor-pointer flex items-center justify-between ${

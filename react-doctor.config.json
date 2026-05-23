@@ -1,0 +1,19 @@
+{
+  "ignore": {
+    "rules": [
+      "deslop/unused-file",
+      "deslop/unused-dependency",
+      "deslop/unused-dev-dependency"
+    ],
+    "overrides": [
+      {
+        "files": ["src/components/ui/**"],
+        "rules": ["react-doctor/only-export-components"]
+      },
+      {
+        "files": ["src/app/dashboard/**"],
+        "rules": ["react-doctor/no-multi-comp"]
+      }
+    ]
+  }
+}

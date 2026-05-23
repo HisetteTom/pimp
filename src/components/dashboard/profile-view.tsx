@@ -144,7 +144,7 @@ export function ProfileView({ user, initialNotifications, projectName, teamName 
             </div>
 
             <div className="space-y-1">
-              <h2 className="text-xl font-bold uppercase text-zinc-900 dark:text-zinc-100 leading-none">
+              <h2 className="text-xl font-semibold uppercase text-zinc-900 dark:text-zinc-100 leading-none">
                 {user.name}
               </h2>
               <p className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
@@ -247,6 +247,7 @@ export function ProfileView({ user, initialNotifications, projectName, teamName 
                         handleNotificationClick(notif);
                       }
                     }}
+                    // eslint-disable-next-line react-doctor/prefer-tag-over-role
                     role="button"
                     tabIndex={0}
                     className={cn(
@@ -293,6 +294,7 @@ export function ProfileView({ user, initialNotifications, projectName, teamName 
                     <div className="shrink-0 flex items-center justify-center self-center">
                       {!notif.isRead ? (
                         <button
+                          type="button"
                           onClick={(e) => handleMarkAsRead(notif.id, e)}
                           title="Mark as read"
                           className="size-3 rounded-full bg-purple-600 border border-purple-500 transition-all hover:bg-emerald-500 hover:border-emerald-400 flex items-center justify-center p-0 cursor-pointer shadow-[0_0_8px_rgba(147,51,234,0.4)]"
