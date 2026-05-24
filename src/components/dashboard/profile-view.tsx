@@ -15,6 +15,8 @@ import {
   Loader2,
   Calendar,
   FileText,
+  Clock,
+  AlertTriangle,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -127,6 +129,12 @@ export function ProfileView({
         return <MessageSquare className="size-4.5 text-amber-500" />;
       case 'note_added':
         return <FileText className="size-4.5 text-blue-500" />;
+      case 'task_deadline_tomorrow':
+        return <Clock className="size-4.5 animate-pulse text-rose-500" />;
+      case 'checkpoint_tomorrow':
+        return <Calendar className="size-4.5 text-amber-500" />;
+      case 'project_end_tomorrow':
+        return <AlertTriangle className="size-4.5 animate-pulse text-red-600" />;
       default:
         return <Bell className="size-4.5 text-zinc-500" />;
     }

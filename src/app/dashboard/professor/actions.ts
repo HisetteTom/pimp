@@ -210,32 +210,6 @@ export async function saveTeamNotes(teamId: number, notes: string, projectId: nu
   try {
     await db.update(team).set({ notes }).where(eq(team.id, teamId));
 
-    // Notify team members about the new/updated note
-    try {
-      const teamMembers = await db
-        .select()
-        .from(projectEnrollment)
-        .where(eq(projectEnrollment.teamId, teamId));
-
-      const [teamData] = await db.select().from(team).where(eq(team.id, teamId)).limit(1);
-
-      if (teamMembers.length > 0) {
-        await Promise.all(
-          teamMembers.map((m) =>
-            createNotification({
-              userId: m.userId,
-              title: 'New Team Note Added',
-              message: `The professor added/updated notes for your team "${teamData?.name || ''}".`,
-              type: 'note_added',
-              link: `/dashboard/student/projects/${projectId}?tab=overview`,
-            }),
-          ),
-        );
-      }
-    } catch (notifErr) {
-      console.error('Failed to trigger team note notifications:', notifErr);
-    }
-
     revalidatePath(`/dashboard/professor/projects/${projectId}`);
   } catch (error) {
     console.error('Failed to save team notes:', error);
@@ -348,36 +322,6 @@ export async function saveCheckpointNote(
         teamId,
         notes,
       });
-    }
-
-    // Notify team members about the new/updated checkpoint note
-    try {
-      const teamMembers = await db
-        .select()
-        .from(projectEnrollment)
-        .where(eq(projectEnrollment.teamId, teamId));
-
-      const [cpData] = await db
-        .select()
-        .from(checkpoint)
-        .where(eq(checkpoint.id, checkpointId))
-        .limit(1);
-
-      if (teamMembers.length > 0) {
-        await Promise.all(
-          teamMembers.map((m) =>
-            createNotification({
-              userId: m.userId,
-              title: 'New Checkpoint Note Added',
-              message: `The professor added a note for checkpoint "${cpData?.title || ''}".`,
-              type: 'note_added',
-              link: `/dashboard/student/projects/${projectId}?tab=dates`,
-            }),
-          ),
-        );
-      }
-    } catch (notifErr) {
-      console.error('Failed to trigger checkpoint note notifications:', notifErr);
     }
 
     revalidatePath(`/dashboard/professor/projects/${projectId}/teams/${teamId}`);

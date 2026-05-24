@@ -185,6 +185,7 @@ export async function createTask(data: {
 
   if (!session) throw new Error('Unauthorized');
 
+  const now = new Date();
   await db.insert(task).values({
     name: data.name,
     description: data.description,
@@ -194,6 +195,8 @@ export async function createTask(data: {
     teamId: data.teamId,
     assigneeId: data.assigneeId,
     assignees: data.assignees,
+    inProgressAt: data.status === 'in_progress' || data.status === 'done' ? now : null,
+    completedAt: data.status === 'done' ? now : null,
   });
 
   // Trigger task assigned notifications
@@ -233,7 +236,33 @@ export async function updateTaskStatus(taskId: number, status: string, projectId
 
   if (!session) throw new Error('Unauthorized');
 
-  await db.update(task).set({ status }).where(eq(task.id, taskId));
+  const now = new Date();
+  const existingTask = await db.query.task.findFirst({
+    where: eq(task.id, taskId),
+  });
+
+  const updateData: {
+    status: string;
+    inProgressAt?: Date | null;
+    completedAt?: Date | null;
+  } = { status };
+
+  if (status === 'todo') {
+    updateData.inProgressAt = null;
+    updateData.completedAt = null;
+  } else if (status === 'in_progress') {
+    if (!existingTask?.inProgressAt) {
+      updateData.inProgressAt = now;
+    }
+    updateData.completedAt = null;
+  } else if (status === 'done') {
+    if (!existingTask?.inProgressAt) {
+      updateData.inProgressAt = existingTask?.createdAt || now;
+    }
+    updateData.completedAt = now;
+  }
+
+  await db.update(task).set(updateData).where(eq(task.id, taskId));
 
   revalidatePath(`/dashboard/student/projects/${projectId}`);
 }

@@ -10,7 +10,13 @@ import {
   ClipboardCheck,
   ArrowLeft,
   Kanban as KanbanIcon,
+  Clock,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const ProjectCalendar = dynamic(() => import('@/components/dashboard/project-calendar'), {
+  ssr: false,
+});
 import { useMemo, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { SupervisorFeedbackCard } from './supervisor-feedback-card';
@@ -200,8 +206,15 @@ export function SupervisorWorkspace({
               value="dates"
               className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
             >
-              <Calendar className="size-4" />
+              <Clock className="size-4" />
               Dates
+            </TabsTrigger>
+            <TabsTrigger
+              value="calendar"
+              className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
+            >
+              <Calendar className="size-4" />
+              Calendar
             </TabsTrigger>
             <TabsTrigger
               value="notes"
@@ -321,6 +334,16 @@ export function SupervisorWorkspace({
                 checkpoints={checkpoints}
                 checkpointNotes={checkpointNotes}
                 readOnly={role === 'jury'}
+              />
+            </TabsContent>
+
+            <TabsContent value="calendar" className="mt-0">
+              <ProjectCalendar
+                project={project}
+                tasks={tasks}
+                checkpoints={checkpoints}
+                checkpointNotes={checkpointNotes}
+                members={members}
               />
             </TabsContent>
 
