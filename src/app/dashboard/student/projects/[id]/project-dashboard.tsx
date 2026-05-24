@@ -1,7 +1,14 @@
 'use client';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutDashboard, CheckSquare, FileUp, Kanban as KanbanIcon, Clock } from 'lucide-react';
+import {
+  LayoutDashboard,
+  CheckSquare,
+  FileUp,
+  Kanban as KanbanIcon,
+  Clock,
+  Calendar as CalendarIcon,
+} from 'lucide-react';
 import { useState, useMemo, useSyncExternalStore } from 'react';
 import {
   StudentOverviewSection,
@@ -13,6 +20,12 @@ import {
 } from './_components/student-sections';
 import { StudentDatesSection } from './_components/student-dates-section';
 import { Task } from './_components/student-charts';
+import dynamic from 'next/dynamic';
+import { TaskDetailDialog } from './task-detail-dialog';
+
+const ProjectCalendar = dynamic(() => import('@/components/dashboard/project-calendar'), {
+  ssr: false,
+});
 
 const emptySubscribe = () => () => {};
 
@@ -66,11 +79,19 @@ export function ProjectDashboard({
   const [activeTab, setActiveTab] = useState(initialTab || 'overview');
   const [prevInitialTab, setPrevInitialTab] = useState(initialTab);
 
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+
+  const handleSelectTask = (task: import('@/components/dashboard/project-calendar').Task) => {
+    setSelectedTask(task as unknown as Task);
+    setDetailOpen(true);
+  };
+
   if (initialTab !== prevInitialTab) {
     setPrevInitialTab(initialTab);
     if (
       initialTab &&
-      ['overview', 'list', 'kanban', 'deliverables', 'dates'].includes(initialTab)
+      ['overview', 'list', 'kanban', 'deliverables', 'dates', 'calendar'].includes(initialTab)
     ) {
       setActiveTab(initialTab);
     }
@@ -193,6 +214,13 @@ export function ProjectDashboard({
             <Clock className="size-4" />
             Dates
           </TabsTrigger>
+          <TabsTrigger
+            value="calendar"
+            className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
+          >
+            <CalendarIcon className="size-4" />
+            Calendar
+          </TabsTrigger>
         </TabsList>
 
         <div className="py-8">
@@ -239,11 +267,31 @@ export function ProjectDashboard({
           <TabsContent value="dates" className="mt-0">
             <StudentDatesSection checkpoints={checkpoints} checkpointNotes={checkpointNotes} />
           </TabsContent>
+
+          <TabsContent value="calendar" className="mt-0">
+            <ProjectCalendar
+              project={project}
+              tasks={tasks}
+              checkpoints={checkpoints}
+              checkpointNotes={checkpointNotes}
+              members={team.members}
+              onSelectTask={handleSelectTask}
+            />
+          </TabsContent>
         </div>
       </Tabs>
       <div className="hidden" aria-hidden="true">
         {prevInitialTab}
       </div>
+
+      <TaskDetailDialog
+        key={selectedTask?.id ?? 'none'}
+        task={selectedTask}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        members={team.members}
+        projectId={project.id}
+      />
     </div>
   );
 }

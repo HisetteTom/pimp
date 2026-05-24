@@ -16,5 +16,7 @@ export const task = pgTable('task', {
   assigneeId: text('assignee_id').references(() => user.id),
   assignees: text('assignees'), // Comma-separated user IDs
   responsabilityId: integer('responsability_id').references(() => responsability.id),
+  inProgressAt: timestamp('in_progress_at'),
+  completedAt: timestamp('completed_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
