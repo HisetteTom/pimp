@@ -15,6 +15,13 @@ export const metadata: Metadata = {
   description: 'Monitor student projects, validate deliverables, and grade teams.',
 };
 
+async function fetchProfessorProjects(teacherId: string) {
+  return await db
+    .select()
+    .from(project)
+    .where(or(eq(project.teacherId, teacherId), sql`${teacherId} = ANY(${project.coTeachers})`));
+}
+
 export default async function ProfessorDashboardPage() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -27,15 +34,7 @@ export default async function ProfessorDashboardPage() {
   // Fetch all resources in parallel
   const [allProjects, allTeams, allEnrollments, allUsers, allTasks, allDeliverables] =
     await Promise.all([
-      db
-        .select()
-        .from(project)
-        .where(
-          or(
-            eq(project.teacherId, session.user.id),
-            sql`${session.user.id} = ANY(${project.coTeachers})`,
-          ),
-        ),
+      fetchProfessorProjects(session.user.id),
       db.select().from(team),
       db.select().from(projectEnrollment),
       db.select().from(user),

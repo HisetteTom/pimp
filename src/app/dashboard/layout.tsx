@@ -12,11 +12,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect('/login');
   }
 
-  const user = session.user;
+  const user = session.user as { requiresPasswordChange?: boolean; role?: string };
+
+  if (user.requiresPasswordChange) {
+    redirect('/change-password');
+  }
 
   // Role based redirection
 
-  if (user.role !== 'student' && user.role !== 'professor' && user.role !== 'jury') {
+  if (
+    user.role !== 'student' &&
+    user.role !== 'professor' &&
+    user.role !== 'jury' &&
+    user.role !== 'admin'
+  ) {
     redirect('/login');
   }
 

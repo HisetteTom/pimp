@@ -58,28 +58,38 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
   const isProfessor = role === 'professor';
   const isJury = role === 'jury';
   const isStaff = isProfessor || isJury;
+  const isAdmin = role === 'admin';
 
-  const navItems = isStaff
+  const navItems = isAdmin
     ? [
-        { href: '/dashboard/professor#top', label: 'Dashboard', icon: LayoutDashboard },
-        { href: '/dashboard/professor#projects', label: 'All Projects', icon: FolderRoot },
-        ...(isProfessor
-          ? [
-              {
-                href: '/dashboard/professor/evaluation-setup',
-                label: 'Evaluation Setup',
-                icon: CheckSquare,
-              },
-            ]
-          : []),
+        { href: '/dashboard/admin', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/dashboard/admin/teachers', label: 'Teachers', icon: User },
       ]
-    : [
-        { href: '/dashboard/student#top', label: 'Dashboard', icon: LayoutDashboard },
-        { href: '/dashboard/student#my-projects', label: 'My Projects', icon: FolderRoot },
-        { href: '/dashboard/student#proposals', label: 'Proposals', icon: Lightbulb },
-      ];
+    : isStaff
+      ? [
+          { href: '/dashboard/professor#top', label: 'Dashboard', icon: LayoutDashboard },
+          { href: '/dashboard/professor#projects', label: 'All Projects', icon: FolderRoot },
+          ...(isProfessor
+            ? [
+                {
+                  href: '/dashboard/professor/evaluation-setup',
+                  label: 'Evaluation Setup',
+                  icon: CheckSquare,
+                },
+              ]
+            : []),
+        ]
+      : [
+          { href: '/dashboard/student#top', label: 'Dashboard', icon: LayoutDashboard },
+          { href: '/dashboard/student#my-projects', label: 'My Projects', icon: FolderRoot },
+          { href: '/dashboard/student#proposals', label: 'Proposals', icon: Lightbulb },
+        ];
 
-  const dashboardLink = isStaff ? '/dashboard/professor' : '/dashboard/student';
+  const dashboardLink = isAdmin
+    ? '/dashboard/admin'
+    : isStaff
+      ? '/dashboard/professor'
+      : '/dashboard/student';
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -143,16 +153,18 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
         {userProjects && userProjects.length > 0 && (
           <div className="space-y-4 pt-8">
             <p className="px-3 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-              {isStaff ? 'All Projects' : 'Active Projects'}
+              {isAdmin || isStaff ? 'All Projects' : 'Active Projects'}
             </p>
             <div className="space-y-1">
               {userProjects.map((p) => (
                 <Link
                   key={p.id}
                   href={
-                    isStaff
-                      ? `/dashboard/professor/projects/${p.id}`
-                      : `/dashboard/student/projects/${p.id}`
+                    isAdmin
+                      ? `/dashboard/admin/projects/${p.id}`
+                      : isStaff
+                        ? `/dashboard/professor/projects/${p.id}`
+                        : `/dashboard/student/projects/${p.id}`
                   }
                 >
                   <div
@@ -240,7 +252,15 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
         <p className="mb-2 px-3 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
           Account
         </p>
-        <Link href={isStaff ? '/dashboard/professor/profile' : '/dashboard/student/profile'}>
+        <Link
+          href={
+            isAdmin
+              ? '/dashboard/admin/profile'
+              : isStaff
+                ? '/dashboard/professor/profile'
+                : '/dashboard/student/profile'
+          }
+        >
           <span className="flex items-center justify-between rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -255,7 +275,15 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
             </div>
           </span>
         </Link>
-        <Link href={isStaff ? '/dashboard/professor/settings' : '/dashboard/student/settings'}>
+        <Link
+          href={
+            isAdmin
+              ? '/dashboard/admin/settings'
+              : isStaff
+                ? '/dashboard/professor/settings'
+                : '/dashboard/student/settings'
+          }
+        >
           <span className="flex items-center gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900">
             <Settings className="size-4" />
             Settings

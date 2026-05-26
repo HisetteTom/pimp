@@ -25,5 +25,9 @@ export default async function HomePage() {
     redirect('/dashboard/professor');
   }
 
+  if (session.user.role === 'admin') {
+    redirect('/dashboard/admin');
+  }
+
   return null;
 }

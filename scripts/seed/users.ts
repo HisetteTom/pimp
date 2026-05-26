@@ -5,15 +5,17 @@ import bcrypt from 'bcrypt';
 
 export async function seedUsers() {
   console.log('Hashing passwords…');
-  const [studentPasswordHash, profPasswordHash] = await Promise.all([
+  const [studentPasswordHash, profPasswordHash, adminPasswordHash] = await Promise.all([
     bcrypt.hash('etudiant', 10),
     bcrypt.hash('professeur', 10),
+    bcrypt.hash('administrateur', 10),
   ]);
 
   const studentTestId = crypto.randomUUID();
   const student2TestId = crypto.randomUUID();
   const profTestId = crypto.randomUUID();
   const prof2TestId = crypto.randomUUID();
+  const adminTestId = crypto.randomUUID();
 
   console.log('Creating core test users…');
   await db.insert(user).values([
@@ -43,7 +45,6 @@ export async function seedUsers() {
       id: profTestId,
       name: 'Professor Test 1',
       email: 'prof@test.com',
-      username: 'professeur',
       role: 'professor',
       emailVerified: true,
       createdAt: new Date(),
@@ -53,8 +54,17 @@ export async function seedUsers() {
       id: prof2TestId,
       name: 'Professor Test 2',
       email: 'prof2@test.com',
-      username: 'professeur2',
       role: 'professor',
+      emailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: adminTestId,
+      name: 'Admin Test',
+      email: 'admin@test.com',
+      username: 'admin',
+      role: 'admin',
       emailVerified: true,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -95,6 +105,15 @@ export async function seedUsers() {
       accountId: prof2TestId,
       providerId: 'credential',
       password: profPasswordHash,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      userId: adminTestId,
+      accountId: adminTestId,
+      providerId: 'credential',
+      password: adminPasswordHash,
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -145,13 +164,11 @@ export async function seedUsers() {
     const name = faker.person.fullName();
     const rawEmail = faker.internet.email({ firstName: name.split(' ')[0] }).toLowerCase();
     const email = `${rawEmail.split('@')[0]}_prof_${i}@test.com`;
-    const username = `${faker.internet.username({ firstName: name.split(' ')[0] }).toLowerCase()}_prof_${i}`;
 
     studentsToInsert.push({
       id: pId,
       name,
       email,
-      username,
       role: 'professor',
       emailVerified: true,
       createdAt: new Date(),

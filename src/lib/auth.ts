@@ -27,6 +27,20 @@ export const auth = betterAuth({
     },
   },
   plugins: [username()],
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          return {
+            data: {
+              ...user,
+              role: 'student',
+            },
+          };
+        },
+      },
+    },
+  },
   user: {
     additionalFields: {
       role: {
@@ -45,6 +59,11 @@ export const auth = betterAuth({
       responsabilityId: {
         type: 'number',
         required: false,
+      },
+      requiresPasswordChange: {
+        type: 'boolean',
+        required: false,
+        defaultValue: false,
       },
     },
   },

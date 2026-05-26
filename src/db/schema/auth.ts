@@ -18,6 +18,7 @@ export const user = pgTable('user', {
   projectId: integer('project_id').references(() => project.id),
   teamId: integer('team_id').references(() => team.id),
   responsabilityId: integer('responsability_id').references(() => responsability.id),
+  requiresPasswordChange: boolean('requires_password_change').default(false).notNull(),
 });
 
 export const session = pgTable('session', {
