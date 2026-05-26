@@ -1,6 +1,23 @@
 name: pimp
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: pimp-app
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgres://pimp:pimp@db:5432/pimp
+      - BETTER_AUTH_SECRET=uOvjw4vT+zn5XPTlI1AyIvax/4stsvubb9AT56SAoUQ=
+      - BETTER_AUTH_URL=http://localhost:3000
+
   db:
     image: postgres:18-alpine3.23
     container_name: pimp-db
