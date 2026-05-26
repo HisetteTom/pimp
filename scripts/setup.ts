@@ -44,7 +44,7 @@ async function main() {
   console.log('\x1b[36m%s\x1b[0m', 'Starting Pimp Setup...');
 
   console.log('\x1b[33m%s\x1b[0m', 'Starting Docker containers...');
-  await runCommand('docker', ['compose', 'up', '-d']);
+  await runCommand('docker', ['compose', 'up', 'db', '-d']);
 
   await waitForDb();
 

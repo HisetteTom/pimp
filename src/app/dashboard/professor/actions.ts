@@ -11,10 +11,34 @@ import {
   user,
 } from '@/db/schema';
 import { auth } from '@/lib/auth';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { createNotification } from '../actions-notification';
+
+export async function getProjectFormDropdowns() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'jury')) {
+    throw new Error('Unauthorized');
+  }
+
+  const allUsers = await db
+    .select({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      promo: user.promo,
+    })
+    .from(user);
+
+  const students = allUsers.filter((u) => u.role === 'student');
+  const professors = allUsers.filter((u) => u.role === 'professor' && u.id !== session.user.id);
+
+  return { students, professors };
+}
 
 export async function createProject(data: {
   name: string;
@@ -24,6 +48,9 @@ export async function createProject(data: {
   maxGroups: number;
   maxMembersPerGroup: number;
   checkpoints?: { title: string; dueDate: string }[];
+  targetPromos?: string[];
+  targetUsers?: string[];
+  coTeachers?: string[];
 }) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -43,6 +70,10 @@ export async function createProject(data: {
         maxGroups: data.maxGroups,
         maxMembersPerGroup: data.maxMembersPerGroup,
         status: 'proposed',
+        teacherId: session.user.id,
+        targetPromos: data.targetPromos || [],
+        targetUsers: data.targetUsers || [],
+        coTeachers: data.coTeachers || [],
       })
       .returning();
 
@@ -56,20 +87,41 @@ export async function createProject(data: {
       );
     }
 
-    // Trigger notification for all students
+    // Trigger notification for targeted students only
     try {
-      const students = await db.select().from(user).where(eq(user.role, 'student'));
-      await Promise.all(
-        students.map((s) =>
-          createNotification({
-            userId: s.id,
-            title: 'New Project Proposed',
-            message: `A new project "${data.name}" has been proposed.`,
-            type: 'project_proposed',
-            link: `/dashboard/student`,
-          }),
-        ),
-      );
+      const targetedStudentIds = new Set<string>();
+
+      // 1. Fetch students in targeted promos
+      if (data.targetPromos && data.targetPromos.length > 0) {
+        const promoStudents = await db
+          .select({ id: user.id })
+          .from(user)
+          .where(and(eq(user.role, 'student'), inArray(user.promo, data.targetPromos)));
+        for (const s of promoStudents) {
+          targetedStudentIds.add(s.id);
+        }
+      }
+
+      // 2. Add specifically targeted student IDs
+      if (data.targetUsers && data.targetUsers.length > 0) {
+        for (const uid of data.targetUsers) {
+          targetedStudentIds.add(uid);
+        }
+      }
+
+      if (targetedStudentIds.size > 0) {
+        await Promise.all(
+          Array.from(targetedStudentIds).map((uid) =>
+            createNotification({
+              userId: uid,
+              title: 'New Project Proposed',
+              message: `A new project "${data.name}" has been proposed to you.`,
+              type: 'project_proposed',
+              link: `/dashboard/student`,
+            }),
+          ),
+        );
+      }
     } catch (notifErr) {
       console.error('Failed to trigger project proposed notifications:', notifErr);
     }
@@ -328,5 +380,50 @@ export async function saveCheckpointNote(
   } catch (error) {
     console.error('Failed to save checkpoint note:', error);
     throw new Error('Failed to save checkpoint note');
+  }
+}
+
+export async function updateProject(
+  projectId: number,
+  data: {
+    name: string;
+    description: string;
+    dateStart?: string;
+    dateEnd?: string;
+    maxGroups: number;
+    maxMembersPerGroup: number;
+    targetPromos?: string[];
+    targetUsers?: string[];
+    coTeachers?: string[];
+  },
+) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session || session.user.role !== 'professor') {
+    throw new Error('Unauthorized: Professor role required');
+  }
+
+  try {
+    await db
+      .update(project)
+      .set({
+        name: data.name,
+        description: data.description,
+        dateStart: data.dateStart || null,
+        dateEnd: data.dateEnd || null,
+        maxGroups: data.maxGroups,
+        maxMembersPerGroup: data.maxMembersPerGroup,
+        targetPromos: data.targetPromos || [],
+        targetUsers: data.targetUsers || [],
+        coTeachers: data.coTeachers || [],
+      })
+      .where(eq(project.id, projectId));
+
+    revalidatePath('/dashboard/professor');
+    revalidatePath(`/dashboard/professor/projects/${projectId}`);
+  } catch (error) {
+    console.error('Failed to update project:', error);
+    throw new Error('Failed to update project');
   }
 }

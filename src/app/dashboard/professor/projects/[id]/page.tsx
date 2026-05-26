@@ -6,6 +6,7 @@ import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { ProjectStatusSelector } from './project-status-selector';
+import { EditProjectDialog } from './edit-project-dialog';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -144,7 +145,10 @@ export default async function ProfessorProjectDetailPage({
               </span>
             </div>
           </div>
-          <ProjectStatusSelector projectId={projectId} initialStatus={projectData.status} />
+          <div className="flex items-end gap-3">
+            <EditProjectDialog projectData={projectData} />
+            <ProjectStatusSelector projectId={projectId} initialStatus={projectData.status} />
+          </div>
         </div>
 
         {/* Teams Overview Section */}

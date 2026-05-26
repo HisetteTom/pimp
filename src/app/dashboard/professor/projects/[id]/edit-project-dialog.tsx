@@ -13,76 +13,105 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { createProject, getProjectFormDropdowns } from './actions';
-import { Loader2, Plus } from 'lucide-react';
-import { CheckpointsEditor } from './_components/checkpoints-editor';
-import { dialogReducer, initialDialogState } from './_components/project-dialog-types';
-import { TargetingSection } from './_components/targeting-section';
-import { ProjectFormFields } from './_components/project-form-fields';
+import { updateProject, getProjectFormDropdowns } from '../../actions';
+import { Loader2, Edit2 } from 'lucide-react';
+import { dialogReducer } from '../../_components/project-dialog-types';
+import { TargetingSection } from '../../_components/targeting-section';
+import { ProjectFormFields } from '../../_components/project-form-fields';
 
-const initialFormState = {
-  name: '',
-  description: '',
-  dateStart: '',
-  dateEnd: '',
-  maxGroups: '8',
-  maxMembersPerGroup: '5',
+interface EditProjectDialogProps {
+  projectData: {
+    id: number;
+    name: string;
+    description: string | null;
+    dateStart: string | null;
+    dateEnd: string | null;
+    maxGroups: number;
+    maxMembersPerGroup: number;
+    targetPromos: string[];
+    targetUsers: string[];
+    coTeachers: string[];
+  };
+}
+
+type FormState = {
+  name: string;
+  description: string;
+  dateStart: string;
+  dateEnd: string;
+  maxGroups: string;
+  maxMembersPerGroup: string;
 };
 
-type FormAction = { type: 'SET_FIELD'; field: string; value: string } | { type: 'RESET' };
+type FormAction =
+  | { type: 'SET_FIELD'; field: string; value: string }
+  | { type: 'RESET'; payload: FormState };
 
-function formReducer(state: typeof initialFormState, action: FormAction) {
+function formReducer(state: FormState, action: FormAction): FormState {
   switch (action.type) {
     case 'SET_FIELD':
       return { ...state, [action.field]: action.value };
     case 'RESET':
-      return initialFormState;
+      return action.payload;
     default:
       return state;
   }
 }
 
-export function CreateProjectDialog() {
+export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
+
+  const initialFormState: FormState = {
+    name: projectData.name,
+    description: projectData.description || '',
+    dateStart: projectData.dateStart || '',
+    dateEnd: projectData.dateEnd || '',
+    maxGroups: projectData.maxGroups.toString(),
+    maxMembersPerGroup: projectData.maxMembersPerGroup.toString(),
+  };
+
+  const initialDialogState = {
+    students: [],
+    professors: [],
+    targetPromos: projectData.targetPromos || [],
+    targetUsers: projectData.targetUsers || [],
+    coTeachers: projectData.coTeachers || [],
+    studentSearch: '',
+    profSearch: '',
+    checkpoints: [],
+  };
+
   const [formState, dispatchForm] = useReducer(formReducer, initialFormState);
   const [state, dispatch] = useReducer(dialogReducer, initialDialogState);
 
-  // Directly fetch dropdowns when opening the dialog (avoiding useEffect)
+  // Directly fetch dropdowns when opening the dialog
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (open) {
+      // Reload current project values into state to ensure freshness
+      dispatchForm({
+        type: 'RESET',
+        payload: {
+          name: projectData.name,
+          description: projectData.description || '',
+          dateStart: projectData.dateStart || '',
+          dateEnd: projectData.dateEnd || '',
+          maxGroups: projectData.maxGroups.toString(),
+          maxMembersPerGroup: projectData.maxMembersPerGroup.toString(),
+        },
+      });
+      dispatch({ type: 'SET_TARGET_PROMOS', promos: projectData.targetPromos || [] });
+      dispatch({ type: 'SET_TARGET_USERS', users: projectData.targetUsers || [] });
+      dispatch({ type: 'SET_CO_TEACHERS', teachers: projectData.coTeachers || [] });
+
       getProjectFormDropdowns()
         .then(({ students, professors }) => {
           dispatch({ type: 'SET_DROPDOWNS', students, professors });
         })
         .catch(console.error);
-    } else {
-      dispatch({ type: 'RESET' });
-      dispatchForm({ type: 'RESET' });
     }
-  };
-
-  const addCheckpoint = () => {
-    dispatch({
-      type: 'SET_CHECKPOINTS',
-      checkpoints: [...state.checkpoints, { id: crypto.randomUUID(), title: '', dueDate: '' }],
-    });
-  };
-
-  const removeCheckpoint = (id: string) => {
-    dispatch({
-      type: 'SET_CHECKPOINTS',
-      checkpoints: state.checkpoints.filter((cp) => cp.id !== id),
-    });
-  };
-
-  const updateCheckpointField = (id: string, field: 'title' | 'dueDate', value: string) => {
-    dispatch({
-      type: 'SET_CHECKPOINTS',
-      checkpoints: state.checkpoints.map((cp) => (cp.id === id ? { ...cp, [field]: value } : cp)),
-    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -95,31 +124,23 @@ export function CreateProjectDialog() {
 
     startTransition(async () => {
       try {
-        await createProject({
+        await updateProject(projectData.id, {
           name: formState.name,
           description: formState.description,
           dateStart: formState.dateStart || undefined,
           dateEnd: formState.dateEnd || undefined,
           maxGroups: parseInt(formState.maxGroups) || 8,
           maxMembersPerGroup: parseInt(formState.maxMembersPerGroup) || 5,
-          checkpoints: state.checkpoints.reduce<{ title: string; dueDate: string }[]>((acc, cp) => {
-            if (cp.title.trim() !== '' && cp.dueDate !== '') {
-              acc.push({ title: cp.title, dueDate: cp.dueDate });
-            }
-            return acc;
-          }, []),
           targetPromos: state.targetPromos,
           targetUsers: state.targetUsers,
           coTeachers: state.coTeachers,
         });
 
-        toast.success('Project created successfully');
+        toast.success('Project updated successfully');
         setIsOpen(false);
-        dispatchForm({ type: 'RESET' });
-        dispatch({ type: 'RESET' });
         refresh();
       } catch (err) {
-        toast.error('Failed to create project');
+        toast.error('Failed to update project');
         console.error(err);
       }
     });
@@ -130,19 +151,19 @@ export function CreateProjectDialog() {
       <DialogTrigger asChild>
         <Button
           variant="unstyled"
-          className="flex h-11 cursor-pointer items-center gap-2 border-transparent bg-purple-600 px-6 font-black tracking-wider text-white uppercase shadow-[4px_4px_0px_0px_rgba(168,85,247,0.2)] transition-all hover:bg-purple-700 hover:text-white focus-visible:border-purple-500 focus-visible:ring-3 focus-visible:ring-purple-500/50 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none dark:hover:bg-purple-700"
+          className="inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 border-transparent bg-zinc-900 px-3.5 text-[10px] font-black tracking-wider text-white uppercase transition-all hover:bg-purple-600 hover:text-white active:scale-[0.97] dark:bg-zinc-100 dark:text-black dark:hover:bg-purple-700 dark:hover:text-white"
         >
-          <Plus className="size-4" />
-          Create New Project
+          Edit Project
+          <Edit2 className="size-3.5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-card max-h-[90vh] overflow-y-auto rounded-none border-2 border-zinc-200 p-6 shadow-2xl sm:max-w-[550px] dark:border-zinc-800">
         <DialogHeader className="border-b border-zinc-100 pb-4 dark:border-zinc-800">
-          <DialogTitle className="text-2xl font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-            Create Project Proposal
+          <DialogTitle className="pt-2 text-2xl font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
+            Edit Project Details
           </DialogTitle>
           <DialogDescription className="text-xs font-bold tracking-widest text-zinc-400 uppercase">
-            Submit a new project that students can enroll in.
+            Modify the project name, description, dates, cohort targets, and collaborators.
           </DialogDescription>
         </DialogHeader>
 
@@ -170,14 +191,6 @@ export function CreateProjectDialog() {
             isPending={isPending}
           />
 
-          <CheckpointsEditor
-            checkpoints={state.checkpoints}
-            isPending={isPending}
-            onAdd={addCheckpoint}
-            onRemove={removeCheckpoint}
-            onUpdate={updateCheckpointField}
-          />
-
           <div className="flex items-center justify-end gap-3 border-t border-zinc-100 pt-4 dark:border-zinc-800">
             <DialogClose asChild>
               <Button
@@ -198,10 +211,10 @@ export function CreateProjectDialog() {
               {isPending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Creating…
+                  Saving…
                 </>
               ) : (
-                'Create Project'
+                'Save Changes'
               )}
             </Button>
           </div>

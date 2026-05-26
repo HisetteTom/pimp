@@ -1,7 +1,18 @@
 import { db } from './db';
 import { project } from '../../src/db/schema/project';
+import { user } from '../../src/db/schema/auth';
+import { eq } from 'drizzle-orm';
 
 export async function seedProjects() {
+  console.log('Fetching seeded professors...');
+  const professors = await db
+    .select({ id: user.id, email: user.email })
+    .from(user)
+    .where(eq(user.role, 'professor'));
+
+  const prof1Id = professors.find((p) => p.email === 'prof@test.com')?.id || null;
+  const prof2Id = professors.find((p) => p.email === 'prof2@test.com')?.id || null;
+
   console.log('Creating 9 realistic projects…');
   const projectsData = [
     {
@@ -13,6 +24,10 @@ export async function seedProjects() {
       dateEnd: '2026-09-30',
       maxGroups: 6,
       maxMembersPerGroup: 4,
+      teacherId: prof1Id,
+      targetPromos: ['ISEN3'],
+      targetUsers: [],
+      coTeachers: [],
     },
     {
       name: 'Decentralized Carbon Offset Registry',
@@ -23,6 +38,10 @@ export async function seedProjects() {
       dateEnd: '2026-11-30',
       maxGroups: 5,
       maxMembersPerGroup: 5,
+      teacherId: prof1Id,
+      targetPromos: ['ISEN4'],
+      targetUsers: [],
+      coTeachers: [],
     },
     {
       name: 'Smart Traffic Flow Controller',
@@ -33,6 +52,10 @@ export async function seedProjects() {
       dateEnd: '2026-08-31',
       maxGroups: 4,
       maxMembersPerGroup: 5,
+      teacherId: prof1Id,
+      targetPromos: ['ISEN3', 'ISEN4'],
+      targetUsers: [],
+      coTeachers: [],
     },
     {
       name: 'AI-Powered Patient Triage Portal',
@@ -43,6 +66,10 @@ export async function seedProjects() {
       dateEnd: '2026-06-30',
       maxGroups: 8,
       maxMembersPerGroup: 4,
+      teacherId: prof2Id,
+      targetPromos: ['ISEN3'],
+      targetUsers: [],
+      coTeachers: [],
     },
     {
       name: 'Greenhouse Hydroponic Automator',
@@ -53,6 +80,10 @@ export async function seedProjects() {
       dateEnd: '2026-06-15',
       maxGroups: 6,
       maxMembersPerGroup: 5,
+      teacherId: prof2Id,
+      targetPromos: ['ISEN4'],
+      targetUsers: [],
+      coTeachers: [],
     },
     {
       name: 'Real-Time Microgrid Balancer',
@@ -63,6 +94,10 @@ export async function seedProjects() {
       dateEnd: '2026-05-15',
       maxGroups: 5,
       maxMembersPerGroup: 5,
+      teacherId: prof2Id,
+      targetPromos: [],
+      targetUsers: [],
+      coTeachers: [],
     },
     {
       name: 'Biometric Identity Guard System',
@@ -73,6 +108,10 @@ export async function seedProjects() {
       dateEnd: '2026-04-15',
       maxGroups: 4,
       maxMembersPerGroup: 4,
+      teacherId: prof1Id,
+      targetPromos: [],
+      targetUsers: [],
+      coTeachers: prof2Id ? [prof2Id] : [],
     },
     {
       name: 'Augmented Reality Museum Guide',
@@ -83,6 +122,10 @@ export async function seedProjects() {
       dateEnd: '2026-03-31',
       maxGroups: 6,
       maxMembersPerGroup: 5,
+      teacherId: prof2Id,
+      targetPromos: [],
+      targetUsers: [],
+      coTeachers: prof1Id ? [prof1Id] : [],
     },
     {
       name: 'Secure Remote Voting Module',
@@ -93,6 +136,10 @@ export async function seedProjects() {
       dateEnd: '2026-02-01',
       maxGroups: 4,
       maxMembersPerGroup: 5,
+      teacherId: prof1Id,
+      targetPromos: ['ISEN1', 'ISEN2', 'ISEN3', 'ISEN4', 'ISEN5'],
+      targetUsers: [],
+      coTeachers: [],
     },
   ];
 

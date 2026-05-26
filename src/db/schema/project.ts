@@ -1,4 +1,5 @@
 import { pgTable, integer, date, text } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 
 export const project = pgTable('project', {
   id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
@@ -9,4 +10,17 @@ export const project = pgTable('project', {
   dateEnd: date('date-end'),
   maxGroups: integer('max_groups').notNull().default(8),
   maxMembersPerGroup: integer('max_members_per_group').notNull().default(5),
+  teacherId: text('teacher_id'),
+  targetPromos: text('target_promos')
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  targetUsers: text('target_users')
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
+  coTeachers: text('co_teachers')
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
 });

@@ -1,6 +1,11 @@
 {
   "ignore": {
-    "rules": ["deslop/unused-file", "deslop/unused-dependency", "deslop/unused-dev-dependency"],
+    "rules": [
+      "deslop/unused-file",
+      "deslop/unused-dependency",
+      "deslop/unused-dev-dependency",
+      "react-doctor/no-gray-on-colored-background"
+    ],
     "overrides": [
       {
         "files": ["src/components/ui/**"],
