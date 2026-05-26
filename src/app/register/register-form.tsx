@@ -30,6 +30,7 @@ type State = {
   password: string;
   username: string;
   role: string;
+  promo: string;
   loading: boolean;
 };
 
@@ -42,6 +43,7 @@ const initialState: State = {
   password: '',
   username: '',
   role: 'student',
+  promo: 'ISEN1',
   loading: false,
 };
 
@@ -70,6 +72,7 @@ export function RegisterForm() {
       username: state.username,
       // @ts-expect-error: Role is dynamically passed from form state
       role: state.role,
+      promo: state.role === 'student' ? state.promo : undefined,
     });
 
     if (error) {
@@ -182,6 +185,54 @@ export function RegisterForm() {
                 </SelectContent>
               </Select>
             </div>
+            {state.role === 'student' && (
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="promo" className="text-secondary/80 font-bold">
+                  Your Promo
+                </Label>
+                <Select
+                  value={state.promo}
+                  onValueChange={(value) => dispatch({ type: 'SET_FIELD', field: 'promo', value })}
+                >
+                  <SelectTrigger className="border-secondary/10 focus:ring-secondary focus:border-secondary hover:border-secondary/30 relative h-10 border-2 pl-10 transition-colors">
+                    <GraduationCap className="text-secondary/40 absolute top-3 left-3 size-4" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      value="ISEN1"
+                      className="focus:bg-secondary/10 focus:text-secondary"
+                    >
+                      ISEN 1
+                    </SelectItem>
+                    <SelectItem
+                      value="ISEN2"
+                      className="focus:bg-secondary/10 focus:text-secondary"
+                    >
+                      ISEN 2
+                    </SelectItem>
+                    <SelectItem
+                      value="ISEN3"
+                      className="focus:bg-secondary/10 focus:text-secondary"
+                    >
+                      ISEN 3
+                    </SelectItem>
+                    <SelectItem
+                      value="ISEN4"
+                      className="focus:bg-secondary/10 focus:text-secondary"
+                    >
+                      ISEN 4
+                    </SelectItem>
+                    <SelectItem
+                      value="ISEN5"
+                      className="focus:bg-secondary/10 focus:text-secondary"
+                    >
+                      ISEN 5
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </CardContent>
           <CardFooter className="flex flex-col gap-6 pt-4 pb-8">
             <Button

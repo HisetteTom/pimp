@@ -8,6 +8,7 @@ import { Metadata } from 'next';
 import { AccessDenied } from './_components/access-denied';
 import { ProfessorMetrics } from './_components/professor-metrics';
 import { ProfessorProjectsTable } from './_components/professor-projects-table';
+import { or, eq, sql } from 'drizzle-orm';
 
 export const metadata: Metadata = {
   title: 'Professor Dashboard - PIMP',
@@ -26,7 +27,15 @@ export default async function ProfessorDashboardPage() {
   // Fetch all resources in parallel
   const [allProjects, allTeams, allEnrollments, allUsers, allTasks, allDeliverables] =
     await Promise.all([
-      db.select().from(project),
+      db
+        .select()
+        .from(project)
+        .where(
+          or(
+            eq(project.teacherId, session.user.id),
+            sql`${session.user.id} = ANY(${project.coTeachers})`,
+          ),
+        ),
       db.select().from(team),
       db.select().from(projectEnrollment),
       db.select().from(user),

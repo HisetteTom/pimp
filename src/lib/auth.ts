@@ -34,6 +34,10 @@ export const auth = betterAuth({
         required: false,
         defaultValue: 'student',
       },
+      promo: {
+        type: 'string',
+        required: false,
+      },
       projectId: {
         type: 'number',
         required: false,

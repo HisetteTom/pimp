@@ -54,6 +54,16 @@ export default async function ProjectPage({
     notFound();
   }
 
+  // Enforce strict student targeting check (manually typed URL protection)
+  const userPromo = (session.user as typeof session.user & { promo?: string }).promo || '';
+  const targetPromosSet = new Set(projectData.targetPromos || []);
+  const targetUsersSet = new Set(projectData.targetUsers || []);
+  const isTargeted = targetPromosSet.has(userPromo) || targetUsersSet.has(session.user.id);
+
+  if (!isTargeted) {
+    notFound();
+  }
+
   // Fetch users for this project based on enrollments and sidebar data in parallel
   const enrolledUserIds = allEnrollments.map((e) => e.userId);
   const activeProjectIds = userEnrollments.map((e) => e.projectId);

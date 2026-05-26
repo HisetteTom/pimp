@@ -53,6 +53,8 @@ export default async function StudentDashboardPage() {
   const userMap = new Map(allUsers.map((u) => [u.id, u]));
   const teamsById = new Map(allTeams.map((t) => [t.id, t]));
 
+  const userPromo = (session.user as typeof session.user & { promo?: string }).promo || '';
+
   const myProjects: ((typeof allProjects)[0] & {
     membersList: { id: string; name: string; image: string | null }[];
   })[] = [];
@@ -62,6 +64,12 @@ export default async function StudentDashboardPage() {
 
   for (const p of allProjects) {
     if (refusedIds.has(p.id)) continue;
+
+    const targetPromosSet = new Set(p.targetPromos || []);
+    const targetUsersSet = new Set(p.targetUsers || []);
+    const isTargeted = targetPromosSet.has(userPromo) || targetUsersSet.has(session.user.id);
+
+    if (!isTargeted) continue;
 
     const projectEnrollments = enrollmentsByProject.get(p.id) || [];
     const membersList = projectEnrollments.map((e) => {
