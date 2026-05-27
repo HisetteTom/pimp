@@ -11,6 +11,7 @@ ENV NEXT_PUBLIC_BASE_PATH=$NEXT_PUBLIC_BASE_PATH
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 ENV NODE_ENV=production
+ENV DATABASE_URL="postgres://dummy:dummy@localhost:5432/dummy"
 RUN bun run build
 
 FROM oven/bun:1 AS runner
