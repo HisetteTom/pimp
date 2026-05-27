@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - '.editorconfig'
+      - '.prettier*'
+      - 'react-doctor.config.json'
+      - '.github/workflows/react-doctor.yml'
 
 jobs:
   build-and-push:
@@ -40,6 +47,8 @@ jobs:
           tags: ${{ steps.prep.outputs.owner }}/pimp-app:latest
           build-args: |
             NEXT_PUBLIC_BASE_PATH=/pimp
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy:
     needs: build-and-push
