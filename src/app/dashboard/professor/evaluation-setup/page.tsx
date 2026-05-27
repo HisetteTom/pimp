@@ -7,11 +7,19 @@ import { headers } from 'next/headers';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { CriteriaManager } from './criteria-manager';
+import { or, eq, sql } from 'drizzle-orm';
 
 export const metadata: Metadata = {
   title: 'Evaluation Grid Setup - PIMP',
   description: 'Configure evaluation grids and custom scoring criteria for student projects.',
 };
+
+async function fetchSidebarProjects(teacherId: string) {
+  return await db
+    .select()
+    .from(project)
+    .where(or(eq(project.teacherId, teacherId), sql`${teacherId} = ANY(${project.coTeachers})`));
+}
 
 export default async function EvaluationSetupPage() {
   const session = await auth.api.getSession({
@@ -48,7 +56,7 @@ export default async function EvaluationSetupPage() {
 
   // Fetch all projects and evaluation criteria in parallel
   const [allProjects, allCriteria] = await Promise.all([
-    db.select().from(project),
+    fetchSidebarProjects(session.user.id),
     db.select().from(evaluationCriterion),
   ]);
 

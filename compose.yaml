@@ -36,5 +36,20 @@ services:
       timeout: 5s
       retries: 5
 
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: pimp-storage
+    restart: unless-stopped
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      - RUSTFS_ACCESS_KEY=pimp-dev-access-key
+      - RUSTFS_SECRET_KEY=pimp-dev-secret-key
+    volumes:
+      - ./.data:/data
+
 volumes:
   postgres_data:
+  rustfs_data:
+

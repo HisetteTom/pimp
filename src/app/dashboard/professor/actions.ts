@@ -167,9 +167,40 @@ export async function validateDeliverable(
   }
 
   try {
-    await db.update(livrable).set({ status, feedback }).where(eq(livrable.id, deliverableId));
+    const [delivData] = await db
+      .update(livrable)
+      .set({ status, feedback })
+      .where(eq(livrable.id, deliverableId))
+      .returning();
+
+    // Trigger notification to students
+    if (delivData) {
+      try {
+        const teamMembers = await db
+          .select()
+          .from(projectEnrollment)
+          .where(eq(projectEnrollment.teamId, delivData.teamId));
+
+        if (teamMembers.length > 0) {
+          await Promise.all(
+            teamMembers.map((m) =>
+              createNotification({
+                userId: m.userId,
+                title: `Deliverable ${status === 'approved' ? 'Approved' : 'Rejected'}`,
+                message: `Your deliverable "${delivData.name}" has been ${status} by the professor.`,
+                type: 'deliverable_validated',
+                link: `/dashboard/student/projects/${projectId}?tab=deliverables`,
+              }),
+            ),
+          );
+        }
+      } catch (notifErr) {
+        console.error('Failed to trigger deliverable validation notifications:', notifErr);
+      }
+    }
 
     revalidatePath(`/dashboard/professor/projects/${projectId}`);
+    revalidatePath(`/dashboard/student/projects/${projectId}`);
   } catch (error) {
     console.error('Failed to validate deliverable:', error);
     throw new Error('Failed to validate deliverable');
@@ -191,58 +222,6 @@ export async function evaluateTeam(
 
   try {
     await db.update(team).set({ grade, feedback }).where(eq(team.id, teamId));
-
-    // Notify team members about updated feedback/comments
-    try {
-      const teamMembers = await db
-        .select()
-        .from(projectEnrollment)
-        .where(eq(projectEnrollment.teamId, teamId));
-
-      const [teamData] = await db.select().from(team).where(eq(team.id, teamId)).limit(1);
-
-      let msg = `The professor updated feedback for your team "${teamData?.name || ''}".`;
-      let tab = 'overview';
-
-      try {
-        if (feedback) {
-          const parsed = JSON.parse(feedback);
-          if (parsed && typeof parsed === 'object') {
-            const parts: string[] = [];
-            if (parsed.overview) parts.push('General Overview');
-            if (parsed.kanban || parsed.tasks) {
-              parts.push('Tasks & Kanban');
-              tab = 'kanban';
-            }
-            if (parsed.deliverables) {
-              parts.push('Deliverables');
-              tab = 'deliverables';
-            }
-            if (parts.length > 0) {
-              msg = `The professor updated your team's comments on: ${parts.join(', ')}.`;
-            }
-          }
-        }
-      } catch {
-        // Fallback to default message
-      }
-
-      if (teamMembers.length > 0) {
-        await Promise.all(
-          teamMembers.map((m) =>
-            createNotification({
-              userId: m.userId,
-              title: 'New Supervisor Comments',
-              message: msg,
-              type: 'note_added',
-              link: `/dashboard/student/projects/${projectId}?tab=${tab}`,
-            }),
-          ),
-        );
-      }
-    } catch (notifErr) {
-      console.error('Failed to trigger evaluation/feedback notifications:', notifErr);
-    }
 
     revalidatePath(`/dashboard/professor/projects/${projectId}`);
   } catch (error) {

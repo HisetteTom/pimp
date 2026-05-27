@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import { project, notification } from '@/db/schema';
 import { auth } from '@/lib/auth';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, or, sql } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
@@ -12,6 +12,13 @@ export const metadata: Metadata = {
   title: 'Profile | Professor Dashboard',
   description: 'View your user profile and notifications on PIMP.',
 };
+
+async function fetchSidebarProjects(teacherId: string) {
+  return await db
+    .select()
+    .from(project)
+    .where(or(eq(project.teacherId, teacherId), sql`${teacherId} = ANY(${project.coTeachers})`));
+}
 
 export default async function ProfessorProfilePage() {
   const session = await auth.api.getSession({
@@ -24,7 +31,7 @@ export default async function ProfessorProfilePage() {
 
   // Fetch projects and notifications in parallel
   const [allProjects, userNotifications] = await Promise.all([
-    db.select().from(project),
+    fetchSidebarProjects(session.user.id),
     db
       .select()
       .from(notification)

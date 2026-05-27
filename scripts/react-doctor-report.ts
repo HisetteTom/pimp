@@ -6,8 +6,19 @@ async function run() {
   console.log('Running react-doctor diagnosis...');
 
   try {
-    // Run CLI directly and parse JSON output to isolate from node_modules imports
-    const stdout = execSync('bunx react-doctor@latest --json', { encoding: 'utf-8' });
+    let stdout = '';
+    try {
+      // Run CLI directly and parse JSON output to isolate from node_modules imports
+      stdout = execSync('bunx react-doctor@latest --json', { encoding: 'utf-8' });
+    } catch (error: any) {
+      // If react-doctor has error-level diagnostics, it will exit with a non-zero code.
+      // We still want to parse the JSON output from stdout to update the badge.
+      if (error.stdout) {
+        stdout = typeof error.stdout === 'string' ? error.stdout : error.stdout.toString('utf-8');
+      } else {
+        throw error;
+      }
+    }
 
     const jsonStart = stdout.indexOf('{');
     if (jsonStart === -1) {

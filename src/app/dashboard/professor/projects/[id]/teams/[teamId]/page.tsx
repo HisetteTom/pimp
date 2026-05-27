@@ -12,11 +12,18 @@ import {
   teamEvaluationScore,
 } from '@/db/schema';
 import { auth } from '@/lib/auth';
-import { eq, and, inArray } from 'drizzle-orm';
+import { eq, and, inArray, or, sql } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { SupervisorWorkspace } from './supervisor-workspace';
+
+async function fetchSidebarProjects(teacherId: string) {
+  return await db
+    .select()
+    .from(project)
+    .where(or(eq(project.teacherId, teacherId), sql`${teacherId} = ANY(${project.coTeachers})`));
+}
 
 export default async function SupervisorTeamPage({
   params,
@@ -44,7 +51,7 @@ export default async function SupervisorTeamPage({
     db.query.project.findFirst({
       where: eq(project.id, projectId),
     }),
-    db.select().from(project),
+    fetchSidebarProjects(session.user.id),
     db.query.team.findFirst({
       where: and(eq(team.id, teamId), eq(team.projectId, projectId)),
     }),

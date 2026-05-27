@@ -1,0 +1,54 @@
+name: pimp-prod
+
+services:
+  app:
+    image: ghcr.io/hisettetom/pimp-app:latest
+    container_name: pimp-app-prod
+    restart: always
+    ports:
+      - '127.0.0.1:3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - BETTER_AUTH_URL=${BETTER_AUTH_URL}
+      - STORAGE_ENDPOINT=${STORAGE_ENDPOINT}
+      - STORAGE_REGION=${STORAGE_REGION}
+      - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY}
+      - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY}
+      - STORAGE_BUCKET=${STORAGE_BUCKET}
+      - PORT=3000
+
+  db:
+    image: postgres:18-alpine3.23
+    container_name: pimp-db-prod
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: pimp-storage-prod
+    restart: always
+    ports:
+      - '127.0.0.1:9000:9000'
+    environment:
+      - RUSTFS_ACCESS_KEY=${STORAGE_ACCESS_KEY}
+      - RUSTFS_SECRET_KEY=${STORAGE_SECRET_KEY}
+    volumes:
+      - rustfs_prod_data:/data
+
+volumes:
+  postgres_prod_data:
+  rustfs_prod_data:
