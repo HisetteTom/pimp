@@ -82,13 +82,13 @@ export function DeliverableReviewer({
           </h4>
           {deliverableSource && (
             <a
-              href={deliverableSource}
+              href={`/api/deliverables/download/${deliverableId}`}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-purple-600 uppercase underline decoration-2 underline-offset-2 hover:text-purple-700"
             >
               <ExternalLink className="size-3" />
-              Open Submission Resource
+              Download Submission Resource
             </a>
           )}
         </div>

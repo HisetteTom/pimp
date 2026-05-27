@@ -234,7 +234,9 @@ export async function createNotification({
     | 'note_added'
     | 'task_deadline_tomorrow'
     | 'checkpoint_tomorrow'
-    | 'project_end_tomorrow';
+    | 'project_end_tomorrow'
+    | 'deliverable_submitted'
+    | 'deliverable_validated';
   link?: string;
 }) {
   const session = await auth.api.getSession({

@@ -12,6 +12,7 @@ import * as refusedProjectSchema from './schema/refused_project';
 import * as checkpointSchema from './schema/checkpoint';
 import * as evaluationSchema from './schema/evaluation';
 import * as notificationSchema from './schema/notification';
+import * as projectEnrollmentSchema from './schema/project_enrollment';
 
 const schema = {
   ...projectSchema,
@@ -26,6 +27,7 @@ const schema = {
   ...checkpointSchema,
   ...evaluationSchema,
   ...notificationSchema,
+  ...projectEnrollmentSchema,
 };
 
 declare global {

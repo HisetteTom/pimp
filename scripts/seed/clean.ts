@@ -10,10 +10,44 @@ import { projectEnrollment } from '../../src/db/schema/project_enrollment';
 import { compte } from '../../src/db/schema/compte';
 import { responsability } from '../../src/db/schema/responsability';
 import { notification } from '../../src/db/schema/notification';
+import { ListObjectsV2Command, DeleteObjectsCommand } from '@aws-sdk/client-s3';
+import { s3Client, BUCKET_NAME } from '../../src/lib/storage';
+
+async function cleanS3Bucket() {
+  console.log('Cleaning S3 / RustFS deliverables bucket...');
+  try {
+    const listResponse = await s3Client.send(
+      new ListObjectsV2Command({
+        Bucket: BUCKET_NAME,
+      }),
+    );
+
+    const objects = listResponse.Contents;
+    if (objects && objects.length > 0) {
+      const deleteParams = {
+        Bucket: BUCKET_NAME,
+        Delete: {
+          Objects: objects
+            .filter((obj): obj is { Key: string } => typeof obj.Key === 'string')
+            .map((obj) => ({ Key: obj.Key })),
+        },
+      };
+      await s3Client.send(new DeleteObjectsCommand(deleteParams));
+      console.log(`Deleted ${objects.length} files from S3 deliverables bucket.`);
+    } else {
+      console.log('S3 deliverables bucket is already empty.');
+    }
+  } catch (error) {
+    console.warn('S3 bucket cleanup skipped or bucket does not exist:', error);
+  }
+}
 
 export async function cleanDatabase() {
   console.log('Cleaning database...');
+
+  // Run S3 clean and initial DB deletes in parallel
   await Promise.all([
+    cleanS3Bucket(),
     db.delete(comment),
     db.delete(task),
     db.delete(livrable),

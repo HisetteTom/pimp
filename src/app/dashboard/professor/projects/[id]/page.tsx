@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import { project, team, user, task, livrable, projectEnrollment } from '@/db/schema';
 import { auth } from '@/lib/auth';
-import { eq, inArray } from 'drizzle-orm';
+import { eq, inArray, or, sql } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
@@ -18,6 +18,13 @@ export const metadata: Metadata = {
   title: 'Project Groups - Professor Workspace',
   description: 'View and manage enrolled student teams and their project spaces.',
 };
+
+async function fetchSidebarProjects(teacherId: string) {
+  return await db
+    .select()
+    .from(project)
+    .where(or(eq(project.teacherId, teacherId), sql`${teacherId} = ANY(${project.coTeachers})`));
+}
 
 export default async function ProfessorProjectDetailPage({
   params,
@@ -44,7 +51,7 @@ export default async function ProfessorProjectDetailPage({
     db.query.project.findFirst({
       where: eq(project.id, projectId),
     }),
-    db.select().from(project),
+    fetchSidebarProjects(session.user.id),
     db.select().from(team).where(eq(team.projectId, projectId)),
     db.select().from(projectEnrollment).where(eq(projectEnrollment.projectId, projectId)),
     db.select().from(user),
