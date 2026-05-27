@@ -72,7 +72,9 @@ export const auth = betterAuth({
 // Automatically create seed admin if env variables are present in production on startup
 if (
   process.env.NODE_ENV === 'production' &&
+  process.env.PORT && // Only run at runtime (Next.js runner), not during next build
   process.env.SEED_ADMIN_EMAIL &&
+  !process.env.SEED_ADMIN_EMAIL.startsWith('encrypted:') && // Ensure variables have been decrypted by dotenvx
   process.env.SEED_ADMIN_PASSWORD
 ) {
   (async () => {
