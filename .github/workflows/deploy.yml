@@ -65,8 +65,8 @@ jobs:
 
       - name: Transfer Compose and Env files
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /app"
-          scp compose.prod.yaml .env.production ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/app/
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /home/${{ secrets.SSH_USER }}/app"
+          scp compose.prod.yaml .env.production ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/app/
 
       - name: Deploy Container
         run: |
@@ -78,7 +78,7 @@ jobs:
             docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
             
             # Run docker compose pulling latest and restarting
-            cd /app
+            cd /home/${{ secrets.SSH_USER }}/app
             npx @dotenvx/dotenvx@latest run -e production -- docker compose -f compose.prod.yaml pull
             npx @dotenvx/dotenvx@latest run -e production -- docker compose -f compose.prod.yaml up -d --remove-orphans
             

@@ -2,7 +2,7 @@ name: pimp-prod
 
 services:
   app:
-    image: ghcr.io/hisettetom/pimp-app:latest
+    image: ${IMAGE_NAME:-ghcr.io/hisettetom/pimp-app:latest}
     container_name: pimp-app-prod
     restart: always
     ports:
