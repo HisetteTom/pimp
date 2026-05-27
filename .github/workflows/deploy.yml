@@ -81,12 +81,12 @@ jobs:
 
       - name: Deploy Container
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' << 'EOF'
             export DOTENV_PRIVATE_KEY_PRODUCTION='${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}'
             export IMAGE_NAME='${{ steps.prep.outputs.owner }}/pimp-app:latest'
             
             # Login to GHCR on droplet using dynamic temp token from actions
-            echo \"${{ secrets.GITHUB_TOKEN }}\" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Run docker compose pulling latest and restarting
             cd /home/${{ secrets.SSH_USER }}/app
@@ -94,9 +94,9 @@ jobs:
             # Fast dotenvx run helper (uses global if present, otherwise falls back to npx)
             run_dotenvx() {
               if command -v dotenvx >/dev/null 2>&1; then
-                dotenvx run -f .env.production -- \"\$@\"
+                dotenvx run -f .env.production -- "$@"
               else
-                npx @dotenvx/dotenvx@latest run -f .env.production -- \"\$@\"
+                npx @dotenvx/dotenvx@latest run -f .env.production -- "$@"
               fi
             }
             
@@ -105,4 +105,4 @@ jobs:
             
             # Logout
             docker logout ghcr.io
-          "
+          EOF
