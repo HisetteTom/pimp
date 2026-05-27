@@ -12,6 +12,8 @@ COPY --from=dependencies /app/node_modules ./node_modules
 COPY . .
 ENV NODE_ENV=production
 ENV DATABASE_URL="postgres://dummy:dummy@localhost:5432/dummy"
+ENV BETTER_AUTH_SECRET="dummy_secret_key_minimum_length_32_characters"
+ENV BETTER_AUTH_URL="http://localhost:3000"
 RUN bun run build
 
 FROM oven/bun:1 AS runner
