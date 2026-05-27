@@ -1,0 +1,2 @@
+# Force Git to always checkout env files using Linux LF line endings to prevent CRLF (\r\n) decryption bugs on Linux droplets
+.env* text eol=lf
