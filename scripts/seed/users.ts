@@ -5,17 +5,21 @@ import bcrypt from 'bcrypt';
 
 export async function seedUsers() {
   console.log('Hashing passwords…');
-  const [studentPasswordHash, profPasswordHash, adminPasswordHash] = await Promise.all([
-    bcrypt.hash('etudiant', 10),
-    bcrypt.hash('professeur', 10),
-    bcrypt.hash('administrateur', 10),
-  ]);
+  const ownerPassword = process.env.SEED_ADMIN_PASSWORD!;
+  const [studentPasswordHash, profPasswordHash, adminPasswordHash, ownerPasswordHash] =
+    await Promise.all([
+      bcrypt.hash('etudiant', 10),
+      bcrypt.hash('professeur', 10),
+      bcrypt.hash('administrateur', 10),
+      bcrypt.hash(ownerPassword, 10),
+    ]);
 
   const studentTestId = crypto.randomUUID();
   const student2TestId = crypto.randomUUID();
   const profTestId = crypto.randomUUID();
   const prof2TestId = crypto.randomUUID();
   const adminTestId = crypto.randomUUID();
+  const ownerTestId = crypto.randomUUID();
 
   console.log('Creating core test users…');
   await db.insert(user).values([
@@ -69,6 +73,16 @@ export async function seedUsers() {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
+    {
+      id: ownerTestId,
+      name: 'Owner Admin',
+      email: process.env.SEED_ADMIN_EMAIL || 'owner@owner.com',
+      username: 'owner',
+      role: 'admin',
+      emailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
   ]);
 
   await db.insert(account).values([
@@ -114,6 +128,15 @@ export async function seedUsers() {
       accountId: adminTestId,
       providerId: 'credential',
       password: adminPasswordHash,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      userId: ownerTestId,
+      accountId: ownerTestId,
+      providerId: 'credential',
+      password: ownerPasswordHash,
       createdAt: new Date(),
       updatedAt: new Date(),
     },
