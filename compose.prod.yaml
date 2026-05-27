@@ -20,6 +20,7 @@ services:
       - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY}
       - STORAGE_BUCKET=${STORAGE_BUCKET}
       - PORT=3000
+    command: ["sh", "-c", "bunx drizzle-kit push && bun server.js"]
 
   db:
     image: postgres:18-alpine3.23

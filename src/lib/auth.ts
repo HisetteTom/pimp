@@ -77,7 +77,7 @@ if (
 ) {
   (async () => {
     try {
-      const email = process.env.SEED_ADMIN_EMAIL;
+      const email = process.env.SEED_ADMIN_EMAIL!;
       const existing = await db.query.user.findFirst({
         where: (u, { eq }) => eq(u.email, email),
       });

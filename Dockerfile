@@ -28,6 +28,8 @@ RUN mkdir .next && chown bun:bun .next
 
 COPY --from=builder --chown=bun:bun /app/.next/standalone ./
 COPY --from=builder --chown=bun:bun /app/.next/static ./.next/static
+COPY --from=builder --chown=bun:bun /app/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder --chown=bun:bun /app/src/db ./src/db
 
 USER bun
 
