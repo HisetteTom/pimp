@@ -84,7 +84,7 @@ if (
       if (!existing) {
         console.log(`[Auto-Seed] Creating admin user: ${email}`);
         const userId = crypto.randomUUID();
-        const hashedPassword = await bcrypt.hash(process.env.SEED_ADMIN_PASSWORD, 10);
+        const hashedPassword = await bcrypt.hash(process.env.SEED_ADMIN_PASSWORD!, 10);
 
         await db.insert(user).values({
           id: userId,
