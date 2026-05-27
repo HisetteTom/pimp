@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
 
       - name: Lowercase Repository Owner
         id: prep
@@ -45,8 +47,6 @@ jobs:
           file: Dockerfile
           push: true
           tags: ${{ steps.prep.outputs.owner }}/pimp-app:latest
-          build-args: |
-            NEXT_PUBLIC_BASE_PATH=/pimp
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -59,6 +59,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
 
       - name: Lowercase Repository Owner
         id: prep
@@ -84,12 +86,22 @@ jobs:
             export IMAGE_NAME='${{ steps.prep.outputs.owner }}/pimp-app:latest'
             
             # Login to GHCR on droplet using dynamic temp token from actions
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo \"${{ secrets.GITHUB_TOKEN }}\" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
             # Run docker compose pulling latest and restarting
             cd /home/${{ secrets.SSH_USER }}/app
-            npx @dotenvx/dotenvx@latest run -f .env.production -- docker compose -f compose.prod.yaml pull
-            npx @dotenvx/dotenvx@latest run -f .env.production -- docker compose -f compose.prod.yaml up -d --remove-orphans
+            
+            # Fast dotenvx run helper (uses global if present, otherwise falls back to npx)
+            run_dotenvx() {
+              if command -v dotenvx >/dev/null 2>&1; then
+                dotenvx run -f .env.production -- \"\$@\"
+              else
+                npx @dotenvx/dotenvx@latest run -f .env.production -- \"\$@\"
+              fi
+            }
+            
+            run_dotenvx docker compose -f compose.prod.yaml pull
+            run_dotenvx docker compose -f compose.prod.yaml up -d --remove-orphans
             
             # Logout
             docker logout ghcr.io
