@@ -1,8 +1,7 @@
 name: React Doctor
 
 on:
-  push:
-    branches: ["*"]
+  workflow_dispatch:
 
 permissions:
   contents: write
