@@ -126,16 +126,16 @@ jobs:
               ACCOUNT_ID=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || echo "00000000-0000-0000-0000-000000000002")
 
               docker exec -i pimp-db-prod psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" <<EOF
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+              CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
-INSERT INTO "user" (id, name, email, email_verified, role, username, created_at, updated_at) 
-VALUES ('$USER_ID', 'Owner Admin', '$SEED_ADMIN_EMAIL', true, 'admin', 'owner', NOW(), NOW())
-ON CONFLICT (email) DO NOTHING;
+              INSERT INTO "user" (id, name, email, email_verified, role, username, created_at, updated_at) 
+              VALUES ('$USER_ID', 'Owner Admin', '$SEED_ADMIN_EMAIL', true, 'admin', 'owner', NOW(), NOW())
+              ON CONFLICT (email) DO NOTHING;
 
-INSERT INTO "account" (id, account_id, provider_id, user_id, password, created_at, updated_at) 
-VALUES ('$ACCOUNT_ID', '$USER_ID', 'credential', '$USER_ID', crypt('$SEED_ADMIN_PASSWORD', gen_salt('bf')), NOW(), NOW())
-ON CONFLICT (id) DO NOTHING;
-EOF
+              INSERT INTO "account" (id, account_id, provider_id, user_id, password, created_at, updated_at) 
+              VALUES ('$ACCOUNT_ID', '$USER_ID', 'credential', '$USER_ID', crypt('$SEED_ADMIN_PASSWORD', gen_salt('bf')), NOW(), NOW())
+              ON CONFLICT (id) DO NOTHING;
+              EOF
             '
             
             # Logout
