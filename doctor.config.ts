@@ -1,0 +1,22 @@
+import type { ReactDoctorConfig } from 'react-doctor/api';
+
+export default {
+  ignore: {
+    rules: [
+      'deslop/unused-file',
+      'deslop/unused-dependency',
+      'deslop/unused-dev-dependency',
+      'react-doctor/no-gray-on-colored-background',
+    ],
+    overrides: [
+      {
+        files: ['src/components/ui/**'],
+        rules: ['react-doctor/only-export-components'],
+      },
+      {
+        files: ['src/app/dashboard/**'],
+        rules: ['react-doctor/no-multi-comp'],
+      },
+    ],
+  },
+} satisfies ReactDoctorConfig;

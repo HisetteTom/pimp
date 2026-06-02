@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 const ResponsiveContainer = dynamic(
   () => import('recharts').then((mod) => mod.ResponsiveContainer),
@@ -36,6 +37,8 @@ export function TimelineAndEvolution({
   chartData,
   completionPercentage,
 }: TimelineAndEvolutionProps) {
+  const t = useTranslations('ProfessorSupervisorTimeline');
+
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card className="group hover:border-primary/50 relative flex h-full flex-col overflow-hidden rounded-none border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-950">
@@ -52,34 +55,34 @@ export function TimelineAndEvolution({
 
         <CardHeader className="relative z-10 flex flex-row items-center justify-between gap-y-0 pb-2">
           <CardTitle className="text-sm font-semibold tracking-widest text-zinc-400 uppercase">
-            Project Timeline
+            {t('timelineTitle')}
           </CardTitle>
           <Clock className="size-4 text-zinc-400" />
         </CardHeader>
         <CardContent className="relative z-10 flex flex-col gap-y-6 pt-4">
           <div className="flex items-end justify-between">
             <div>
-              <p className="text-[9px] font-bold text-zinc-400 uppercase">Start Date</p>
+              <p className="text-[9px] font-bold text-zinc-400 uppercase">{t('startDate')}</p>
               <p
                 className="font-mono text-xl font-semibold tracking-tighter"
                 suppressHydrationWarning
               >
-                {project.dateStart ? new Date(project.dateStart).toLocaleDateString() : 'TBD'}
+                {project.dateStart ? new Date(project.dateStart).toLocaleDateString() : t('tbd')}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[9px] font-bold text-zinc-400 uppercase">Final Deadline</p>
+              <p className="text-[9px] font-bold text-zinc-400 uppercase">{t('finalDeadline')}</p>
               <p
                 className="font-mono text-xl font-semibold tracking-tighter"
                 suppressHydrationWarning
               >
-                {project.dateEnd ? new Date(project.dateEnd).toLocaleDateString() : 'TBD'}
+                {project.dateEnd ? new Date(project.dateEnd).toLocaleDateString() : t('tbd')}
               </p>
             </div>
           </div>
           <div className="flex flex-col gap-y-2">
             <div className="flex justify-between text-[10px] font-semibold tracking-tighter uppercase">
-              <span>Time Elapsed</span>
+              <span>{t('timeElapsed')}</span>
               <span>{timelineProgress}%</span>
             </div>
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
@@ -106,7 +109,7 @@ export function TimelineAndEvolution({
 
         <CardHeader className="relative z-10">
           <CardTitle className="text-sm font-semibold tracking-widest text-zinc-400 uppercase">
-            Work Evolution
+            {t('workEvolution')}
           </CardTitle>
         </CardHeader>
         <CardContent className="relative z-10 h-[200px] w-full p-0">
@@ -163,7 +166,7 @@ export function TimelineAndEvolution({
             {completionPercentage}%
           </p>
           <p className="mt-1 text-[10px] font-bold tracking-widest text-zinc-400 uppercase">
-            Overall Completion
+            {t('overallCompletion')}
           </p>
         </div>
       </Card>

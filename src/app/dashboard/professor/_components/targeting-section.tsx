@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StudentDropdownItem, ProfDropdownItem } from './project-dialog-types';
+import { useTranslations } from 'next-intl';
 
 interface TargetingSectionProps {
   targetPromos: string[];
@@ -36,6 +37,8 @@ export function TargetingSection({
   setProfSearch,
   isPending,
 }: TargetingSectionProps) {
+  const t = useTranslations('ProfessorTargetingSection');
+
   const filteredStudents = students.filter(
     (s) =>
       s.name.toLowerCase().includes(studentSearch.toLowerCase()) ||
@@ -54,7 +57,7 @@ export function TargetingSection({
       {/* Target Promos Section */}
       <div className="space-y-2">
         <Label className="text-[11px] font-black tracking-widest text-zinc-500 uppercase">
-          Target Cohorts / Promos
+          {t('targetCohorts')}
         </Label>
         <div className="flex flex-wrap gap-2">
           {['ISEN1', 'ISEN2', 'ISEN3', 'ISEN4', 'ISEN5'].map((p) => {
@@ -83,9 +86,7 @@ export function TargetingSection({
             );
           })}
         </div>
-        <p className="text-[10px] font-bold text-zinc-400 uppercase italic">
-          * Note: If targeted promos and students are empty, project is private by default.
-        </p>
+        <p className="text-[10px] font-bold text-zinc-400 uppercase italic">{t('privateNote')}</p>
       </div>
 
       {/* Target Specific Students */}
@@ -95,11 +96,11 @@ export function TargetingSection({
             htmlFor="student-search"
             className="text-[11px] font-black tracking-widest text-zinc-500 uppercase"
           >
-            Target Specific Students ({targetUsers.length} selected)
+            {t('targetStudents', { count: targetUsers.length })}
           </Label>
           <Input
             id="student-search"
-            placeholder="Filter students..."
+            placeholder={t('filterStudents')}
             className="h-8 rounded-none border border-zinc-200 text-xs sm:w-48 dark:border-zinc-800"
             value={studentSearch}
             onChange={(e) => setStudentSearch(e.target.value)}
@@ -108,7 +109,7 @@ export function TargetingSection({
         </div>
         <div className="h-32 space-y-1 overflow-y-auto rounded-none border border-zinc-200 bg-zinc-50/50 p-2 dark:border-zinc-800 dark:bg-zinc-900/20">
           {filteredStudents.length === 0 ? (
-            <p className="p-2 text-xs text-zinc-400 italic">No students found</p>
+            <p className="p-2 text-xs text-zinc-400 italic">{t('noStudentsFound')}</p>
           ) : (
             filteredStudents.map((s) => {
               const checked = targetUsers.includes(s.id);
@@ -135,7 +136,7 @@ export function TargetingSection({
                   />
                   <span className="text-zinc-700 dark:text-zinc-300">
                     {s.name}{' '}
-                    <span className="font-bold text-purple-500">({s.promo || 'No Promo'})</span> -{' '}
+                    <span className="font-bold text-purple-500">({s.promo || t('noPromo')})</span> -{' '}
                     <span className="text-zinc-500">{s.email}</span>
                   </span>
                 </label>
@@ -152,11 +153,11 @@ export function TargetingSection({
             htmlFor="prof-search"
             className="text-[11px] font-black tracking-widest text-zinc-500 uppercase"
           >
-            Invite Collaborators ({coTeachers.length} selected)
+            {t('inviteCollaborators', { count: coTeachers.length })}
           </Label>
           <Input
             id="prof-search"
-            placeholder="Filter professors..."
+            placeholder={t('filterProfessors')}
             className="h-8 rounded-none border border-zinc-200 text-xs sm:w-48 dark:border-zinc-800"
             value={profSearch}
             onChange={(e) => setProfSearch(e.target.value)}
@@ -165,7 +166,7 @@ export function TargetingSection({
         </div>
         <div className="h-28 space-y-1 overflow-y-auto rounded-none border border-zinc-200 bg-zinc-50/50 p-2 dark:border-zinc-800 dark:bg-zinc-900/20">
           {filteredProfs.length === 0 ? (
-            <p className="p-2 text-xs text-zinc-400 italic">No other professors found</p>
+            <p className="p-2 text-xs text-zinc-400 italic">{t('noProfessorsFound')}</p>
           ) : (
             filteredProfs.map((p) => {
               const checked = coTeachers.includes(p.id);

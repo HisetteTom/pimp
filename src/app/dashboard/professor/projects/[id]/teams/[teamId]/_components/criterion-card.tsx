@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ShieldAlert } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface CriterionCardProps {
   criterion: {
@@ -25,6 +26,8 @@ export function CriterionCard({
   onScoreChange,
   onCommentChange,
 }: CriterionCardProps) {
+  const t = useTranslations('ProfessorCriterionCard');
+
   return (
     <Card
       className={`rounded-none border-2 transition-all ${
@@ -50,7 +53,7 @@ export function CriterionCard({
           variant="outline"
           className="rounded-none border-zinc-300 px-2 py-0.5 text-[9px] font-bold tracking-wider text-zinc-500 uppercase dark:border-zinc-700"
         >
-          Max: {criterion.maxPoints} pts
+          {t('maxPoints', { max: criterion.maxPoints })}
         </Badge>
       </CardHeader>
       <CardContent className="grid items-end gap-6 p-6 md:grid-cols-4">
@@ -60,12 +63,12 @@ export function CriterionCard({
             htmlFor={`crit-score-${criterion.id}`}
             className="flex items-center gap-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase"
           >
-            Score (0-{criterion.maxPoints})
+            {t('scoreLabel', { max: criterion.maxPoints })}
           </label>
           <div className="relative">
             <input
               id={`crit-score-${criterion.id}`}
-              aria-label="Score"
+              aria-label={t('scoreLabel', { max: criterion.maxPoints })}
               type="number"
               step="0.5"
               min="0"
@@ -95,11 +98,11 @@ export function CriterionCard({
             htmlFor={`crit-comment-${criterion.id}`}
             className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase"
           >
-            Comments
+            {t('comments')}
           </label>
           <input
             id={`crit-comment-${criterion.id}`}
-            aria-label="Comments"
+            aria-label={t('comments')}
             type="text"
             value={scoreData.comment || ''}
             onChange={(e) => onCommentChange(criterion.id, e.target.value)}

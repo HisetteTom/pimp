@@ -24,6 +24,7 @@ import {
 import { createTask } from '../../actions';
 import { toast } from 'sonner';
 import { Plus, Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface TaskDialogProps {
   projectId: number;
@@ -40,6 +41,7 @@ export function TaskDialog({
   trigger,
   defaultStatus,
 }: TaskDialogProps) {
+  const t = useTranslations('TaskDialog');
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
@@ -69,12 +71,12 @@ export function TaskDialog({
         assignees: assignees || undefined,
         projectId,
       });
-      toast.success('Task created');
+      toast.success(t('taskCreatedToast'));
       setOpen(false);
       setSelectedAssignees([]);
       setLoading(false);
     } catch {
-      toast.error('Failed to create task');
+      toast.error(t('failedCreateToast'));
       setLoading(false);
     }
   }
@@ -93,55 +95,55 @@ export function TaskDialog({
         {trigger || (
           <Button className="text-xs font-semibold tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)]">
             <Plus className="mr-2 size-4" />
-            Add Task
+            {t('addTask')}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="tracking-tighter uppercase">New Team Task</DialogTitle>
-            <DialogDescription>Assign work to your team and set deadlines.</DialogDescription>
+            <DialogTitle className="tracking-tighter uppercase">{t('newTeamTask')}</DialogTitle>
+            <DialogDescription>{t('descriptionSub')}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="name" className="text-xs font-bold text-zinc-400 uppercase">
-                Task Name
+                {t('taskName')}
               </Label>
               <Input id="name" name="name" required />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="description" className="text-xs font-bold text-zinc-400 uppercase">
-                Description
+                {t('description')}
               </Label>
               <Textarea id="description" name="description" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="priority" className="text-xs font-bold text-zinc-400 uppercase">
-                  Priority
+                  {t('priority')}
                 </Label>
                 <Select name="priority" defaultValue="medium">
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="low">{t('low')}</SelectItem>
+                    <SelectItem value="medium">{t('medium')}</SelectItem>
+                    <SelectItem value="high">{t('high')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="deadline" className="text-xs font-bold text-zinc-400 uppercase">
-                  Deadline
+                  {t('deadline')}
                 </Label>
                 <Input id="deadline" name="deadline" type="date" />
               </div>
             </div>
             <div className="grid gap-2">
               <Label className="text-xs font-bold text-zinc-400 uppercase">
-                Assign To Team Members
+                {t('assignMembers')}
               </Label>
               <div className="max-h-[160px] space-y-1 overflow-y-auto rounded-lg border border-zinc-200 bg-zinc-50/50 p-2 dark:border-zinc-800 dark:bg-zinc-900/50">
                 {members.map((member) => {
@@ -192,16 +194,14 @@ export function TaskDialog({
                   );
                 })}
                 {members.length === 0 && (
-                  <p className="py-4 text-center text-xs text-zinc-400 italic">
-                    No team members available.
-                  </p>
+                  <p className="py-4 text-center text-xs text-zinc-400 italic">{t('noMembers')}</p>
                 )}
               </div>
             </div>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={loading} className="w-full font-bold uppercase">
-              {loading ? 'Creating...' : 'Create Task'}
+              {loading ? t('creating') : t('createTask')}
             </Button>
           </DialogFooter>
         </form>

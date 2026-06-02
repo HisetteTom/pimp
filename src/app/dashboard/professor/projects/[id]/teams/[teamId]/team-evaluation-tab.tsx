@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useMemo } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { saveTeamEvaluation } from '../../../../evaluation-actions';
 import { EvaluationMetrics } from './_components/evaluation-metrics';
 import { EvaluationCriteriaGrid } from './_components/evaluation-criteria-grid';
 import { GlobalRemarksCard } from './_components/global-remarks-card';
+import { useTranslations } from 'next-intl';
 
 interface TeamEvaluationTabProps {
   projectId: number;
@@ -26,6 +27,7 @@ export function TeamEvaluationTab({
   initialScores,
   team,
 }: TeamEvaluationTabProps) {
+  const t = useTranslations('ProfessorTeamEvaluationTab');
   const { refresh } = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -70,7 +72,7 @@ export function TeamEvaluationTab({
   };
 
   // Live total score calculators
-  const totalScoreInfo = useMemo(() => {
+  const totalScoreInfo = (() => {
     let currentSum = 0;
     let maxSum = 0;
     let anyAssigned = false;
@@ -90,37 +92,35 @@ export function TeamEvaluationTab({
       anyAssigned,
       percentage: maxSum > 0 ? ((currentSum / maxSum) * 100).toFixed(1) : '0',
     };
-  }, [criteria, scores]);
+  })();
 
-  // Auto-calculated global grade normalized to /20
-  const globalGrade = useMemo(() => {
+  const globalGrade = (() => {
     if (!totalScoreInfo.anyAssigned || totalScoreInfo.maxSum === 0) return '';
     const normalized = (totalScoreInfo.currentSum / totalScoreInfo.maxSum) * 20;
     return `${parseFloat(normalized.toFixed(2))}/20`;
-  }, [totalScoreInfo]);
+  })();
 
-  // Validation: Check if any score is out of bounds or negative
-  const validationErrors = useMemo(() => {
+  const validationErrors = (() => {
     const errors: Record<number, string> = {};
     criteria.forEach((c) => {
       const scoreObj = scores[c.id];
       if (scoreObj && scoreObj.score !== undefined) {
         if (scoreObj.score < 0) {
-          errors[c.id] = 'Score cannot be negative';
+          errors[c.id] = t('errNegative');
         } else if (scoreObj.score > c.maxPoints) {
-          errors[c.id] = `Score cannot exceed maximum of ${c.maxPoints}`;
+          errors[c.id] = t('errExceed', { max: c.maxPoints });
         }
       }
     });
     return errors;
-  }, [criteria, scores]);
+  })();
 
   const hasErrors = Object.keys(validationErrors).length > 0;
 
   // Handle Save Action
   const handleSave = () => {
     if (hasErrors) {
-      toast.error('Please fix validation errors before saving.');
+      toast.error(t('validationError'));
       return;
     }
 
@@ -141,10 +141,10 @@ export function TeamEvaluationTab({
           supervisorNotes,
         });
 
-        toast.success('Team evaluation grid saved successfully!');
+        toast.success(t('saveSuccess'));
         refresh();
       } catch (err) {
-        toast.error('Failed to save team evaluation.');
+        toast.error(t('saveError'));
         console.error(err);
       }
     });
@@ -181,7 +181,7 @@ export function TeamEvaluationTab({
           className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-none bg-zinc-900 px-6 py-2.5 text-xs font-bold tracking-widest text-white uppercase transition-all hover:bg-zinc-800 sm:w-auto dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
         >
           {isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-          Save Evaluation Grid
+          {t('btnSave')}
         </Button>
       </div>
     </div>

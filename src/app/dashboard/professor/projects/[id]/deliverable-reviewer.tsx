@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { validateDeliverable } from '../../actions';
 import { Loader2, ExternalLink, CheckSquare, XCircle, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useTranslations } from 'next-intl';
 
 interface DeliverableReviewerProps {
   deliverableId: number;
@@ -20,6 +21,29 @@ interface DeliverableReviewerProps {
   readOnly?: boolean;
 }
 
+function getStatusBadge(s: string, t: (key: string) => string) {
+  switch (s) {
+    case 'approved':
+      return (
+        <Badge className="rounded-none bg-emerald-500 text-[9px] font-black tracking-wider text-white uppercase hover:bg-emerald-600">
+          {t('statusApproved')}
+        </Badge>
+      );
+    case 'rejected':
+      return (
+        <Badge className="rounded-none bg-red-500 text-[9px] font-black tracking-wider text-white uppercase hover:bg-red-600">
+          {t('statusRejected')}
+        </Badge>
+      );
+    default:
+      return (
+        <Badge className="rounded-none bg-amber-500 text-[9px] font-black tracking-wider text-white uppercase hover:bg-amber-600">
+          {t('statusPending')}
+        </Badge>
+      );
+  }
+}
+
 export function DeliverableReviewer({
   deliverableId,
   projectId,
@@ -29,6 +53,7 @@ export function DeliverableReviewer({
   initialFeedback = '',
   readOnly = false,
 }: DeliverableReviewerProps) {
+  const t = useTranslations('ProfessorDeliverableReviewer');
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
 
@@ -40,36 +65,19 @@ export function DeliverableReviewer({
       try {
         await validateDeliverable(deliverableId, newStatus, feedback, projectId);
         setStatus(newStatus);
-        toast.success(`Deliverable "${deliverableName}" marked as ${newStatus}`);
+        const statusLabel =
+          newStatus === 'approved'
+            ? t('statusApproved')
+            : newStatus === 'rejected'
+              ? t('statusRejected')
+              : t('statusPending');
+        toast.success(t('markedStatus', { name: deliverableName, status: statusLabel }));
         refresh();
       } catch (err) {
-        toast.error('Failed to update deliverable status');
+        toast.error(t('errorUpdate'));
         console.error(err);
       }
     });
-  };
-
-  const getStatusBadge = (s: string) => {
-    switch (s) {
-      case 'approved':
-        return (
-          <Badge className="rounded-none bg-emerald-500 text-[9px] font-black tracking-wider text-white uppercase hover:bg-emerald-600">
-            Approved
-          </Badge>
-        );
-      case 'rejected':
-        return (
-          <Badge className="rounded-none bg-red-500 text-[9px] font-black tracking-wider text-white uppercase hover:bg-red-600">
-            Rejected
-          </Badge>
-        );
-      default:
-        return (
-          <Badge className="rounded-none bg-amber-500 text-[9px] font-black tracking-wider text-white uppercase hover:bg-amber-600">
-            Pending Review
-          </Badge>
-        );
-    }
   };
 
   return (
@@ -78,7 +86,7 @@ export function DeliverableReviewer({
         <div>
           <h4 className="flex items-center gap-1.5 text-xs font-semibold tracking-tight text-zinc-800 uppercase dark:text-zinc-200">
             {deliverableName}
-            {getStatusBadge(status)}
+            {getStatusBadge(status, t)}
           </h4>
           {deliverableSource && (
             <a
@@ -88,7 +96,7 @@ export function DeliverableReviewer({
               className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-purple-600 uppercase underline decoration-2 underline-offset-2 hover:text-purple-700"
             >
               <ExternalLink className="size-3" />
-              Download Submission Resource
+              {t('downloadResource')}
             </a>
           )}
         </div>
@@ -100,7 +108,7 @@ export function DeliverableReviewer({
             htmlFor={`deliv-feed-${deliverableId}`}
             className="text-[9px] font-black tracking-widest text-zinc-400 uppercase"
           >
-            Review Comments / Feedback
+            {t('feedbackLabel')}
           </Label>
           <Textarea
             id={`deliv-feed-${deliverableId}`}
@@ -127,7 +135,7 @@ export function DeliverableReviewer({
               ) : (
                 <CheckSquare className="size-3" />
               )}
-              Approve
+              {t('btnApprove')}
             </Button>
 
             <Button
@@ -143,7 +151,7 @@ export function DeliverableReviewer({
               ) : (
                 <XCircle className="size-3" />
               )}
-              Reject
+              {t('btnReject')}
             </Button>
 
             {status !== 'pending' && (
@@ -160,7 +168,7 @@ export function DeliverableReviewer({
                 ) : (
                   <AlertCircle className="size-3" />
                 )}
-                Reset to Pending
+                {t('btnReset')}
               </Button>
             )}
           </div>

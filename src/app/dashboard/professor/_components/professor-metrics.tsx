@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { FolderRoot, Users, GraduationCap, ClipboardCheck } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ProfessorMetricsProps {
   totalProjects: number;
@@ -14,19 +15,21 @@ export function ProfessorMetrics({
   totalEnrolledStudents,
   pendingDeliverables,
 }: ProfessorMetricsProps) {
+  const t = useTranslations('ProfessorMetrics');
+
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-none dark:border-zinc-800">
         <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
           <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-            Active Proposals
+            {t('activeProposals')}
           </span>
           <FolderRoot className="size-4 text-purple-500" />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-black text-zinc-950 dark:text-zinc-50">{totalProjects}</div>
           <p className="mt-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
-            Total proposed subjects
+            {t('totalSubjects')}
           </p>
         </CardContent>
       </Card>
@@ -34,14 +37,14 @@ export function ProfessorMetrics({
       <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-none dark:border-zinc-800">
         <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
           <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-            Assigned Teams
+            {t('assignedTeams')}
           </span>
           <Users className="size-4 text-purple-500" />
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-black text-zinc-950 dark:text-zinc-50">{totalTeams}</div>
           <p className="mt-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
-            Active working groups
+            {t('activeGroups')}
           </p>
         </CardContent>
       </Card>
@@ -49,7 +52,7 @@ export function ProfessorMetrics({
       <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-none dark:border-zinc-800">
         <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
           <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-            Students Enrolled
+            {t('studentsEnrolled')}
           </span>
           <GraduationCap className="size-4 text-purple-500" />
         </CardHeader>
@@ -58,7 +61,7 @@ export function ProfessorMetrics({
             {totalEnrolledStudents}
           </div>
           <p className="mt-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
-            Unique student accounts
+            {t('uniqueAccounts')}
           </p>
         </CardContent>
       </Card>
@@ -68,7 +71,7 @@ export function ProfessorMetrics({
       >
         <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
           <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-            Pending Reviews
+            {t('pendingReviews')}
           </span>
           <ClipboardCheck
             className={`size-4 ${pendingDeliverables > 0 ? 'animate-pulse text-amber-500' : 'text-purple-500'}`}
@@ -79,7 +82,7 @@ export function ProfessorMetrics({
             {pendingDeliverables}
           </div>
           <p className="mt-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
-            Deliverables awaiting review
+            {t('awaitingReview')}
           </p>
         </CardContent>
       </Card>

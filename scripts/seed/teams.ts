@@ -6,12 +6,14 @@ import { faker } from '@faker-js/faker';
 interface SeedTeamsProps {
   insertedProjects: any[];
   studentTestId: string;
+  student2TestId: string;
   randomStudentIds: string[];
 }
 
 export async function seedTeams({
   insertedProjects,
   studentTestId,
+  student2TestId,
   randomStudentIds,
 }: SeedTeamsProps) {
   console.log('Populating active student teams…');
@@ -37,22 +39,20 @@ export async function seedTeams({
   const teamsData = [];
   let nameIndex = 0;
   for (const p of activeProjects) {
-    // Add 2 teams per project
-    for (let j = 0; j < 2; j++) {
-      teamsData.push({
-        name: `${teamNames[nameIndex % teamNames.length]} - Team ${j + 1}`,
-        projectId: p.id,
-        grade:
-          p.status === 'presented' || p.status === 'closed'
-            ? getInt({ min: 12, max: 19 }).toString()
-            : null,
-        feedback:
-          p.status === 'presented' || p.status === 'closed'
-            ? 'Impressive delivery, well-structured codebase and solid testing.'
-            : null,
-      });
-      nameIndex++;
-    }
+    // Add exactly 1 team per active project to avoid multiple student leads per project
+    teamsData.push({
+      name: `${teamNames[nameIndex % teamNames.length]} - Team 1`,
+      projectId: p.id,
+      grade:
+        p.status === 'presented' || p.status === 'closed'
+          ? getInt({ min: 12, max: 19 }).toString()
+          : null,
+      feedback:
+        p.status === 'presented' || p.status === 'closed'
+          ? 'Impressive delivery, well-structured codebase and solid testing.'
+          : null,
+    });
+    nameIndex++;
   }
 
   const insertedTeams = await db.insert(team).values(teamsData).returning();
@@ -60,17 +60,32 @@ export async function seedTeams({
   console.log('Enrolling students and structuring groups…');
   const enrollmentsToInsert: (typeof projectEnrollment.$inferInsert)[] = [];
 
-  // Assign our test student to an ongoing project team as leader
-  const targetProject = insertedProjects.find((p) => p.status === 'ongoing');
-  const targetTeam = targetProject
-    ? insertedTeams.find((t) => t.projectId === targetProject.id)
+  // Assign Student Test 1 to 'AI-Powered Patient Triage Portal' (ongoing)
+  const isen3Project = insertedProjects.find((p) => p.name === 'AI-Powered Patient Triage Portal');
+  const isen3Team = isen3Project
+    ? insertedTeams.find((t) => t.projectId === isen3Project.id)
     : null;
 
-  if (targetProject && targetTeam) {
+  if (isen3Project && isen3Team) {
     enrollmentsToInsert.push({
       userId: studentTestId,
-      projectId: targetProject.id,
-      teamId: targetTeam.id,
+      projectId: isen3Project.id,
+      teamId: isen3Team.id,
+      responsabilityId: 1,
+    });
+  }
+
+  // Assign Student Test 2 to 'Greenhouse Hydroponic Automator' (ongoing)
+  const isen4Project = insertedProjects.find((p) => p.name === 'Greenhouse Hydroponic Automator');
+  const isen4Team = isen4Project
+    ? insertedTeams.find((t) => t.projectId === isen4Project.id)
+    : null;
+
+  if (isen4Project && isen4Team) {
+    enrollmentsToInsert.push({
+      userId: student2TestId,
+      projectId: isen4Project.id,
+      teamId: isen4Team.id,
       responsabilityId: 1,
     });
   }
@@ -100,8 +115,6 @@ export async function seedTeams({
     }
   }
 
-  await db.insert(projectEnrollment).values(enrollmentsToInsert);
-
   // Add remaining students to idle projects (without teams)
   const idleProjects = insertedProjects.filter(
     (p) => p.status === 'proposed' || p.status === 'validated',
@@ -118,6 +131,8 @@ export async function seedTeams({
       }
     }
   }
+
+  await db.insert(projectEnrollment).values(enrollmentsToInsert);
 
   return {
     insertedTeams,

@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useMemo, useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, User as UserIcon, AlertTriangle, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useTranslations } from 'next-intl';
 
 interface Task {
   id: number;
@@ -21,35 +22,42 @@ interface ReadOnlyTaskListViewProps {
   members: { id: string; name: string }[];
 }
 
-const STATUS_TITLES = {
-  todo: 'To Do',
-  in_progress: 'In Progress',
-  done: 'Done',
+const priorityStyles = {
+  low: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-500/20',
+  medium:
+    'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-500/20',
+  high: 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-450 border border-red-500/20',
 } as Record<string, string>;
 
 export function ReadOnlyTaskListView({ initialTasks, members }: ReadOnlyTaskListViewProps) {
+  const t = useTranslations('ProfessorReadOnlyTaskList');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
-  const selectedTaskAssignees = useMemo(() => {
+  const STATUS_TITLES = {
+    todo: t('colTodo'),
+    in_progress: t('colInProgress'),
+    done: t('colDone'),
+  } as Record<string, string>;
+
+  const priorityLabels = {
+    low: t('priorityLow'),
+    medium: t('priorityMedium'),
+    high: t('priorityHigh'),
+  } as Record<string, string>;
+
+  const selectedTaskAssignees = (() => {
     if (!selectedTask) return [];
     const ids =
       selectedTask.assignees?.split(',').filter(Boolean) ||
       (selectedTask.assigneeId ? [selectedTask.assigneeId] : []);
     return members.filter((m) => ids.includes(m.id));
-  }, [selectedTask, members]);
+  })();
 
   function handleSelectTask(task: Task) {
     setSelectedTask(task);
     setDetailOpen(true);
   }
-
-  const priorityStyles = {
-    low: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-500/20',
-    medium:
-      'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-500/20',
-    high: 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-400 border border-red-500/20',
-  } as Record<string, string>;
 
   return (
     <>
@@ -57,7 +65,7 @@ export function ReadOnlyTaskListView({ initialTasks, members }: ReadOnlyTaskList
         {/* Header */}
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-xl font-semibold tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-            Task List
+            {t('title')}
           </h3>
         </div>
 
@@ -68,22 +76,22 @@ export function ReadOnlyTaskListView({ initialTasks, members }: ReadOnlyTaskList
               <thead className="border-b-2 border-zinc-100 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
                 <tr>
                   <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                    Task Name
+                    {t('colTaskName')}
                   </th>
                   <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                    Status
+                    {t('colStatus')}
                   </th>
                   <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                    Priority
+                    {t('colPriority')}
                   </th>
                   <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                    Deadline
+                    {t('colDeadline')}
                   </th>
                   <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                    Assignees
+                    {t('colAssignees')}
                   </th>
                   <th className="p-4 text-right text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                    Actions
+                    {t('colActions')}
                   </th>
                 </tr>
               </thead>
@@ -129,7 +137,7 @@ export function ReadOnlyTaskListView({ initialTasks, members }: ReadOnlyTaskList
                           <Badge
                             className={`rounded-none px-2 py-0.5 text-[9px] font-bold uppercase shadow-none ${priorityStyles[task.priority] || priorityStyles.medium}`}
                           >
-                            {task.priority}
+                            {priorityLabels[task.priority] || task.priority}
                           </Badge>
                         </td>
 
@@ -143,10 +151,14 @@ export function ReadOnlyTaskListView({ initialTasks, members }: ReadOnlyTaskList
                               </div>
                             ) : (
                               <span className="text-[10px] font-bold text-zinc-300 uppercase italic">
-                                None
+                                {t('none')}
                               </span>
                             )}
-                            <OverdueBadge deadline={task.deadline} status={task.status} />
+                            <OverdueBadge
+                              deadline={task.deadline}
+                              status={task.status}
+                              overdueText={t('overdue')}
+                            />
                           </div>
                         </td>
 
@@ -175,7 +187,7 @@ export function ReadOnlyTaskListView({ initialTasks, members }: ReadOnlyTaskList
                             </div>
                           ) : (
                             <span className="text-[10px] font-bold text-zinc-300 uppercase italic">
-                              Unassigned
+                              {t('unassigned')}
                             </span>
                           )}
                         </td>
@@ -183,7 +195,7 @@ export function ReadOnlyTaskListView({ initialTasks, members }: ReadOnlyTaskList
                         {/* Actions */}
                         <td className="p-4 text-right align-middle">
                           <span className="text-zinc-450 group-hover:text-primary inline-flex items-center text-xs font-semibold tracking-wider uppercase transition-colors">
-                            Details
+                            {t('details')}
                             <ChevronRight className="ml-1 size-3.5" />
                           </span>
                         </td>
@@ -193,7 +205,7 @@ export function ReadOnlyTaskListView({ initialTasks, members }: ReadOnlyTaskList
                 ) : (
                   <tr>
                     <td colSpan={6} className="p-12 text-center font-medium text-zinc-400 italic">
-                      No tasks created by team yet.
+                      {t('noTasks')}
                     </td>
                   </tr>
                 )}
@@ -222,7 +234,7 @@ export function ReadOnlyTaskListView({ initialTasks, members }: ReadOnlyTaskList
                           : 'border border-emerald-500/20 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400'
                     }`}
                   >
-                    {selectedTask.priority} priority
+                    {priorityLabels[selectedTask.priority] || selectedTask.priority}
                   </Badge>
                 </div>
                 <DialogTitle className="text-xl font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
@@ -233,33 +245,37 @@ export function ReadOnlyTaskListView({ initialTasks, members }: ReadOnlyTaskList
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <span className="text-[9px] font-black tracking-widest text-zinc-400 uppercase">
-                    Description
+                    {t('description')}
                   </span>
                   <p className="text-sm leading-relaxed font-medium whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">
-                    {selectedTask.description || 'No description provided for this task.'}
+                    {selectedTask.description || t('noDescription')}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 border-t border-zinc-100 pt-2 dark:border-zinc-800">
                   <div className="space-y-1">
                     <span className="text-[9px] font-black tracking-widest text-zinc-400 uppercase">
-                      Deadline
+                      {t('colDeadline')}
                     </span>
                     <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-700 uppercase dark:text-zinc-300">
                       <Calendar className="text-primary size-4" />
-                      {selectedTask.deadline ? <ClientDate date={selectedTask.deadline} /> : 'None'}
+                      {selectedTask.deadline ? (
+                        <ClientDate date={selectedTask.deadline} />
+                      ) : (
+                        t('none')
+                      )}
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
                   <span className="text-[9px] font-black tracking-widest text-zinc-400 uppercase">
-                    Assigned Team Members
+                    {t('assignedMembers')}
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {selectedTaskAssignees.length === 0 ? (
                       <p className="text-xs font-semibold text-zinc-400 uppercase italic">
-                        Unassigned
+                        {t('unassigned')}
                       </p>
                     ) : (
                       selectedTaskAssignees.map((member) => (
@@ -302,7 +318,15 @@ function ClientDate({ date }: { date: string | Date }) {
   );
 }
 
-function OverdueBadge({ deadline, status }: { deadline: Date | string | null; status: string }) {
+function OverdueBadge({
+  deadline,
+  status,
+  overdueText,
+}: {
+  deadline: Date | string | null;
+  status: string;
+  overdueText: string;
+}) {
   const now = useSyncExternalStore(
     timeStore.subscribe,
     timeStore.getSnapshot,
@@ -321,7 +345,7 @@ function OverdueBadge({ deadline, status }: { deadline: Date | string | null; st
       suppressHydrationWarning
     >
       <AlertTriangle className="size-3" />
-      Overdue
+      {overdueText}
     </span>
   );
 }

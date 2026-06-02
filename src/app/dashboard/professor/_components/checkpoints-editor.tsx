@@ -1,7 +1,10 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Trash } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface Checkpoint {
   id: string;
@@ -24,11 +27,13 @@ export function CheckpointsEditor({
   onRemove,
   onUpdate,
 }: CheckpointsEditorProps) {
+  const t = useTranslations('ProfessorCheckpointsEditor');
+
   return (
     <div className="space-y-4 border-t border-zinc-100 pt-4 dark:border-zinc-800">
       <div className="flex items-center justify-between">
         <Label className="text-[11px] font-black tracking-widest text-zinc-500 uppercase">
-          Project Checkpoints (Meetings/Deadlines)
+          {t('title')}
         </Label>
         <Button
           type="button"
@@ -39,14 +44,12 @@ export function CheckpointsEditor({
           disabled={isPending}
         >
           <Plus className="size-3.5" />
-          Add Checkpoint
+          {t('addCheckpoint')}
         </Button>
       </div>
 
       {checkpoints.length === 0 ? (
-        <p className="text-[10px] font-bold text-zinc-400 uppercase italic">
-          No checkpoints added yet. These can also be managed inside the project workspace.
-        </p>
+        <p className="text-[10px] font-bold text-zinc-400 uppercase italic">{t('emptyText')}</p>
       ) : (
         <div className="max-h-48 space-y-3 overflow-y-auto pr-1">
           {checkpoints.map((cp) => (
@@ -58,7 +61,7 @@ export function CheckpointsEditor({
                 onChange={(e) => onUpdate(cp.id, 'title', e.target.value)}
                 required
                 disabled={isPending}
-                placeholder="Checkpoint Title"
+                placeholder={t('titlePlaceholder')}
               />
               <Input
                 type="date"

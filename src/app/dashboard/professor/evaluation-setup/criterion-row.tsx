@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Edit2, Trash, Check, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface Criterion {
   id: number;
@@ -47,6 +48,8 @@ export function CriterionRow({
   onUpdate,
   onDelete,
 }: CriterionRowProps) {
+  const t = useTranslations('ProfessorCriterionRowSetup');
+
   if (isEditing) {
     return (
       <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] dark:border-zinc-800">
@@ -57,7 +60,7 @@ export function CriterionRow({
                 htmlFor={`edit-name-${criterion.id}`}
                 className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase"
               >
-                Criterion Name
+                {t('fieldName')}
               </Label>
               <Input
                 id={`edit-name-${criterion.id}`}
@@ -71,7 +74,7 @@ export function CriterionRow({
                 htmlFor={`edit-points-${criterion.id}`}
                 className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase"
               >
-                Max Points
+                {t('fieldPoints')}
               </Label>
               <Input
                 id={`edit-points-${criterion.id}`}
@@ -88,7 +91,7 @@ export function CriterionRow({
               htmlFor={`edit-desc-${criterion.id}`}
               className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase"
             >
-              Description (Optional)
+              {t('fieldDesc')}
             </Label>
             <Textarea
               id={`edit-desc-${criterion.id}`}
@@ -110,14 +113,14 @@ export function CriterionRow({
               ) : (
                 <Check className="size-3" />
               )}
-              Save Changes
+              {t('btnSave')}
             </Button>
             <button
               type="button"
               onClick={onCancelEdit}
               className="cursor-pointer px-4 py-2 text-xs font-bold tracking-wider text-zinc-500 uppercase hover:text-zinc-900 dark:hover:text-zinc-100"
             >
-              Cancel
+              {t('btnCancel')}
             </button>
           </div>
         </CardContent>
@@ -133,7 +136,7 @@ export function CriterionRow({
             {criterion.name}
           </h4>
           <Badge className="rounded-none border border-zinc-200 bg-zinc-100 px-2.5 py-0.5 text-[9px] font-bold tracking-wider text-zinc-700 uppercase dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-            Score Max: {criterion.maxPoints} pts
+            {t('maxPoints', { max: criterion.maxPoints })}
           </Badge>
         </div>
         {criterion.description && (
@@ -145,7 +148,7 @@ export function CriterionRow({
         <button
           type="button"
           onClick={onStartEdit}
-          title="Edit Criterion"
+          title={t('edit')}
           className="flex size-8 cursor-pointer items-center justify-center rounded border border-zinc-200 text-zinc-500 transition-all hover:bg-zinc-50 hover:text-zinc-900 dark:border-zinc-800 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
         >
           <Edit2 className="size-3.5" />
@@ -153,7 +156,7 @@ export function CriterionRow({
         <button
           type="button"
           onClick={onDelete}
-          title="Delete Criterion"
+          title={t('delete')}
           className="flex size-8 cursor-pointer items-center justify-center rounded border border-rose-200 text-rose-500/80 transition-all hover:bg-rose-50 hover:text-rose-600"
         >
           <Trash className="size-3.5" />

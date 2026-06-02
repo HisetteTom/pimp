@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { refuseInvitation, joinProject } from '@/app/dashboard/student/actions';
 import { useTransition } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface ProjectCardProps {
   id: number;
@@ -55,10 +56,11 @@ export function ProjectCard({
   membersList = EMPTY_MEMBERS,
   isMember = false,
 }: ProjectCardProps) {
+  const t = useTranslations('ProjectCard');
   const isAssigned = status.toLowerCase() === 'assigned' || isMember;
   const [isPending, startTransition] = useTransition();
 
-  const progress = React.useMemo(() => {
+  const progress = (() => {
     if (!dateStart || !dateEnd) return 0;
     const start = new Date(dateStart).getTime();
     const end = new Date(dateEnd).getTime();
@@ -68,7 +70,7 @@ export function ProjectCard({
     if (now > end) return 100;
 
     return Math.round(((now - start) / (end - start)) * 100);
-  }, [dateStart, dateEnd]);
+  })();
 
   const handleRefuse = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -129,13 +131,13 @@ export function ProjectCard({
       <CardContent className="relative z-10 px-8 pb-8">
         <div className="flex flex-col gap-2">
           <span className="font-mono text-[9px] font-black tracking-[0.2em] text-zinc-400 uppercase">
-            Timeline
+            {t('timeline')}
           </span>
           <div className="flex items-center gap-4">
             <div className="flex-1 space-y-1">
-              <p className="text-[9px] font-bold text-zinc-400 uppercase">Start</p>
+              <p className="text-[9px] font-bold text-zinc-400 uppercase">{t('start')}</p>
               <p className="font-mono text-sm font-black tracking-tight text-zinc-800 dark:text-zinc-200">
-                {dateStart || 'TBD'}
+                {dateStart || t('tbd')}
               </p>
             </div>
 
@@ -146,7 +148,7 @@ export function ProjectCard({
             </div>
 
             <div className="flex-1 space-y-1 text-right">
-              <p className="text-[9px] font-bold text-zinc-400 uppercase">Final</p>
+              <p className="text-[9px] font-bold text-zinc-400 uppercase">{t('final')}</p>
               <p className="font-mono text-sm font-black tracking-tight text-zinc-800 dark:text-zinc-200">
                 {dateEnd || deadline}
               </p>
@@ -156,7 +158,7 @@ export function ProjectCard({
           <div className="mt-4 space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="font-mono text-[9px] font-black tracking-[0.2em] text-zinc-400 uppercase">
-                Progress
+                {t('progress')}
               </span>
               <span
                 className={cn(
@@ -192,7 +194,7 @@ export function ProjectCard({
               href={`/dashboard/student/projects/${id}`}
               className="flex items-center justify-center gap-2"
             >
-              OPEN PROJECT
+              {t('openProject')}
               <ArrowRight className="size-4" />
             </Link>
           </Button>
@@ -204,7 +206,7 @@ export function ProjectCard({
                   variant="outline"
                   className="border-primary/10 hover:border-primary/30 hover:bg-primary/5 text-primary h-12 w-[95%] border-2 text-sm font-black tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.1)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                 >
-                  PROJECT DETAILS
+                  {t('projectDetails')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="overflow-hidden rounded-none border-0 p-0 shadow-2xl sm:max-w-[550px]">
@@ -218,7 +220,7 @@ export function ProjectCard({
                   <div className="border border-zinc-100 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800">
                     <div className="space-y-2 bg-white p-6 dark:bg-zinc-950">
                       <p className="font-mono text-[9px] font-black tracking-widest text-zinc-400 uppercase">
-                        Final Deadline
+                        {t('finalDeadline')}
                       </p>
                       <p className="text-sm font-bold">{deadline}</p>
                     </div>
@@ -227,7 +229,7 @@ export function ProjectCard({
                   <div className="space-y-3">
                     <h4 className="flex items-center gap-3 font-mono text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
                       <Info className="size-3" />
-                      Specifications
+                      {t('specifications')}
                     </h4>
                     <p className="text-sm leading-relaxed font-medium text-zinc-500">
                       {fullDescription || description}
@@ -238,14 +240,14 @@ export function ProjectCard({
                     <div className="flex items-center justify-between">
                       <h4 className="flex items-center gap-3 font-mono text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
                         <Users className="size-3" />
-                        Project Groups
+                        {t('projectGroups')}
                       </h4>
                       <span className="text-primary bg-primary/5 border-primary/10 border px-2 py-0.5 font-mono text-[10px] font-black">
-                        {groups} / {maxGroups} GROUPS
+                        {groups} / {maxGroups} {t('groupsSuffix')}
                       </span>
                     </div>
                     <p className="text-[10px] font-bold tracking-tighter text-zinc-400 uppercase">
-                      Max 5 members per group
+                      {t('maxMembers')}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {membersList.length > 0 ? (
@@ -263,7 +265,7 @@ export function ProjectCard({
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs font-medium text-zinc-400 italic">No members yet</p>
+                        <p className="text-xs font-medium text-zinc-400 italic">{t('noMembers')}</p>
                       )}
                     </div>
                   </div>
@@ -275,7 +277,7 @@ export function ProjectCard({
                           variant="ghost"
                           className="text-xs font-black tracking-wider text-zinc-400 uppercase transition-colors hover:text-zinc-900"
                         >
-                          Close
+                          {t('close')}
                         </Button>
                       </DialogClose>
                       {!isMember && (
@@ -284,7 +286,7 @@ export function ProjectCard({
                           disabled={isPending}
                           className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 flex-1 text-sm font-black tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                         >
-                          {isPending ? 'LOADING...' : 'JOIN PROJECT'}
+                          {isPending ? t('loading') : t('joinProject')}
                         </Button>
                       )}
                     </div>
@@ -301,7 +303,7 @@ export function ProjectCard({
                 className="flex h-12 w-[95%] items-center justify-center gap-2 border-2 border-red-500/10 text-sm font-black tracking-wider text-red-500 uppercase shadow-[4px_4px_0px_0px_rgba(239,68,68,0.1)] transition-all hover:border-red-500/30 hover:bg-red-500/5 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
               >
                 <X className="size-4" />
-                {isPending ? 'REFUSING...' : 'REFUSE PROPOSITION'}
+                {isPending ? t('refusing') : t('refuseProposition')}
               </Button>
             )}
           </>

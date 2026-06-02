@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { evaluateTeam } from '../../actions';
 import { Loader2, FileEdit } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface TeamEvaluationCardProps {
   teamId: number;
@@ -26,6 +27,7 @@ export function TeamEvaluationCard({
   initialGrade = '',
   initialFeedback = '',
 }: TeamEvaluationCardProps) {
+  const t = useTranslations('ProfessorTeamEvaluationCard');
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
 
@@ -36,17 +38,17 @@ export function TeamEvaluationCard({
     e.preventDefault();
 
     if (grade && (parseFloat(grade) < 0 || parseFloat(grade) > 20)) {
-      toast.error('Grade must be between 0 and 20');
+      toast.error(t('gradeError'));
       return;
     }
 
     startTransition(async () => {
       try {
         await evaluateTeam(teamId, grade, feedback, projectId);
-        toast.success(`Successfully updated evaluation for ${teamName}`);
+        toast.success(t('saveSuccess', { name: teamName }));
         refresh();
       } catch (err) {
-        toast.error('Failed to save evaluation');
+        toast.error(t('saveError'));
         console.error(err);
       }
     });
@@ -61,11 +63,11 @@ export function TeamEvaluationCard({
       <CardHeader className="border-b border-zinc-100 pb-4 dark:border-zinc-800">
         <div className="flex items-center gap-2">
           <CardTitle className="text-sm font-black tracking-wider text-zinc-800 uppercase dark:text-zinc-200">
-            Team Evaluation
+            {t('title')}
           </CardTitle>
         </div>
         <CardDescription className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">
-          Input the final cohort grade out of 20 and review comments.
+          {t('description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-5">
@@ -75,7 +77,7 @@ export function TeamEvaluationCard({
               htmlFor={`grade-${teamId}`}
               className="text-[10px] font-black tracking-widest text-zinc-500 uppercase"
             >
-              Grade (Score / 20)
+              {t('gradeLabel')}
             </Label>
             <div className="relative">
               <span className="absolute top-3 left-3.5 text-[13px] font-black text-zinc-400">
@@ -100,7 +102,7 @@ export function TeamEvaluationCard({
               htmlFor={`feedback-${teamId}`}
               className="text-[10px] font-black tracking-widest text-zinc-500 uppercase"
             >
-              Professor Feedback
+              {t('feedbackLabel')}
             </Label>
             <div className="relative">
               <FileEdit className="absolute top-3.5 left-3 size-4 text-zinc-400" />
@@ -124,10 +126,10 @@ export function TeamEvaluationCard({
             {isPending ? (
               <>
                 <Loader2 className="size-3.5 animate-spin" />
-                Saving…
+                {t('saving')}
               </>
             ) : (
-              'Save Evaluation'
+              t('btnSave')
             )}
           </Button>
         </form>

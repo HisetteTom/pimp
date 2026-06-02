@@ -18,6 +18,7 @@ import {
 import { StatusBadge } from '../professor/_components/status-badge';
 import Link from 'next/link';
 import { FolderRoot, Users, GraduationCap, UserCheck, ArrowRight } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Admin Dashboard - PIMP',
@@ -25,9 +26,10 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminDashboardPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const [t, session] = await Promise.all([
+    getTranslations('AdminDashboard'),
+    headers().then((h) => auth.api.getSession({ headers: h })),
+  ]);
 
   if (!session || session.user.role !== 'admin') {
     return <AccessDenied />;
@@ -72,10 +74,10 @@ export default async function AdminDashboardPage() {
         {/* Header Section */}
         <div>
           <h1 className="text-4xl font-semibold tracking-tighter text-zinc-900 uppercase dark:text-zinc-100">
-            Admin Dashboard
+            {t('title')}
           </h1>
           <p className="mt-1 text-xs font-bold tracking-widest text-zinc-400 uppercase">
-            Global administrative control center. Manage teachers, projects, teams, and students.
+            {t('subtitle')}
           </p>
         </div>
 
@@ -84,7 +86,7 @@ export default async function AdminDashboardPage() {
           <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-none dark:border-zinc-800">
             <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
               <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                Total Projects
+                {t('totalProjects')}
               </span>
               <FolderRoot className="size-4 text-purple-500" />
             </CardHeader>
@@ -93,7 +95,7 @@ export default async function AdminDashboardPage() {
                 {totalProjects}
               </div>
               <p className="mt-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
-                Active subjects and cohorts
+                {t('projectsSub')}
               </p>
             </CardContent>
           </Card>
@@ -101,7 +103,7 @@ export default async function AdminDashboardPage() {
           <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-none dark:border-zinc-800">
             <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
               <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                Total Teams
+                {t('totalTeams')}
               </span>
               <Users className="size-4 text-purple-500" />
             </CardHeader>
@@ -110,7 +112,7 @@ export default async function AdminDashboardPage() {
                 {totalTeams}
               </div>
               <p className="mt-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
-                Groups working in projects
+                {t('teamsSub')}
               </p>
             </CardContent>
           </Card>
@@ -118,7 +120,7 @@ export default async function AdminDashboardPage() {
           <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-none dark:border-zinc-800">
             <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
               <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                Total Students
+                {t('totalStudents')}
               </span>
               <GraduationCap className="size-4 text-purple-500" />
             </CardHeader>
@@ -127,7 +129,7 @@ export default async function AdminDashboardPage() {
                 {totalStudents}
               </div>
               <p className="mt-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
-                Registered student accounts
+                {t('studentsSub')}
               </p>
             </CardContent>
           </Card>
@@ -135,7 +137,7 @@ export default async function AdminDashboardPage() {
           <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-none dark:border-zinc-800">
             <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
               <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                Total Professors
+                {t('totalProfessors')}
               </span>
               <UserCheck className="size-4 text-purple-500" />
             </CardHeader>
@@ -144,7 +146,7 @@ export default async function AdminDashboardPage() {
                 {totalTeachers}
               </div>
               <p className="mt-1 text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
-                Educators and jury members
+                {t('professorsSub')}
               </p>
             </CardContent>
           </Card>
@@ -154,7 +156,7 @@ export default async function AdminDashboardPage() {
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-              Projects Administration
+              {t('projectsAdmin')}
             </h2>
             <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
             <Badge className="rounded-none bg-zinc-900 font-black text-white dark:bg-zinc-100 dark:text-zinc-900">
@@ -167,19 +169,19 @@ export default async function AdminDashboardPage() {
               <TableHeader className="border-b-2 border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="w-[40%] py-4 pl-6 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                    Project Subject
+                    {t('colSubject')}
                   </TableHead>
                   <TableHead className="w-[15%] p-4 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                    Status
+                    {t('colStatus')}
                   </TableHead>
                   <TableHead className="w-[15%] p-4 text-center text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                    Teams
+                    {t('colTeams')}
                   </TableHead>
                   <TableHead className="w-[15%] p-4 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                    Target Promos
+                    {t('colTargetPromos')}
                   </TableHead>
                   <TableHead className="w-[15%] p-4 text-left text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                    Action
+                    {t('colAction')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -190,7 +192,7 @@ export default async function AdminDashboardPage() {
                       colSpan={5}
                       className="h-32 text-center font-medium text-zinc-400 italic"
                     >
-                      No projects exist in the system yet.
+                      {t('noProjects')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -208,7 +210,7 @@ export default async function AdminDashboardPage() {
                             {p.name}
                           </span>
                           <span className="mt-0.5 block max-w-md truncate text-[10px] font-medium text-zinc-400">
-                            {p.description || 'No description provided.'}
+                            {p.description || t('noDescription')}
                           </span>
                         </Link>
                       </TableCell>
@@ -238,7 +240,7 @@ export default async function AdminDashboardPage() {
                           href={`/dashboard/admin/projects/${p.id}`}
                           className="inline-flex h-9 items-center justify-center gap-1 bg-zinc-900 px-3.5 text-[10px] font-black tracking-wider text-white uppercase transition-all hover:bg-purple-600 hover:text-white active:scale-[0.97] dark:bg-zinc-100 dark:text-black dark:hover:bg-purple-700 dark:hover:text-white"
                         >
-                          Control Center
+                          {t('controlCenter')}
                           <ArrowRight className="size-3.5" />
                         </Link>
                       </TableCell>

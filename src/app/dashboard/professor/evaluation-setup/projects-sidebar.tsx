@@ -1,6 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
+import { useTranslations } from 'next-intl';
 
 interface Project {
   id: number;
@@ -30,10 +31,12 @@ export function ProjectsSidebar({
   criteria,
   onSelectProject,
 }: ProjectsSidebarProps) {
+  const t = useTranslations('ProfessorProjectsSidebar');
+
   return (
     <div className="space-y-4 lg:col-span-4">
       <h3 className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
-        Projects Directory
+        {t('title')}
       </h3>
       <div className="space-y-2">
         {projects.map((p) => {
@@ -58,11 +61,11 @@ export function ProjectsSidebar({
                   {p.name}
                 </h4>
                 <p className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
-                  Status: {p.status}
+                  {t('status', { status: p.status })}
                 </p>
               </div>
               <Badge className="shrink-0 rounded-none border border-purple-500/20 bg-purple-600/10 px-2 py-0.5 text-[9px] font-bold tracking-widest text-purple-600 uppercase dark:text-purple-400">
-                {count} {count > 1 ? 'grids' : 'grid'}
+                {count} {count > 1 ? t('grids') : t('grid')}
               </Badge>
             </button>
           );
@@ -70,7 +73,7 @@ export function ProjectsSidebar({
         {projects.length === 0 && (
           <div className="border-2 border-dashed border-zinc-200 p-8 text-center dark:border-zinc-800">
             <p className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
-              No active projects found.
+              {t('empty')}
             </p>
           </div>
         )}

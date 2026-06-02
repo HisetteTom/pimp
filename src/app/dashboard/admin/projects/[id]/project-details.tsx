@@ -11,6 +11,7 @@ import {
 import { StatusBadge } from '../../../professor/_components/status-badge';
 import { School } from 'lucide-react';
 import { StudentTeamSelector, UnenrollButton } from './project-controls';
+import { useTranslations } from 'next-intl';
 
 interface ProjectData {
   id: number;
@@ -43,6 +44,8 @@ export function ProjectHeaderCard({
   currentProject: ProjectData;
   professorName: string;
 }) {
+  const t = useTranslations('AdminProjectDetails');
+
   return (
     <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] dark:border-zinc-800">
       <CardContent className="p-6 sm:p-8">
@@ -55,7 +58,7 @@ export function ProjectHeaderCard({
               <StatusBadge status={currentProject.status} />
             </div>
             <p className="mt-1.5 flex items-center gap-1.5 text-xs font-bold tracking-widest text-zinc-400 uppercase">
-              <School className="size-3.5" /> Led by Prof. {professorName}
+              <School className="size-3.5" /> {t('ledBy', { name: professorName })}
             </p>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -72,7 +75,7 @@ export function ProjectHeaderCard({
         </div>
 
         <p className="max-w-3xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-          {currentProject.description || 'No description provided for this project subject.'}
+          {currentProject.description || t('noDescription')}
         </p>
       </CardContent>
     </Card>
@@ -89,22 +92,24 @@ export function EnrolledStudentsTable({
   teams: TeamOption[];
   projectId: number;
 }) {
+  const t = useTranslations('AdminProjectDetails');
+
   return (
     <Card className="bg-card overflow-hidden rounded-none border-2 border-zinc-200 dark:border-zinc-800">
       <Table>
         <TableHeader className="border-b-2 border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
           <TableRow className="hover:bg-transparent">
             <TableHead className="py-4 pl-6 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-              Student
+              {t('colStudent')}
             </TableHead>
             <TableHead className="p-4 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-              Promo
+              {t('colPromo')}
             </TableHead>
             <TableHead className="p-4 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-              Team Assignment
+              {t('colTeamAssignment')}
             </TableHead>
             <TableHead className="p-4 text-center text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-              Unenroll
+              {t('colUnenroll')}
             </TableHead>
           </TableRow>
         </TableHeader>
@@ -112,7 +117,7 @@ export function EnrolledStudentsTable({
           {enrolledStudents.length === 0 ? (
             <TableRow>
               <TableCell colSpan={4} className="h-32 text-center font-medium text-zinc-400 italic">
-                No students enrolled in this project yet. Use the tool above to add students.
+                {t('noStudents')}
               </TableCell>
             </TableRow>
           ) : (
@@ -171,21 +176,23 @@ export function TeamsStatusList({
   teamMemberCounts: Map<number, number>;
   membersByTeam: Map<number, EnrolledStudent[]>;
 }) {
+  const t = useTranslations('AdminProjectDetails');
+
   return (
     <div className="space-y-4">
       {teams.length === 0 ? (
         <div className="border-2 border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-xs font-semibold tracking-wider text-zinc-400 uppercase dark:border-zinc-800 dark:bg-zinc-900">
-          No teams created yet. Use the tool above to add a team.
+          {t('noTeams')}
         </div>
       ) : (
-        teams.map((t) => {
-          const size = teamMemberCounts.get(t.id) || 0;
-          const members = membersByTeam.get(t.id) || [];
+        teams.map((teamItem) => {
+          const size = teamMemberCounts.get(teamItem.id) || 0;
+          const members = membersByTeam.get(teamItem.id) || [];
           const isFull = size >= maxMembersPerGroup;
 
           return (
             <Card
-              key={t.id}
+              key={teamItem.id}
               className={`rounded-none border-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.03)] ${
                 isFull
                   ? 'border-emerald-500/30 bg-emerald-500/[0.01]'
@@ -194,7 +201,7 @@ export function TeamsStatusList({
             >
               <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-100 pb-2 dark:border-zinc-800">
                 <span className="text-xs font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-                  {t.name}
+                  {teamItem.name}
                 </span>
                 <Badge
                   variant="outline"
@@ -204,13 +211,13 @@ export function TeamsStatusList({
                       : 'border-zinc-300 text-zinc-500'
                   }`}
                 >
-                  {size} / {maxMembersPerGroup} MEMBERS
+                  {t('membersCount', { count: size, max: maxMembersPerGroup })}
                 </Badge>
               </CardHeader>
               <CardContent className="pt-3">
                 {members.length === 0 ? (
                   <p className="text-[10px] font-bold text-zinc-400 uppercase italic">
-                    No members assigned yet.
+                    {t('noMembers')}
                   </p>
                 ) : (
                   <div className="space-y-2">

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,12 +16,13 @@ import { Label } from '@/components/ui/label';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Loader2, Mail, Lock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export function LoginForm() {
+  const t = useTranslations('Auth');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { push } = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +35,7 @@ export function LoginForm() {
     if (error) {
       alert(error.message);
     } else {
-      push('/');
+      window.location.href = '/';
     }
     setLoading(false);
   };
@@ -49,10 +49,10 @@ export function LoginForm() {
           </div>
           <div className="space-y-1 text-center">
             <CardTitle className="text-primary text-4xl font-black tracking-tighter">
-              Project Isen Manager Planner
+              {t('loginTitle')}
             </CardTitle>
             <CardDescription className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Login Area
+              {t('loginArea')}
             </CardDescription>
           </div>
         </CardHeader>
@@ -60,7 +60,7 @@ export function LoginForm() {
           <CardContent className="space-y-4 pt-8">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-primary/80 font-bold">
-                Email
+                {t('email')}
               </Label>
               <div className="relative">
                 <Mail className="text-primary/40 absolute top-3 left-3 size-4" />
@@ -77,7 +77,7 @@ export function LoginForm() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password" className="text-primary/80 font-bold">
-                  Password
+                  {t('password')}
                 </Label>
               </div>
               <div className="relative">
@@ -99,15 +99,17 @@ export function LoginForm() {
               className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-full text-base font-black shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
               disabled={loading}
             >
-              {loading ? <Loader2 className="size-5 animate-spin" /> : 'SIGN IN'}
+              {loading ? <Loader2 className="size-5 animate-spin" /> : t('signIn')}
             </Button>
             <div className="text-center text-sm font-bold">
-              <span className="text-muted-foreground tracking-tight uppercase">No account? </span>
+              <span className="text-muted-foreground tracking-tight uppercase">
+                {t('noAccount')}{' '}
+              </span>
               <Link
                 href="/register"
                 className="text-secondary hover:text-primary underline decoration-2 underline-offset-4 transition-colors"
               >
-                CREATE A PROFILE
+                {t('createProfile')}
               </Link>
             </div>
           </CardFooter>

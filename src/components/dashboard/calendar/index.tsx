@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useReducer } from 'react';
+import { useRef, useReducer } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -113,7 +113,7 @@ export function ProjectCalendar<TTask extends BaseTask = BaseTask>({
     });
   };
 
-  const calendarEvents = useMemo(() => {
+  const calendarEvents = (() => {
     interface CalendarEventInput {
       id: string;
       title: string;
@@ -246,7 +246,7 @@ export function ProjectCalendar<TTask extends BaseTask = BaseTask>({
     }
 
     return list;
-  }, [project, tasks, checkpoints, checkpointNotes, onlyTeacherDates, hideInProgress]);
+  })();
 
   const handleEventClick = (info: EventClickArg) => {
     const props = info.event.extendedProps as unknown as {

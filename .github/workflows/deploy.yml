@@ -87,25 +87,25 @@ jobs:
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' << 'EOF'
             export DOTENV_PRIVATE_KEY_PRODUCTION='${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}'
             export IMAGE_NAME='${{ steps.prep.outputs.owner }}/pimp-app:latest'
-            
+
             # Login to GHCR on droplet using dynamic temp token from actions
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
+
             # Run docker compose pulling latest and restarting
             cd /home/${{ secrets.SSH_USER }}/app
-            
+
             # Fast dotenvx run helper (uses global if present, otherwise falls back to npx)
             run_dotenvx() {
               if command -v dotenvx >/dev/null 2>&1; then
                 dotenvx run -f .env.production -- "$@"
               else
                 npx @dotenvx/dotenvx@latest run -f .env.production -- "$@"
-              fi
+              fi  
             }
-            
+
             run_dotenvx docker compose -f compose.prod.yaml pull
             run_dotenvx docker compose -f compose.prod.yaml up -d --remove-orphans
-            
+
             # Wipe DB, apply Drizzle schema, and seed owner via pure PostgreSQL
             run_dotenvx bash -c '
               echo "Waiting for database to be ready..."
@@ -132,7 +132,7 @@ jobs:
                 -v password="$SEED_ADMIN_PASSWORD" \
                 < seed-admin.sql
             '
-            
+
             # Logout
             docker logout ghcr.io
           EOF

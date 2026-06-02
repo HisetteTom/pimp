@@ -8,6 +8,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { CriteriaManager } from './criteria-manager';
 import { or, eq, sql } from 'drizzle-orm';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Evaluation Grid Setup - PIMP',
@@ -22,9 +23,10 @@ async function fetchSidebarProjects(teacherId: string) {
 }
 
 export default async function EvaluationSetupPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const [t, session] = await Promise.all([
+    getTranslations('ProfessorEvaluationSetup'),
+    headers().then((h) => auth.api.getSession({ headers: h })),
+  ]);
 
   if (!session || session.user.role !== 'professor') {
     return (
@@ -32,21 +34,21 @@ export default async function EvaluationSetupPage() {
         <Card className="bg-card max-w-md rounded-none border-2 border-red-500/20 shadow-xl">
           <CardHeader className="pb-4 text-center">
             <CardTitle className="text-2xl font-black tracking-tight text-red-500 uppercase">
-              Access Denied
+              {t('accessDeniedTitle')}
             </CardTitle>
             <CardDescription className="text-xs font-bold tracking-widest text-zinc-400 uppercase">
-              Professor Role Required
+              {t('accessDeniedSubtitle')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 pb-6 text-center">
             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-              You must be logged in as a professor to access this configuration panel.
+              {t('accessDeniedMessage')}
             </p>
             <Link
               href="/login"
               className="inline-block bg-zinc-900 px-5 py-2.5 text-xs font-black tracking-wider text-white uppercase transition-transform active:scale-95 dark:bg-zinc-100 dark:text-zinc-900"
             >
-              Back to Login
+              {t('backToLogin')}
             </Link>
           </CardContent>
         </Card>
@@ -71,12 +73,9 @@ export default async function EvaluationSetupPage() {
       <div className="space-y-6">
         <div className="flex flex-col gap-1 border-b border-zinc-100 pb-5 dark:border-zinc-800">
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-            Evaluation Grid Setup
+            {t('title')}
           </h1>
-          <p className="text-xs font-medium text-zinc-400">
-            Design and establish customized grading rubrics, scoring criteria, and weights for oral
-            defenses and project deliverables.
-          </p>
+          <p className="text-xs font-medium text-zinc-400">{t('description')}</p>
         </div>
 
         <CriteriaManager projects={allProjects} initialCriteria={allCriteria} />

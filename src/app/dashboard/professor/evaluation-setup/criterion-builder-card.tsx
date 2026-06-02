@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { X, Check, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface CriterionBuilderCardProps {
   newName: string;
@@ -30,12 +31,14 @@ export function CriterionBuilderCard({
   onSave,
   onCancel,
 }: CriterionBuilderCardProps) {
+  const t = useTranslations('ProfessorCriterionBuilder');
+
   return (
     <Card className="rounded-none border-2 border-purple-600 shadow-[4px_4px_0px_0px_#a855f7]">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xs font-semibold tracking-widest text-purple-600 uppercase">
-            New Criterion Builder
+            {t('title')}
           </CardTitle>
           <button
             type="button"
@@ -53,7 +56,7 @@ export function CriterionBuilderCard({
               htmlFor="new-name"
               className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase"
             >
-              Criterion Name
+              {t('fieldName')}
             </Label>
             <Input
               id="new-name"
@@ -67,7 +70,7 @@ export function CriterionBuilderCard({
               htmlFor="new-points"
               className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase"
             >
-              Max Points
+              {t('fieldPoints')}
             </Label>
             <Input
               id="new-points"
@@ -84,7 +87,7 @@ export function CriterionBuilderCard({
             htmlFor="new-desc"
             className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase"
           >
-            Description (Optional)
+            {t('fieldDesc')}
           </Label>
           <Textarea
             id="new-desc"
@@ -102,14 +105,14 @@ export function CriterionBuilderCard({
             className="flex h-9 items-center justify-center gap-2 bg-purple-600 px-4 py-2 text-xs font-bold tracking-wider text-white uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-purple-700 active:scale-95"
           >
             {isPending ? <Loader2 className="size-3 animate-spin" /> : <Check className="size-3" />}
-            Save Grid Element
+            {t('btnSave')}
           </Button>
           <button
             type="button"
             onClick={onCancel}
             className="cursor-pointer px-4 py-2 text-xs font-bold tracking-wider text-zinc-500 uppercase hover:text-zinc-900 dark:hover:text-zinc-100"
           >
-            Cancel
+            {t('btnCancel')}
           </button>
         </div>
       </CardContent>

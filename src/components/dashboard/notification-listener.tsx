@@ -8,7 +8,10 @@ export function NotificationListener() {
   const router = useRouter();
   const { push } = router;
 
-  const notifiedIds = useRef<Set<number>>(new Set());
+  const notifiedIds = useRef<Set<number>>(null as unknown as Set<number>);
+  if (notifiedIds.current === null) {
+    notifiedIds.current = new Set();
+  }
   const tabOpenTime = useRef<number>(0);
   const isRequestingPermission = useRef<boolean>(false);
 

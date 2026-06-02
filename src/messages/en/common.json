@@ -1,0 +1,77 @@
+{
+  "Sidebar": {
+    "navigation": "Navigation",
+    "dashboard": "Dashboard",
+    "myProjects": "My Projects",
+    "proposals": "Proposals",
+    "activeProjects": "Active Projects",
+    "members": "Members",
+    "leaveTeam": "Leave Team",
+    "account": "Account",
+    "profile": "Profile",
+    "settings": "Settings",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "logout": "Logout",
+    "team": "Team",
+    "toggleTheme": "Toggle theme",
+    "teachers": "Teachers",
+    "allProjects": "All Projects",
+    "evaluationSetup": "Evaluation Setup"
+  },
+  "Settings": {
+    "title": "Settings",
+    "subtitle": "Manage your language and application preferences.",
+    "language": "Language",
+    "languageDescription": "Select your preferred language.",
+    "save": "Save",
+    "success": "Language updated successfully!",
+    "french": "French",
+    "english": "English"
+  },
+  "Auth": {
+    "loginTitle": "Project Isen Manager Planner",
+    "loginArea": "Login Area",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "SIGN IN",
+    "noAccount": "No account?",
+    "createProfile": "CREATE A PROFILE",
+    "username": "Username",
+    "yourPromo": "Your Promo",
+    "createAccount": "CREATE MY ACCOUNT",
+    "alreadyRegistered": "Already registered?",
+    "platformRegistration": "Platform Registration"
+  },
+  "Calendar": {
+    "previous": "Previous",
+    "next": "Next",
+    "today": "Today",
+    "teachers": "Teacher's",
+    "hideIp": "Hide IP",
+    "month": "Month",
+    "week": "Week",
+    "day": "Day"
+  },
+  "Profile": {
+    "role": "Role",
+    "project": "Project",
+    "team": "Team",
+    "student": "Student",
+    "notificationCenter": "Notification Center",
+    "manageNotifications": "Manage your recent platform updates",
+    "markAllRead": "Mark All Read",
+    "allCaughtUp": "All caught up!",
+    "noNotifications": "No notifications yet. New updates will appear here.",
+    "viewDetails": "View details",
+    "markAsRead": "Mark as read",
+    "markRead": "Mark Read",
+    "justNow": "Just now",
+    "minsAgo": "{mins}m ago",
+    "hoursAgo": "{hours}h ago",
+    "daysAgo": "{days}d ago"
+  },
+  "Dialog": {
+    "close": "Close"
+  }
+}

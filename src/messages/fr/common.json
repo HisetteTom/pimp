@@ -1,0 +1,77 @@
+{
+  "Sidebar": {
+    "navigation": "Navigation",
+    "dashboard": "Tableau de bord",
+    "myProjects": "Mes Projets",
+    "proposals": "Propositions",
+    "activeProjects": "Projets Actifs",
+    "members": "Membres",
+    "leaveTeam": "Quitter l'équipe",
+    "account": "Compte",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "lightMode": "Mode Clair",
+    "darkMode": "Mode Sombre",
+    "logout": "Se déconnecter",
+    "team": "Équipe",
+    "toggleTheme": "Basculer le thème",
+    "teachers": "Enseignants",
+    "allProjects": "Tous les Projets",
+    "evaluationSetup": "Configuration de l'Évaluation"
+  },
+  "Settings": {
+    "title": "Paramètres",
+    "subtitle": "Gérez vos préférences de langue et d'application.",
+    "language": "Langue",
+    "languageDescription": "Choisissez la langue de l'application.",
+    "save": "Enregistrer",
+    "success": "Langue mise à jour avec succès !",
+    "french": "Français",
+    "english": "Anglais"
+  },
+  "Auth": {
+    "loginTitle": "Project Isen Manager Planner",
+    "loginArea": "Connexion",
+    "email": "Adresse Email",
+    "password": "Mot de passe",
+    "signIn": "SE CONNECTER",
+    "noAccount": "Pas de compte ?",
+    "createProfile": "CRÉER UN PROFIL",
+    "username": "Nom d'utilisateur",
+    "yourPromo": "Votre Promotion",
+    "createAccount": "CRÉER MON COMPTE",
+    "alreadyRegistered": "Déjà inscrit ?",
+    "platformRegistration": "Inscription sur la plateforme"
+  },
+  "Calendar": {
+    "previous": "Précédent",
+    "next": "Suivant",
+    "today": "Aujourd'hui",
+    "teachers": "Encadrant",
+    "hideIp": "Masquer en cours",
+    "month": "Mois",
+    "week": "Semaine",
+    "day": "Jour"
+  },
+  "Profile": {
+    "role": "Rôle",
+    "project": "Projet",
+    "team": "Équipe",
+    "student": "Étudiant",
+    "notificationCenter": "Centre de Notifications",
+    "manageNotifications": "Gerez les récentes mises à jour de la plateforme",
+    "markAllRead": "Tout marquer comme lu",
+    "allCaughtUp": "Vous êtes à jour !",
+    "noNotifications": "Aucune notification pour le moment. Les nouvelles mises à jour apparaîtront ici.",
+    "viewDetails": "Voir les détails",
+    "markAsRead": "Marquer comme lu",
+    "markRead": "Marquer comme lu",
+    "justNow": "À l'instant",
+    "minsAgo": "Il y a {mins}m",
+    "hoursAgo": "Il y a {hours}h",
+    "daysAgo": "Il y a {days}j"
+  },
+  "Dialog": {
+    "close": "Fermer"
+  }
+}

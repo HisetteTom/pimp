@@ -22,6 +22,7 @@ import { authClient } from '@/lib/auth-client';
 import { leaveTeam } from '@/app/dashboard/student/actions';
 import { useTransition, useSyncExternalStore } from 'react';
 import { useTheme } from 'next-themes';
+import { useTranslations } from 'next-intl';
 
 const emptySubscribe = () => () => {};
 
@@ -32,11 +33,13 @@ interface SidebarProps {
     projectId: number;
     name: string;
     members: { id: string; name: string; responsabilityId: number | null }[];
+    projectStatus?: string;
   };
   unreadCount?: number;
 }
 
 export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
+  const t = useTranslations('Sidebar');
   const pathname = usePathname();
   const { push } = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -62,27 +65,27 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
 
   const navItems = isAdmin
     ? [
-        { href: '/dashboard/admin', label: 'Dashboard', icon: LayoutDashboard },
-        { href: '/dashboard/admin/teachers', label: 'Teachers', icon: User },
+        { href: '/dashboard/admin', label: t('dashboard'), icon: LayoutDashboard },
+        { href: '/dashboard/admin/teachers', label: t('teachers'), icon: User },
       ]
     : isStaff
       ? [
-          { href: '/dashboard/professor#top', label: 'Dashboard', icon: LayoutDashboard },
-          { href: '/dashboard/professor#projects', label: 'All Projects', icon: FolderRoot },
+          { href: '/dashboard/professor#top', label: t('dashboard'), icon: LayoutDashboard },
+          { href: '/dashboard/professor#projects', label: t('allProjects'), icon: FolderRoot },
           ...(isProfessor
             ? [
                 {
                   href: '/dashboard/professor/evaluation-setup',
-                  label: 'Evaluation Setup',
+                  label: t('evaluationSetup'),
                   icon: CheckSquare,
                 },
               ]
             : []),
         ]
       : [
-          { href: '/dashboard/student#top', label: 'Dashboard', icon: LayoutDashboard },
-          { href: '/dashboard/student#my-projects', label: 'My Projects', icon: FolderRoot },
-          { href: '/dashboard/student#proposals', label: 'Proposals', icon: Lightbulb },
+          { href: '/dashboard/student#top', label: t('dashboard'), icon: LayoutDashboard },
+          { href: '/dashboard/student#my-projects', label: t('myProjects'), icon: FolderRoot },
+          { href: '/dashboard/student#proposals', label: t('proposals'), icon: Lightbulb },
         ];
 
   const dashboardLink = isAdmin
@@ -103,6 +106,14 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
 
   const handleLeaveTeam = () => {
     if (!team) return;
+    if (
+      team.projectStatus &&
+      team.projectStatus !== 'proposed' &&
+      team.projectStatus !== 'validated'
+    ) {
+      alert('Cannot leave team once project has started.');
+      return;
+    }
     if (confirm('Are you sure you want to leave this team?')) {
       startTransition(async () => {
         await leaveTeam(team.projectId);
@@ -125,7 +136,7 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
 
       <nav className="flex-1 space-y-1.5">
         <p className="mb-2 px-3 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-          Navigation
+          {t('navigation')}
         </p>
         {navItems.map((item) => (
           <Link key={item.href} href={item.href}>
@@ -153,7 +164,7 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
         {userProjects && userProjects.length > 0 && (
           <div className="space-y-4 pt-8">
             <p className="px-3 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-              {isAdmin || isStaff ? 'All Projects' : 'Active Projects'}
+              {isAdmin || isStaff ? t('allProjects') : t('activeProjects')}
             </p>
             <div className="space-y-1">
               {userProjects.map((p) => (
@@ -183,7 +194,7 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
                     </div>
                     {p.teamName && (
                       <span className="text-[9px] font-bold text-zinc-400 uppercase italic">
-                        Team: {p.teamName}
+                        {t('team')}: {p.teamName}
                       </span>
                     )}
                   </div>
@@ -197,13 +208,13 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
           <div className="space-y-4 pt-8">
             <div className="space-y-1 px-3">
               <p className="text-[13px] font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-                Team: {team.name}
+                {t('team')}: {team.name}
               </p>
             </div>
 
             <div className="space-y-1">
               <p className="mb-2 px-3 text-[9px] font-bold tracking-tighter text-zinc-400 uppercase">
-                Members
+                {t('members')}
               </p>
               {team.members.map((member) => (
                 <div
@@ -233,24 +244,28 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
               ))}
             </div>
 
-            <div className="px-3 pt-2">
-              <button
-                type="button"
-                onClick={handleLeaveTeam}
-                disabled={isPending}
-                className="flex w-full items-center justify-center gap-2 rounded border border-red-200 py-2 text-[10px] font-black tracking-widest text-red-500 uppercase transition-all hover:bg-red-500 hover:text-white active:scale-[0.98] dark:border-red-900/50"
-              >
-                <LeaveIcon className="size-3" />
-                Leave Team
-              </button>
-            </div>
+            {(!team.projectStatus ||
+              team.projectStatus === 'proposed' ||
+              team.projectStatus === 'validated') && (
+              <div className="px-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleLeaveTeam}
+                  disabled={isPending}
+                  className="flex w-full items-center justify-center gap-2 rounded border border-red-200 py-2 text-[10px] font-black tracking-widest text-red-500 uppercase transition-all hover:bg-red-500 hover:text-white active:scale-[0.98] dark:border-red-900/50"
+                >
+                  <LeaveIcon className="size-3" />
+                  {t('leaveTeam')}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </nav>
 
       <div className="mt-auto space-y-2 border-t border-zinc-100 pt-6 dark:border-zinc-800">
         <p className="mb-2 px-3 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-          Account
+          {t('account')}
         </p>
         <Link
           href={
@@ -271,7 +286,7 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
                   </span>
                 )}
               </div>
-              <span>Profile</span>
+              <span>{t('profile')}</span>
             </div>
           </span>
         </Link>
@@ -286,7 +301,7 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
         >
           <span className="flex items-center gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900">
             <Settings className="size-4" />
-            Settings
+            {t('settings')}
           </span>
         </Link>
         <button
@@ -301,7 +316,7 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
             ) : (
               <Moon className="size-4 text-indigo-500" />
             )}
-            <span>{currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+            <span>{currentTheme === 'dark' ? t('lightMode') : t('darkMode')}</span>
           </div>
           <span className="text-[9px] font-black tracking-widest text-zinc-400 uppercase dark:text-zinc-500">
             {currentTheme === 'dark' ? 'LIGHT' : 'DARK'}
@@ -313,7 +328,7 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
           className="mt-4 flex w-full items-center justify-start gap-3 rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-red-500 transition-all hover:border-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950"
         >
           <LogOut className="size-4" />
-          Logout
+          {t('logout')}
         </Button>
       </div>
     </div>

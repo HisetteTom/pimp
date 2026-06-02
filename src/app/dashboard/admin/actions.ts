@@ -116,3 +116,34 @@ export async function assignStudentToTeam(
 
   revalidatePath(`/dashboard/admin/projects/${projectId}`);
 }
+
+import { session as sessionTable, notification as notificationTable, project } from '@/db/schema';
+import { sql } from 'drizzle-orm';
+
+export async function deleteTeacher(teacherId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session || session.user.role !== 'admin') {
+    throw new Error('Unauthorized');
+  }
+
+  await db.transaction(async (tx) => {
+    // 1. Set teacherId to null in project table
+    await tx.update(project).set({ teacherId: null }).where(eq(project.teacherId, teacherId));
+
+    // 2. Remove from coTeachers array in project table
+    await tx.execute(
+      sql`UPDATE "project" SET "co_teachers" = array_remove("co_teachers", ${teacherId}) WHERE ${teacherId} = ANY("co_teachers")`,
+    );
+
+    // 3. Delete session, account, notification, and user records
+    await tx.delete(sessionTable).where(eq(sessionTable.userId, teacherId));
+    await tx.delete(account).where(eq(account.userId, teacherId));
+    await tx.delete(notificationTable).where(eq(notificationTable.userId, teacherId));
+    await tx.delete(projectEnrollment).where(eq(projectEnrollment.userId, teacherId));
+    await tx.delete(user).where(eq(user.id, teacherId));
+  });
+
+  revalidatePath('/dashboard/admin/teachers');
+}

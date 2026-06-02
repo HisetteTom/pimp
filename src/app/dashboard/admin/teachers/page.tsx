@@ -1,5 +1,6 @@
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { CreateTeacherDialog } from './create-teacher-dialog';
+import { DeleteTeacherButton } from './delete-teacher-button';
 import { db } from '@/db';
 import { user, project } from '@/db/schema';
 import { auth } from '@/lib/auth';
@@ -17,6 +18,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { eq } from 'drizzle-orm';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Professors Administration - PIMP',
@@ -24,9 +26,10 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminTeachersPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const [t, session] = await Promise.all([
+    getTranslations('AdminTeachers'),
+    headers().then((h) => auth.api.getSession({ headers: h })),
+  ]);
 
   if (!session || session.user.role !== 'admin') {
     return <AccessDenied />;
@@ -50,10 +53,10 @@ export default async function AdminTeachersPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-4xl font-semibold tracking-tighter text-zinc-900 uppercase dark:text-zinc-100">
-              Professors Administration
+              {t('title')}
             </h1>
             <p className="mt-1 text-xs font-bold tracking-widest text-zinc-400 uppercase">
-              Manage accounts for teachers, cohort leaders, and evaluators.
+              {t('subtitle')}
             </p>
           </div>
           <CreateTeacherDialog />
@@ -63,7 +66,7 @@ export default async function AdminTeachersPage() {
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-              Professor Accounts
+              {t('sectionTitle')}
             </h2>
             <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
             <Badge className="rounded-none bg-zinc-900 font-black text-white dark:bg-zinc-100 dark:text-zinc-900">
@@ -75,14 +78,17 @@ export default async function AdminTeachersPage() {
             <Table>
               <TableHeader className="border-b-2 border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[45%] py-4 pl-6 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                    Full Name
+                  <TableHead className="w-[35%] py-4 pl-6 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
+                    {t('colName')}
                   </TableHead>
-                  <TableHead className="w-[35%] p-4 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                    Email Address
+                  <TableHead className="w-[30%] p-4 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
+                    {t('colEmail')}
                   </TableHead>
                   <TableHead className="w-[20%] p-4 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                    Date Created
+                    {t('colDateCreated')}
+                  </TableHead>
+                  <TableHead className="w-[15%] p-4 text-right text-[10px] font-black tracking-wider text-zinc-500 uppercase">
+                    {t('colAction')}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -90,10 +96,10 @@ export default async function AdminTeachersPage() {
                 {professors.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={3}
+                      colSpan={4}
                       className="h-32 text-center font-medium text-zinc-400 italic"
                     >
-                      No professor accounts found. Use the button above to create one.
+                      {t('noTeachers')}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -115,6 +121,9 @@ export default async function AdminTeachersPage() {
                       </TableCell>
                       <TableCell className="p-4 text-xs text-zinc-500">
                         {prof.createdAt ? new Date(prof.createdAt).toLocaleDateString() : 'N/A'}
+                      </TableCell>
+                      <TableCell className="p-4 text-right">
+                        <DeleteTeacherButton teacherId={prof.id} teacherName={prof.name} />
                       </TableCell>
                     </TableRow>
                   ))

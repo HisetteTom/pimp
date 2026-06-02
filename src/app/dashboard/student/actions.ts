@@ -81,6 +81,10 @@ export async function createTeam(projectId: number, teamName: string) {
 
   if (!projectData) throw new Error('Project not found');
 
+  if (projectData.status !== 'proposed' && projectData.status !== 'validated') {
+    throw new Error('Team creation is only allowed for proposed or validated projects');
+  }
+
   const teamsCount = await db
     .select({ value: count() })
     .from(team)
@@ -126,6 +130,10 @@ export async function joinTeam(projectId: number, teamId: number) {
 
   if (!projectData) throw new Error('Project not found');
 
+  if (projectData.status !== 'proposed' && projectData.status !== 'validated') {
+    throw new Error('Joining a team is only allowed for proposed or validated projects');
+  }
+
   const membersCount = await db
     .select({ value: count() })
     .from(projectEnrollment)
@@ -154,6 +162,16 @@ export async function leaveTeam(projectId: number) {
   });
 
   if (!session) throw new Error('Unauthorized');
+
+  const projectData = await db.query.project.findFirst({
+    where: eq(project.id, projectId),
+  });
+
+  if (!projectData) throw new Error('Project not found');
+
+  if (projectData.status !== 'proposed' && projectData.status !== 'validated') {
+    throw new Error('Leaving a team is only allowed for proposed or validated projects');
+  }
 
   await db
     .update(projectEnrollment)

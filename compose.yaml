@@ -41,8 +41,8 @@ services:
     container_name: pimp-storage
     restart: unless-stopped
     ports:
-      - '9000:9000'
-      - '9001:9001'
+      - '9010:9000'
+      - '9011:9001'
     environment:
       - RUSTFS_ACCESS_KEY=pimp-dev-access-key
       - RUSTFS_SECRET_KEY=pimp-dev-secret-key

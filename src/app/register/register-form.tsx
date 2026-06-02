@@ -1,7 +1,6 @@
 'use client';
 
 import { useReducer } from 'react';
-import { useRouter } from 'next/navigation';
 import { authClient } from '@/lib/auth-client';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +23,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { Loader2, AtSign, Mail, Lock, GraduationCap } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 type State = {
   email: string;
@@ -59,8 +59,8 @@ function reducer(state: State, action: Action): State {
 }
 
 export function RegisterForm() {
+  const t = useTranslations('Auth');
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { push } = useRouter();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,7 +78,7 @@ export function RegisterForm() {
     if (error) {
       alert(error.message);
     } else {
-      push('/');
+      window.location.href = '/';
     }
     dispatch({ type: 'SET_LOADING', value: false });
   };
@@ -92,10 +92,10 @@ export function RegisterForm() {
           </div>
           <div className="space-y-1 text-center">
             <CardTitle className="text-secondary text-4xl font-black tracking-tighter">
-              Project Isen Manager Planner
+              {t('loginTitle')}
             </CardTitle>
             <CardDescription className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Platform Registration
+              {t('platformRegistration')}
             </CardDescription>
           </div>
         </CardHeader>
@@ -103,7 +103,7 @@ export function RegisterForm() {
           <CardContent className="grid gap-6 pt-8">
             <div className="space-y-2">
               <Label htmlFor="username" className="text-secondary/80 font-bold">
-                Username
+                {t('username')}
               </Label>
               <div className="relative">
                 <AtSign className="text-secondary/40 absolute top-3 left-3 size-4" />
@@ -120,7 +120,7 @@ export function RegisterForm() {
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="email" className="text-secondary/80 font-bold">
-                Email
+                {t('email')}
               </Label>
               <div className="relative">
                 <Mail className="text-secondary/40 absolute top-3 left-3 size-4" />
@@ -138,7 +138,7 @@ export function RegisterForm() {
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="password" className="text-secondary/80 font-bold">
-                Password
+                {t('password')}
               </Label>
               <div className="relative">
                 <Lock className="text-secondary/40 absolute top-3 left-3 size-4" />
@@ -156,7 +156,7 @@ export function RegisterForm() {
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label htmlFor="promo" className="text-secondary/80 font-bold">
-                Your Promo
+                {t('yourPromo')}
               </Label>
               <Select
                 value={state.promo}
@@ -192,17 +192,17 @@ export function RegisterForm() {
               className="bg-secondary text-secondary-foreground hover:bg-secondary/90 h-12 w-full text-base font-black shadow-[4px_4px_0px_0px_rgba(var(--secondary-rgb),0.2)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
               disabled={state.loading}
             >
-              {state.loading ? <Loader2 className="size-5 animate-spin" /> : 'CREATE MY ACCOUNT'}
+              {state.loading ? <Loader2 className="size-5 animate-spin" /> : t('createAccount')}
             </Button>
             <div className="text-center text-sm font-bold">
               <span className="text-muted-foreground tracking-tight uppercase">
-                Already registered?{' '}
+                {t('alreadyRegistered')}{' '}
               </span>
               <Link
                 href="/login"
                 className="text-primary hover:text-secondary underline decoration-2 underline-offset-4 transition-colors"
               >
-                SIGN IN
+                {t('signIn')}
               </Link>
             </div>
           </CardFooter>

@@ -3,16 +3,7 @@ import { project } from '../../src/db/schema/project';
 import { user } from '../../src/db/schema/auth';
 import { eq } from 'drizzle-orm';
 
-export async function seedProjects() {
-  console.log('Fetching seeded professors...');
-  const professors = await db
-    .select({ id: user.id, email: user.email })
-    .from(user)
-    .where(eq(user.role, 'professor'));
-
-  const prof1Id = professors.find((p) => p.email === 'prof@test.com')?.id || null;
-  const prof2Id = professors.find((p) => p.email === 'prof2@test.com')?.id || null;
-
+export async function seedProjects(prof1Id: string | null, prof2Id: string | null) {
   console.log('Creating 9 realistic projects…');
   const projectsData = [
     {

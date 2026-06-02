@@ -1,4 +1,6 @@
-import { useState, useTransition, useMemo } from 'react';
+'use client';
+
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { evaluateTeam } from '../../../../actions';
 import { Loader2, Save } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface SupervisorFeedbackCardProps {
   teamId: number;
@@ -23,10 +26,23 @@ export function SupervisorFeedbackCard({
   type,
   readOnly = false,
 }: SupervisorFeedbackCardProps) {
+  const t = useTranslations('ProfessorSupervisorFeedbackCard');
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
 
-  const parsedFeedbacks = useMemo(() => {
+  const typeLabels: Record<string, string> = {
+    overview: t('labelOverview'),
+    kanban: t('labelKanban'),
+    deliverables: t('labelDeliverables'),
+  };
+
+  const typeNames: Record<string, string> = {
+    overview: t('typeOverview'),
+    kanban: t('typeKanban'),
+    deliverables: t('typeDeliverables'),
+  };
+
+  const parsedFeedbacks = (() => {
     try {
       if (!initialFeedback) return { overview: '', kanban: '', deliverables: '' };
       const parsed = JSON.parse(initialFeedback);
@@ -39,7 +55,7 @@ export function SupervisorFeedbackCard({
       }
     } catch {}
     return { overview: initialFeedback || '', kanban: '', deliverables: '' };
-  }, [initialFeedback]);
+  })();
 
   const currentInitialText = parsedFeedbacks[type] || '';
   const [feedback, setFeedback] = useState(currentInitialText);
@@ -54,22 +70,16 @@ export function SupervisorFeedbackCard({
         };
         // Passing null for grade since we are completely removing the grading system
         await evaluateTeam(teamId, null, JSON.stringify(updated), projectId);
-        toast.success('Feedback updated successfully!');
+        toast.success(t('saveSuccess'));
         refresh();
       } catch (err) {
-        toast.error('Failed to update feedback.');
+        toast.error(t('saveError'));
         console.error(err);
       }
     });
   };
 
   const isChanged = feedback !== currentInitialText;
-
-  const typeLabels: Record<string, string> = {
-    overview: 'General Overview Written Feedback',
-    kanban: 'Tasks & Kanban Board Progress Feedback',
-    deliverables: 'Deliverables & Submissions Feedback',
-  };
 
   return (
     <Card className="group hover:border-primary/50 relative w-full overflow-hidden rounded-none border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-950">
@@ -92,7 +102,7 @@ export function SupervisorFeedbackCard({
 
       <CardHeader className="relative z-10 border-b border-zinc-100 px-6 py-3.5 dark:border-zinc-800">
         <CardTitle className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
-          Supervisor Evaluation ({type})
+          {t('cardTitle', { type: typeNames[type] })}
         </CardTitle>
       </CardHeader>
       <CardContent className="gap-y-0.01 relative z-10 flex flex-col p-6 pt-4">
@@ -120,7 +130,7 @@ export function SupervisorFeedbackCard({
             className="bg-primary text-primary-foreground hover:bg-primary/90 flex h-12 w-full cursor-pointer items-center justify-center gap-1.5 rounded-none text-sm font-black tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
           >
             {isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-            Save {type} Comments
+            {t('btnSave', { type: typeNames[type] })}
           </Button>
         )}
       </CardContent>

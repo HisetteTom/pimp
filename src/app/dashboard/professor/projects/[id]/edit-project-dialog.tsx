@@ -18,6 +18,7 @@ import { Loader2, Edit2 } from 'lucide-react';
 import { dialogReducer } from '../../_components/project-dialog-types';
 import { TargetingSection } from '../../_components/targeting-section';
 import { ProjectFormFields } from '../../_components/project-form-fields';
+import { useTranslations } from 'next-intl';
 
 interface EditProjectDialogProps {
   projectData: {
@@ -59,6 +60,7 @@ function formReducer(state: FormState, action: FormAction): FormState {
 }
 
 export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
+  const t = useTranslations('ProfessorEditDialog');
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
@@ -118,7 +120,7 @@ export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
     e.preventDefault();
 
     if (!formState.name.trim()) {
-      toast.error('Project name is required');
+      toast.error(t('nameRequired'));
       return;
     }
 
@@ -136,11 +138,11 @@ export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
           coTeachers: state.coTeachers,
         });
 
-        toast.success('Project updated successfully');
+        toast.success(t('updateSuccess'));
         setIsOpen(false);
         refresh();
       } catch (err) {
-        toast.error('Failed to update project');
+        toast.error(t('updateError'));
         console.error(err);
       }
     });
@@ -153,17 +155,17 @@ export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
           variant="unstyled"
           className="inline-flex h-9 cursor-pointer items-center justify-center gap-1.5 border-transparent bg-zinc-900 px-3.5 text-[10px] font-black tracking-wider text-white uppercase transition-all hover:bg-purple-600 hover:text-white active:scale-[0.97] dark:bg-zinc-100 dark:text-black dark:hover:bg-purple-700 dark:hover:text-white"
         >
-          Edit Project
+          {t('trigger')}
           <Edit2 className="size-3.5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-card max-h-[90vh] overflow-y-auto rounded-none border-2 border-zinc-200 p-6 shadow-2xl sm:max-w-[550px] dark:border-zinc-800">
         <DialogHeader className="border-b border-zinc-100 pb-4 dark:border-zinc-800">
           <DialogTitle className="pt-2 text-2xl font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-            Edit Project Details
+            {t('title')}
           </DialogTitle>
           <DialogDescription className="text-xs font-bold tracking-widest text-zinc-400 uppercase">
-            Modify the project name, description, dates, cohort targets, and collaborators.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -199,7 +201,7 @@ export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
                 className="flex h-11 cursor-pointer items-center justify-center rounded-none border-2 border-zinc-200 px-5 font-bold tracking-wider uppercase hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-900"
                 disabled={isPending}
               >
-                Cancel
+                {t('cancel')}
               </Button>
             </DialogClose>
             <Button
@@ -211,10 +213,10 @@ export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
               {isPending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Saving…
+                  {t('saving')}
                 </>
               ) : (
-                'Save Changes'
+                t('saveChanges')
               )}
             </Button>
           </div>

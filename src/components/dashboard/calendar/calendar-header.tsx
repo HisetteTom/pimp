@@ -2,6 +2,7 @@
 
 import { RefObject } from 'react';
 import FullCalendar from '@fullcalendar/react';
+import { useTranslations } from 'next-intl';
 
 interface CalendarHeaderProps {
   calendarRef: RefObject<FullCalendar | null>;
@@ -24,6 +25,8 @@ export function CalendarHeader({
   onToggleHideInProgress,
   onSetView,
 }: CalendarHeaderProps) {
+  const t = useTranslations('Calendar');
+
   return (
     <div className="mb-4 flex flex-col gap-3 border-b border-zinc-100 pb-3 sm:flex-row sm:items-center sm:justify-between dark:border-zinc-800">
       {/* Left Side: Navigation */}
@@ -32,7 +35,7 @@ export function CalendarHeader({
           type="button"
           onClick={() => calendarRef.current?.getApi().prev()}
           className="cursor-pointer border-2 border-zinc-200 bg-white px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-700 transition-all duration-150 hover:border-zinc-400 active:translate-y-[1px] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600"
-          title="Previous"
+          title={t('previous')}
         >
           ←
         </button>
@@ -40,7 +43,7 @@ export function CalendarHeader({
           type="button"
           onClick={() => calendarRef.current?.getApi().next()}
           className="cursor-pointer border-2 border-zinc-200 bg-white px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-700 transition-all duration-150 hover:border-zinc-400 active:translate-y-[1px] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600"
-          title="Next"
+          title={t('next')}
         >
           →
         </button>
@@ -49,7 +52,7 @@ export function CalendarHeader({
           onClick={() => calendarRef.current?.getApi().today()}
           className="cursor-pointer border-2 border-zinc-200 bg-white px-3 py-1 font-mono text-[9px] font-bold tracking-widest text-zinc-700 uppercase transition-all duration-150 hover:border-zinc-400 active:translate-y-[1px] dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:border-zinc-600"
         >
-          Today
+          {t('today')}
         </button>
       </div>
 
@@ -73,7 +76,7 @@ export function CalendarHeader({
                 : 'border-zinc-200 text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-200'
             }`}
           >
-            {onlyTeacherDates ? "✓ Teacher's" : "Teacher's"}
+            {onlyTeacherDates ? `✓ ${t('teachers')}` : t('teachers')}
           </button>
           <button
             type="button"
@@ -85,16 +88,16 @@ export function CalendarHeader({
                 : 'border-zinc-200 text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-200'
             }`}
           >
-            {hideInProgress ? '✓ Hide IP' : 'Hide IP'}
+            {hideInProgress ? `✓ ${t('hideIp')}` : t('hideIp')}
           </button>
         </div>
 
         {/* Views Group */}
         <div className="flex items-center gap-1">
           {[
-            { id: 'dayGridMonth', label: 'Month' },
-            { id: 'timeGridWeek', label: 'Week' },
-            { id: 'timeGridDay', label: 'Day' },
+            { id: 'dayGridMonth', key: 'month' },
+            { id: 'timeGridWeek', key: 'week' },
+            { id: 'timeGridDay', key: 'day' },
           ].map((v) => (
             <button
               key={v.id}
@@ -109,7 +112,7 @@ export function CalendarHeader({
                   : 'border-zinc-200 text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-200'
               }`}
             >
-              {v.label}
+              {t(v.key)}
             </button>
           ))}
         </div>

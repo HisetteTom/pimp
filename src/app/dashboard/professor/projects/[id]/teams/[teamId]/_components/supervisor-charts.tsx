@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { User, Crown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 const ResponsiveContainer = dynamic(
   () => import('recharts').then((mod) => mod.ResponsiveContainer),
@@ -40,18 +41,13 @@ interface PieGradientProps {
   fill?: string;
   payload?: {
     name: string;
+    color?: string;
   };
   index?: number;
 }
 
 const PieGradient = (props: PieGradientProps) => {
-  const entryName = props.payload?.name || '';
-  const colorMap: Record<string, string> = {
-    'To Do': '#a1a1aa',
-    'In Progress': '#52525b',
-    Done: '#ff7800',
-  };
-  const color = colorMap[entryName] || '#a1a1aa';
+  const color = props.payload?.color || '#a1a1aa';
 
   return (
     <>
@@ -86,10 +82,17 @@ export interface TaskStatsAndBreakdownProps {
 
 export function TaskStatsAndBreakdown({
   tasks,
-  taskStats,
   tasksByStatus,
   members,
 }: TaskStatsAndBreakdownProps) {
+  const t = useTranslations('ProfessorSupervisorCharts');
+
+  const taskStats = [
+    { name: t('colTodo'), value: tasksByStatus.todo.length, color: '#a1a1aa' },
+    { name: t('colInProgress'), value: tasksByStatus.in_progress.length, color: '#52525b' },
+    { name: t('colDone'), value: tasksByStatus.done.length, color: '#ff7800' },
+  ].filter((s) => s.value > 0);
+
   return (
     <div className="grid gap-8 md:grid-cols-3">
       <Card className="group hover:border-primary/50 relative flex h-full flex-col overflow-hidden rounded-none border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl md:col-span-1 dark:border-zinc-800 dark:bg-zinc-950">
@@ -106,7 +109,7 @@ export function TaskStatsAndBreakdown({
 
         <CardHeader className="relative z-10">
           <CardTitle className="text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-            Task Distribution
+            {t('taskDistribution')}
           </CardTitle>
         </CardHeader>
         <CardContent className="relative z-10 h-[200px]">
@@ -128,7 +131,7 @@ export function TaskStatsAndBreakdown({
             </ResponsiveContainer>
           ) : (
             <div className="flex h-full items-center justify-center text-[10px] font-bold text-zinc-400 uppercase">
-              No Tasks
+              {t('noTasks')}
             </div>
           )}
         </CardContent>
@@ -136,44 +139,44 @@ export function TaskStatsAndBreakdown({
 
       <div className="flex flex-col justify-between gap-y-4 md:col-span-2">
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold tracking-tight uppercase">Status breakdown</h3>
+          <h3 className="text-lg font-semibold tracking-tight uppercase">{t('statusBreakdown')}</h3>
           <div className="flex flex-col gap-y-4">
             <div className="flex h-12 w-full overflow-hidden border border-zinc-200 dark:border-zinc-800">
               <div
                 className="h-full bg-zinc-400 transition-all dark:bg-zinc-600"
                 style={{ width: `${(tasksByStatus.todo.length / (tasks.length || 1)) * 100}%` }}
-                title="To Do"
+                title={t('colTodo')}
               />
               <div
-                className="h-full bg-zinc-600 transition-all dark:bg-zinc-400"
+                className="bg-zinc-650 h-full transition-all dark:bg-zinc-400"
                 style={{
                   width: `${(tasksByStatus.in_progress.length / (tasks.length || 1)) * 100}%`,
                 }}
-                title="In Progress"
+                title={t('colInProgress')}
               />
               <div
                 className="bg-primary h-full transition-all"
                 style={{ width: `${(tasksByStatus.done.length / (tasks.length || 1)) * 100}%` }}
-                title="Done"
+                title={t('colDone')}
               />
             </div>
             <div className="flex gap-4">
               <div className="flex items-center gap-2">
                 <div className="size-3 bg-zinc-400 dark:bg-zinc-600" />
                 <span className="text-zinc-450 text-[10px] font-bold uppercase dark:text-zinc-400">
-                  To Do
+                  {t('colTodo')}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="bg-zinc-650 size-3 dark:bg-zinc-400" />
                 <span className="text-zinc-450 text-[10px] font-bold uppercase dark:text-zinc-400">
-                  In Progress
+                  {t('colInProgress')}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="bg-primary size-3" />
                 <span className="text-zinc-450 text-[10px] font-bold uppercase dark:text-zinc-400">
-                  Done
+                  {t('colDone')}
                 </span>
               </div>
             </div>
@@ -182,13 +185,11 @@ export function TaskStatsAndBreakdown({
 
         <div className="space-y-3 border-t border-zinc-200 pt-4 dark:border-zinc-800">
           <h4 className="text-[9px] font-semibold tracking-widest text-zinc-400 uppercase">
-            Enrolled Team Members ({members.length})
+            {t('enrolledMembers', { count: members.length })}
           </h4>
           <div className="flex flex-wrap gap-2.5">
             {members.length === 0 ? (
-              <p className="text-xs font-bold text-zinc-400 uppercase italic">
-                No members enrolled yet.
-              </p>
+              <p className="text-xs font-bold text-zinc-400 uppercase italic">{t('noMembers')}</p>
             ) : (
               members.map((m) => (
                 <div

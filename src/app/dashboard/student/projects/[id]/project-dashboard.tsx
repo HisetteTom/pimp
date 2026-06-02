@@ -9,7 +9,7 @@ import {
   Clock,
   Calendar as CalendarIcon,
 } from 'lucide-react';
-import { useState, useMemo, useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import {
   StudentOverviewSection,
   StudentKanbanSection,
@@ -22,6 +22,7 @@ import { StudentDatesSection } from './_components/student-dates-section';
 import { Task } from './_components/student-charts';
 import dynamic from 'next/dynamic';
 import { TaskDetailDialog } from './task-detail-dialog';
+import { useTranslations } from 'next-intl';
 
 const ProjectCalendar = dynamic(() => import('@/components/dashboard/project-calendar'), {
   ssr: false,
@@ -74,6 +75,7 @@ export function ProjectDashboard({
   checkpointNotes,
   initialTab,
 }: ProjectDashboardProps) {
+  const t = useTranslations('ProjectDashboard');
   const now = useSyncExternalStore(emptySubscribe, getMountTime, () => null);
 
   const [activeTab, setActiveTab] = useState(initialTab || 'overview');
@@ -97,30 +99,25 @@ export function ProjectDashboard({
     }
   }
 
-  const timelineProgress = useMemo(() => {
+  const timelineProgress = (() => {
     if (!project.dateStart || !project.dateEnd || !now) return 0;
     const start = new Date(project.dateStart).getTime();
     const end = new Date(project.dateEnd).getTime();
     if (now < start) return 0;
     if (now > end) return 100;
     return Math.round(((now - start) / (end - start)) * 100);
-  }, [project.dateStart, project.dateEnd, now]);
+  })();
 
-  const tasksByStatus = useMemo(
-    () => ({
-      todo: tasks.filter((t) => t.status === 'todo'),
-      in_progress: tasks.filter((t) => t.status === 'in_progress'),
-      done: tasks.filter((t) => t.status === 'done'),
-    }),
-    [tasks],
-  );
+  const tasksByStatus = {
+    todo: tasks.filter((t) => t.status === 'todo'),
+    in_progress: tasks.filter((t) => t.status === 'in_progress'),
+    done: tasks.filter((t) => t.status === 'done'),
+  };
 
-  const completionPercentage = useMemo(() => {
-    if (tasks.length === 0) return 0;
-    return Math.round((tasksByStatus.done.length / tasks.length) * 100);
-  }, [tasks, tasksByStatus]);
+  const completionPercentage =
+    tasks.length === 0 ? 0 : Math.round((tasksByStatus.done.length / tasks.length) * 100);
 
-  const chartData = useMemo(() => {
+  const chartData = (() => {
     const dates: string[] = [];
     const doneTasks: (Task & { deadlineDate: Date })[] = [];
     for (const t of tasks) {
@@ -148,18 +145,15 @@ export function ProjectDashboard({
       const pct = tasks.length > 0 ? Math.round((runningCount / tasks.length) * 100) : 0;
       return { label: dateStr, count: pct };
     });
-  }, [tasks]);
+  })();
 
-  const taskStats = useMemo(
-    () => [
-      { name: 'To Do', value: tasksByStatus.todo.length },
-      { name: 'In Progress', value: tasksByStatus.in_progress.length },
-      { name: 'Done', value: tasksByStatus.done.length },
-    ],
-    [tasksByStatus],
-  );
+  const taskStats = [
+    { name: 'To Do', value: tasksByStatus.todo.length },
+    { name: 'In Progress', value: tasksByStatus.in_progress.length },
+    { name: 'Done', value: tasksByStatus.done.length },
+  ];
 
-  const parsedFeedback = useMemo(() => {
+  const parsedFeedback = (() => {
     if (team.feedback) {
       try {
         if (team.feedback.startsWith('{')) {
@@ -173,7 +167,7 @@ export function ProjectDashboard({
       } catch {}
     }
     return { overview: team.feedback || '', kanban: '', deliverables: '' };
-  }, [team.feedback]);
+  })();
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -184,42 +178,42 @@ export function ProjectDashboard({
             className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
           >
             <LayoutDashboard className="size-4" />
-            Overview
+            {t('overview')}
           </TabsTrigger>
           <TabsTrigger
             value="list"
             className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
           >
             <CheckSquare className="size-4" />
-            List
+            {t('list')}
           </TabsTrigger>
           <TabsTrigger
             value="kanban"
             className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
           >
             <KanbanIcon className="size-4" />
-            Kanban
+            {t('kanban')}
           </TabsTrigger>
           <TabsTrigger
             value="deliverables"
             className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
           >
             <FileUp className="size-4" />
-            Deliverables
+            {t('deliverables')}
           </TabsTrigger>
           <TabsTrigger
             value="dates"
             className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
           >
             <Clock className="size-4" />
-            Dates
+            {t('dates')}
           </TabsTrigger>
           <TabsTrigger
             value="calendar"
             className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
           >
             <CalendarIcon className="size-4" />
-            Calendar
+            {t('calendar')}
           </TabsTrigger>
         </TabsList>
 

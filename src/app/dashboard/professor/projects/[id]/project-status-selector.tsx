@@ -6,36 +6,51 @@ import { toast } from 'sonner';
 import { updateProjectStatus } from '../../actions';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowUpDown } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ProjectStatusSelectorProps {
   projectId: number;
   initialStatus: string;
 }
 
+const statuses = [
+  { value: 'proposed', key: 'proposed' },
+  { value: 'validated', key: 'validated' },
+  { value: 'ongoing', key: 'ongoing' },
+  { value: 'late', key: 'late' },
+  { value: 'delivered', key: 'delivered' },
+  { value: 'presented', key: 'presented' },
+  { value: 'closed', key: 'closed' },
+];
+
 export function ProjectStatusSelector({ projectId, initialStatus }: ProjectStatusSelectorProps) {
+  const t = useTranslations('ProfessorProjectDetail');
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
   const [optimisticStatus, setOptimisticStatus] = useOptimistic(initialStatus);
-
-  const statuses = [
-    { value: 'proposed', label: 'Proposed' },
-    { value: 'validated', label: 'Validated' },
-    { value: 'ongoing', label: 'Ongoing' },
-    { value: 'late', label: 'Late (Warning)' },
-    { value: 'delivered', label: 'Delivered' },
-    { value: 'presented', label: 'Presented' },
-    { value: 'closed', label: 'Closed' },
-  ];
 
   const handleStatusChange = (newStatus: string) => {
     startTransition(async () => {
       setOptimisticStatus(newStatus);
       try {
         await updateProjectStatus(projectId, newStatus);
-        toast.success(`Project status updated to ${newStatus}`);
+        toast.success(
+          t('statusUpdated', {
+            status: t(
+              newStatus as
+                | 'proposed'
+                | 'validated'
+                | 'ongoing'
+                | 'late'
+                | 'delivered'
+                | 'presented'
+                | 'closed',
+            ),
+          }),
+        );
         refresh();
       } catch (err) {
-        toast.error('Failed to update project status');
+        toast.error(t('statusUpdateError'));
         console.error(err);
       }
     });
@@ -47,7 +62,7 @@ export function ProjectStatusSelector({ projectId, initialStatus }: ProjectStatu
         htmlFor="status-select"
         className="text-[10px] font-black tracking-widest text-zinc-400 uppercase"
       >
-        Project Status
+        {t('projectStatus')}
       </Label>
       <div className="relative flex items-center">
         <select
@@ -59,7 +74,16 @@ export function ProjectStatusSelector({ projectId, initialStatus }: ProjectStatu
         >
           {statuses.map((s) => (
             <option key={s.value} value={s.value} className="py-2 font-bold">
-              {s.label}
+              {t(
+                s.key as
+                  | 'proposed'
+                  | 'validated'
+                  | 'ongoing'
+                  | 'late'
+                  | 'delivered'
+                  | 'presented'
+                  | 'closed',
+              )}
             </option>
           ))}
         </select>

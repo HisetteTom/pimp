@@ -19,6 +19,7 @@ import { CheckpointsEditor } from './_components/checkpoints-editor';
 import { dialogReducer, initialDialogState } from './_components/project-dialog-types';
 import { TargetingSection } from './_components/targeting-section';
 import { ProjectFormFields } from './_components/project-form-fields';
+import { useTranslations } from 'next-intl';
 
 const initialFormState = {
   name: '',
@@ -43,6 +44,7 @@ function formReducer(state: typeof initialFormState, action: FormAction) {
 }
 
 export function CreateProjectDialog() {
+  const t = useTranslations('ProfessorCreateDialog');
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
@@ -89,7 +91,7 @@ export function CreateProjectDialog() {
     e.preventDefault();
 
     if (!formState.name.trim()) {
-      toast.error('Project name is required');
+      toast.error(t('nameRequired'));
       return;
     }
 
@@ -113,13 +115,13 @@ export function CreateProjectDialog() {
           coTeachers: state.coTeachers,
         });
 
-        toast.success('Project created successfully');
+        toast.success(t('createSuccess'));
         setIsOpen(false);
         dispatchForm({ type: 'RESET' });
         dispatch({ type: 'RESET' });
         refresh();
       } catch (err) {
-        toast.error('Failed to create project');
+        toast.error(t('createError'));
         console.error(err);
       }
     });
@@ -133,16 +135,16 @@ export function CreateProjectDialog() {
           className="flex h-11 cursor-pointer items-center gap-2 border-transparent bg-purple-600 px-6 font-black tracking-wider text-white uppercase shadow-[4px_4px_0px_0px_rgba(168,85,247,0.2)] transition-all hover:bg-purple-700 hover:text-white focus-visible:border-purple-500 focus-visible:ring-3 focus-visible:ring-purple-500/50 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none dark:hover:bg-purple-700"
         >
           <Plus className="size-4" />
-          Create New Project
+          {t('trigger')}
         </Button>
       </DialogTrigger>
       <DialogContent className="bg-card max-h-[90vh] overflow-y-auto rounded-none border-2 border-zinc-200 p-6 shadow-2xl sm:max-w-[550px] dark:border-zinc-800">
         <DialogHeader className="border-b border-zinc-100 pb-4 dark:border-zinc-800">
           <DialogTitle className="text-2xl font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-            Create Project Proposal
+            {t('title')}
           </DialogTitle>
           <DialogDescription className="text-xs font-bold tracking-widest text-zinc-400 uppercase">
-            Submit a new project that students can enroll in.
+            {t('description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -186,7 +188,7 @@ export function CreateProjectDialog() {
                 className="flex h-11 cursor-pointer items-center justify-center rounded-none border-2 border-zinc-200 px-5 font-bold tracking-wider uppercase hover:bg-zinc-100 dark:border-zinc-800 dark:hover:bg-zinc-900"
                 disabled={isPending}
               >
-                Cancel
+                {t('cancel')}
               </Button>
             </DialogClose>
             <Button
@@ -198,10 +200,10 @@ export function CreateProjectDialog() {
               {isPending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  Creating…
+                  {t('submitting')}
                 </>
               ) : (
-                'Create Project'
+                t('submit')
               )}
             </Button>
           </div>

@@ -70,12 +70,16 @@ export default async function StudentProfilePage() {
     }
   }
 
+  const currentProj = currentTeam
+    ? activeProjects.find((p) => p.id === currentTeam.projectId)
+    : null;
   const sidebarTeamData = currentTeam
     ? {
         id: currentTeam.id,
         projectId: currentTeam.projectId,
         name: currentTeam.name,
         members: sidebarMembers,
+        projectStatus: currentProj?.status,
       }
     : undefined;
 

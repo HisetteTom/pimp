@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageSquare } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface GlobalRemarksCardProps {
   globalGrade: string;
@@ -17,12 +18,14 @@ export function GlobalRemarksCard({
   supervisorNotes,
   setSupervisorNotes,
 }: GlobalRemarksCardProps) {
+  const t = useTranslations('ProfessorGlobalRemarksCard');
+
   return (
     <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-none dark:border-zinc-800">
       <CardHeader className="flex flex-row items-center gap-2 border-b border-zinc-100 px-6 py-4 dark:border-zinc-800">
         <MessageSquare className="size-4 text-purple-500" />
         <CardTitle className="text-sm font-semibold tracking-wider text-zinc-900 uppercase dark:text-zinc-50">
-          Global Grade & General Feedback
+          {t('title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 p-6">
@@ -30,7 +33,7 @@ export function GlobalRemarksCard({
           {/* Note Globale — auto-calculated */}
           <div className="flex flex-col gap-1.5 md:col-span-1">
             <span className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
-              Overall Grade (Auto)
+              {t('gradeAuto')}
             </span>
             <div className="w-full rounded-none border-2 border-zinc-200 bg-zinc-50 p-3 font-mono text-lg font-black text-zinc-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
               {globalGrade || '—'}
@@ -43,14 +46,14 @@ export function GlobalRemarksCard({
               htmlFor="jury-feedback"
               className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase"
             >
-              Jury General Feedback / Remarks
+              {t('juryTitle')}
             </label>
             <Textarea
               id="jury-feedback"
               rows={3}
               value={juryFeedback}
               onChange={(e) => setJuryFeedback(e.target.value)}
-              placeholder="Enter jury general comments, positive feedback, and critiques..."
+              placeholder={t('juryPlaceholder')}
               className="bg-card resize-none rounded-none border-2 border-zinc-200 p-3 font-mono text-xs leading-relaxed font-medium focus-visible:ring-purple-500 dark:border-zinc-800"
             />
           </div>
@@ -62,14 +65,14 @@ export function GlobalRemarksCard({
             htmlFor="supervisor-notes"
             className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase"
           >
-            Supervisor Private Observations
+            {t('supervisorTitle')}
           </label>
           <Textarea
             id="supervisor-notes"
             rows={4}
             value={supervisorNotes}
             onChange={(e) => setSupervisorNotes(e.target.value)}
-            placeholder="Internal supervisor notes (observations, process notes, etc.)..."
+            placeholder={t('supervisorPlaceholder')}
             className="bg-card resize-y rounded-none border-2 border-zinc-200 p-3 font-mono text-xs leading-relaxed font-medium focus-visible:ring-purple-500 dark:border-zinc-800"
           />
         </div>

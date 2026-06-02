@@ -12,8 +12,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Users, Plus, ArrowRight, Crown } from 'lucide-react';
+import { Users, Plus, ArrowRight, Crown, Lock } from 'lucide-react';
 import { createTeam, joinTeam } from '@/app/dashboard/student/actions';
+import { useTranslations } from 'next-intl';
+import { StatusBadge } from '@/app/dashboard/professor/_components/status-badge';
 
 interface TeamMember {
   id: string;
@@ -32,20 +34,31 @@ interface TeamSelectionProps {
   teams: Team[];
   maxGroups: number;
   maxMembers: number;
+  projectStatus?: string;
 }
 
-export function TeamSelection({ projectId, teams, maxGroups, maxMembers }: TeamSelectionProps) {
+export function TeamSelection({
+  projectId,
+  teams,
+  maxGroups,
+  maxMembers,
+  projectStatus = 'proposed',
+}: TeamSelectionProps) {
+  const t = useTranslations('TeamSelection');
   const [isPending, startTransition] = useTransition();
   const [newTeamName, setNewTeamName] = useState('');
 
+  const isSelectionAllowed = projectStatus === 'proposed' || projectStatus === 'validated';
+
   const handleCreateTeam = () => {
-    if (!newTeamName.trim()) return;
+    if (!newTeamName.trim() || !isSelectionAllowed) return;
     startTransition(async () => {
       await createTeam(projectId, newTeamName);
     });
   };
 
   const handleJoinTeam = (teamId: number) => {
+    if (!isSelectionAllowed) return;
     startTransition(async () => {
       await joinTeam(projectId, teamId);
     });
@@ -55,19 +68,17 @@ export function TeamSelection({ projectId, teams, maxGroups, maxMembers }: TeamS
     <div className="grid gap-8 lg:grid-cols-3">
       <div className="space-y-6 lg:col-span-2">
         <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-semibold tracking-tight uppercase">Available Teams</h2>
+          <h2 className="text-2xl font-semibold tracking-tight uppercase">{t('availableTeams')}</h2>
           <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
           <span className="font-mono text-xs font-bold text-zinc-400">
-            {teams.length} / {maxGroups} GROUPS
+            {teams.length} / {maxGroups} {t('groupsSuffix')}
           </span>
         </div>
 
         {teams.length === 0 ? (
           <div className="space-y-2 rounded-xl border-2 border-dashed border-zinc-200 bg-zinc-50 p-12 text-center dark:border-zinc-800 dark:bg-zinc-900/50">
             <Users className="mx-auto size-12 text-zinc-300" />
-            <p className="font-medium text-zinc-500 italic">
-              No teams have been created yet. Be the first!
-            </p>
+            <p className="font-medium text-zinc-500 italic">{t('noTeams')}</p>
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
@@ -105,12 +116,27 @@ export function TeamSelection({ projectId, teams, maxGroups, maxMembers }: TeamS
                 <CardFooter className="p-6 pt-0">
                   <Button
                     onClick={() => handleJoinTeam(team.id)}
-                    disabled={isPending || team.members.length >= maxMembers}
+                    disabled={isPending || team.members.length >= maxMembers || !isSelectionAllowed}
                     className="h-10 w-full text-xs font-black tracking-wider uppercase"
-                    variant={team.members.length >= maxMembers ? 'outline' : 'default'}
+                    variant={
+                      team.members.length >= maxMembers || !isSelectionAllowed
+                        ? 'outline'
+                        : 'default'
+                    }
                   >
-                    {team.members.length >= maxMembers ? 'FULL' : 'JOIN TEAM'}
-                    <ArrowRight className="ml-2 size-3" />
+                    {!isSelectionAllowed ? (
+                      <>
+                        <Lock className="mr-2 size-3 text-amber-500" />
+                        Locked
+                      </>
+                    ) : team.members.length >= maxMembers ? (
+                      t('full')
+                    ) : (
+                      <>
+                        {t('joinTeam')}
+                        <ArrowRight className="ml-2 size-3" />
+                      </>
+                    )}
                   </Button>
                 </CardFooter>
               </Card>
@@ -120,39 +146,65 @@ export function TeamSelection({ projectId, teams, maxGroups, maxMembers }: TeamS
       </div>
 
       <div className="space-y-6">
-        <h2 className="text-2xl font-semibold tracking-tight uppercase">Create New</h2>
-        <Card className="border-primary/20 border-2 shadow-[8px_8px_0px_0px_rgba(var(--primary-rgb),0.1)]">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold uppercase">Start a Team</CardTitle>
-            <CardDescription>You will become the Team Leader.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label
-                htmlFor="team-name"
-                className="text-[10px] font-black tracking-widest text-zinc-400 uppercase"
+        <h2 className="text-2xl font-semibold tracking-tight uppercase">
+          {!isSelectionAllowed ? t('lockTitle') : t('createNew')}
+        </h2>
+        {!isSelectionAllowed ? (
+          <Card className="border-2 border-amber-500/20 bg-amber-500/5 shadow-[8px_8px_0px_0px_rgba(245,158,11,0.1)] dark:bg-amber-500/10">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-3">
+                <div className="rounded-full bg-amber-500/10 p-2 text-amber-500 dark:bg-amber-500/20">
+                  <Lock className="size-5" />
+                </div>
+                <CardTitle className="text-lg font-black text-amber-600 uppercase dark:text-amber-500">
+                  {t('lockTitle')}
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2 text-xs leading-none font-bold text-zinc-600 dark:text-zinc-400">
+                <span>{t('lockDescription')}</span>
+                <StatusBadge status={projectStatus} />
+              </div>
+              <p className="text-xs leading-relaxed font-medium text-zinc-500 dark:text-zinc-400">
+                {t('lockInstructions')}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="border-primary/20 border-2 shadow-[8px_8px_0px_0px_rgba(var(--primary-rgb),0.1)]">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold uppercase">{t('startTeam')}</CardTitle>
+              <CardDescription>{t('teamLeaderWarning')}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="team-name"
+                  className="text-[10px] font-black tracking-widest text-zinc-400 uppercase"
+                >
+                  {t('teamName')}
+                </Label>
+                <Input
+                  id="team-name"
+                  value={newTeamName}
+                  onChange={(e) => setNewTeamName(e.target.value)}
+                  className="focus-visible:ring-primary border-2 font-bold"
+                />
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button
+                onClick={handleCreateTeam}
+                disabled={isPending || !newTeamName.trim() || teams.length >= maxGroups}
+                className="w-full font-black tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
               >
-                Team Name
-              </Label>
-              <Input
-                id="team-name"
-                value={newTeamName}
-                onChange={(e) => setNewTeamName(e.target.value)}
-                className="focus-visible:ring-primary border-2 font-bold"
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button
-              onClick={handleCreateTeam}
-              disabled={isPending || !newTeamName.trim() || teams.length >= maxGroups}
-              className="w-full font-black tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-            >
-              {isPending ? 'CREATING...' : 'CREATE TEAM'}
-              <Plus className="ml-2 size-4" />
-            </Button>
-          </CardFooter>
-        </Card>
+                {isPending ? t('creating') : t('createTeam')}
+                <Plus className="ml-2 size-4" />
+              </Button>
+            </CardFooter>
+          </Card>
+        )}
       </div>
     </div>
   );

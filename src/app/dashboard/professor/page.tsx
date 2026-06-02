@@ -9,6 +9,7 @@ import { AccessDenied } from './_components/access-denied';
 import { ProfessorMetrics } from './_components/professor-metrics';
 import { ProfessorProjectsTable } from './_components/professor-projects-table';
 import { or, eq, sql } from 'drizzle-orm';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Professor Dashboard - PIMP',
@@ -16,16 +17,23 @@ export const metadata: Metadata = {
 };
 
 async function fetchProfessorProjects(teacherId: string) {
+  const sqlStrings = ['', ' = ANY(', ')'];
+  const templateStrings = Object.assign(sqlStrings, {
+    raw: sqlStrings,
+  }) as unknown as TemplateStringsArray;
   return await db
     .select()
     .from(project)
-    .where(or(eq(project.teacherId, teacherId), sql`${teacherId} = ANY(${project.coTeachers})`));
+    .where(
+      or(eq(project.teacherId, teacherId), sql(templateStrings, teacherId, project.coTeachers)),
+    );
 }
 
 export default async function ProfessorDashboardPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const [t, session] = await Promise.all([
+    getTranslations('ProfessorDashboard'),
+    headers().then((h) => auth.api.getSession({ headers: h })),
+  ]);
 
   if (!session || session.user.role !== 'professor') {
     return <AccessDenied />;
@@ -112,10 +120,10 @@ export default async function ProfessorDashboardPage() {
         >
           <div>
             <h1 className="text-4xl font-semibold tracking-tighter text-zinc-900 uppercase dark:text-zinc-100">
-              Professor Dashboard
+              {t('title')}
             </h1>
             <p className="mt-1 text-xs font-bold tracking-widest text-zinc-400 uppercase">
-              High-level overview and administrative management of all student cohorts.
+              {t('subtitle')}
             </p>
           </div>
           <CreateProjectDialog />

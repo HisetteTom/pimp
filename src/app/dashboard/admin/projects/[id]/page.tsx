@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { eq } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { EnrollmentTool, CreateTeamTool } from './project-controls';
 
@@ -30,9 +31,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function AdminProjectControlPage({ params }: Props) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const [t, session] = await Promise.all([
+    getTranslations('AdminProjectControl'),
+    headers().then((h) => auth.api.getSession({ headers: h })),
+  ]);
 
   if (!session || session.user.role !== 'admin') {
     return <AccessDenied />;
@@ -70,8 +72,8 @@ export default async function AdminProjectControlPage({ params }: Props) {
   }
 
   const professorName = currentProject.teacherId
-    ? usersById.get(currentProject.teacherId)?.name || 'Unknown Professor'
-    : 'No main teacher assigned';
+    ? usersById.get(currentProject.teacherId)?.name || t('unknownProfessor')
+    : t('noTeacherAssigned');
 
   // Find enrolled students and teams details
   const enrolledStudentIds = new Set<string>();
@@ -79,16 +81,16 @@ export default async function AdminProjectControlPage({ params }: Props) {
     const s = usersById.get(e.userId);
     enrolledStudentIds.add(e.userId);
 
-    const t = teams.find((teamItem) => teamItem.id === e.teamId);
+    const teamItem = teams.find((ti) => ti.id === e.teamId);
 
     return {
       id: e.userId,
-      name: s?.name || 'Unknown Student',
+      name: s?.name || t('unknownStudent'),
       username: s?.username || 'unknown',
       email: s?.email || 'n/a',
-      promo: s?.promo || 'No Promo',
+      promo: s?.promo || t('noPromo'),
       teamId: e.teamId,
-      teamName: t?.name || null,
+      teamName: teamItem?.name || null,
     };
   });
 
@@ -139,7 +141,7 @@ export default async function AdminProjectControlPage({ params }: Props) {
             className="inline-flex items-center gap-1.5 text-xs font-black tracking-widest text-zinc-400 uppercase transition-colors hover:text-purple-600"
           >
             <ArrowLeft className="size-3.5" />
-            Back to Dashboard
+            {t('back')}
           </Link>
         </div>
 
@@ -158,7 +160,7 @@ export default async function AdminProjectControlPage({ params }: Props) {
           <div className="space-y-4 lg:col-span-2">
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-                Enrolled Students
+                {t('enrolledStudents')}
               </h2>
               <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
               <Badge className="rounded-none bg-zinc-900 font-black text-white dark:bg-zinc-100 dark:text-zinc-900">
@@ -177,7 +179,7 @@ export default async function AdminProjectControlPage({ params }: Props) {
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-                Teams Status
+                {t('teamsStatus')}
               </h2>
               <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
               <Badge className="rounded-none bg-zinc-900 font-black text-white dark:bg-zinc-100 dark:text-zinc-900">

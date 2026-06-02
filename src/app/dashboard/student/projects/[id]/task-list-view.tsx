@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { Calendar, Plus, AlertTriangle, ChevronRight } from 'lucide-react';
 import { TaskDialog } from './task-dialog';
 import { TaskDetailDialog } from './task-detail-dialog';
+import { useTranslations } from 'next-intl';
 
 interface Task {
   id: number;
@@ -34,16 +35,24 @@ interface TaskListViewProps {
   teamId: number;
 }
 
-const COLUMNS = [
-  { id: 'todo', title: 'To Do' },
-  { id: 'in_progress', title: 'In Progress' },
-  { id: 'done', title: 'Done' },
-];
+const priorityStyles = {
+  low: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-500/20',
+  medium:
+    'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-500/20',
+  high: 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-400 border border-red-500/20',
+} as Record<string, string>;
 
 export function TaskListView({ initialTasks, projectId, members, teamId }: TaskListViewProps) {
+  const t = useTranslations('TaskListView');
   const [tasks, setTasks] = useState<Task[]>(() => initialTasks);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+
+  const COLUMNS = [
+    { id: 'todo', title: t('todo') },
+    { id: 'in_progress', title: t('inProgress') },
+    { id: 'done', title: t('done') },
+  ];
 
   function handleSelectTask(task: Task) {
     setSelectedTask(task);
@@ -59,16 +68,9 @@ export function TaskListView({ initialTasks, projectId, members, teamId }: TaskL
       toast.success('Task status updated');
     } catch {
       setTasks(previousTasks);
-      toast.error('Failed to update task status');
+      toast.error(t('failedUpdate'));
     }
   }
-
-  const priorityStyles = {
-    low: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-500/20',
-    medium:
-      'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400 border border-amber-500/20',
-    high: 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-400 border border-red-500/20',
-  } as Record<string, string>;
 
   return (
     <>
@@ -76,7 +78,7 @@ export function TaskListView({ initialTasks, projectId, members, teamId }: TaskL
         {/* Top actions */}
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-xl font-semibold tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-            Task List
+            {t('taskList')}
           </h3>
           <TaskDialog
             projectId={projectId}
@@ -86,7 +88,7 @@ export function TaskListView({ initialTasks, projectId, members, teamId }: TaskL
             trigger={
               <Button className="text-xs font-semibold tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)]">
                 <Plus className="mr-2 size-4" />
-                Add Task
+                {t('addTask')}
               </Button>
             }
           />
@@ -99,22 +101,22 @@ export function TaskListView({ initialTasks, projectId, members, teamId }: TaskL
               <thead className="border-b-2 border-zinc-100 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
                 <tr>
                   <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                    Task Name
+                    {t('taskName')}
                   </th>
                   <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                    Status
+                    {t('status')}
                   </th>
                   <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                    Priority
+                    {t('priority')}
                   </th>
                   <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                    Deadline
+                    {t('deadline')}
                   </th>
                   <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                    Assignees
+                    {t('assignees')}
                   </th>
                   <th className="p-4 text-right text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                    Actions
+                    {t('actions')}
                   </th>
                 </tr>
               </thead>
@@ -181,7 +183,11 @@ export function TaskListView({ initialTasks, projectId, members, teamId }: TaskL
                           <Badge
                             className={`rounded-none px-2 py-0.5 text-[9px] font-bold uppercase shadow-none ${priorityStyles[task.priority] || priorityStyles.medium}`}
                           >
-                            {task.priority}
+                            {task.priority === 'low'
+                              ? t('low')
+                              : task.priority === 'high'
+                                ? t('high')
+                                : t('medium')}
                           </Badge>
                         </td>
 
@@ -195,7 +201,7 @@ export function TaskListView({ initialTasks, projectId, members, teamId }: TaskL
                               </div>
                             ) : (
                               <span className="text-[10px] font-bold text-zinc-300 uppercase italic">
-                                None
+                                {t('none')}
                               </span>
                             )}
                             <OverdueBadge deadline={task.deadline} status={task.status} />
@@ -227,7 +233,7 @@ export function TaskListView({ initialTasks, projectId, members, teamId }: TaskL
                             </div>
                           ) : (
                             <span className="text-[10px] font-bold text-zinc-300 uppercase italic">
-                              Unassigned
+                              {t('unassigned')}
                             </span>
                           )}
                         </td>
@@ -240,7 +246,7 @@ export function TaskListView({ initialTasks, projectId, members, teamId }: TaskL
                             onClick={() => handleSelectTask(task)}
                             className="hover:text-primary h-8 rounded-none text-xs font-semibold tracking-wider text-zinc-400 uppercase"
                           >
-                            Details
+                            {t('details')}
                             <ChevronRight className="ml-1 size-3.5" />
                           </Button>
                         </td>
@@ -250,7 +256,7 @@ export function TaskListView({ initialTasks, projectId, members, teamId }: TaskL
                 ) : (
                   <tr>
                     <td colSpan={6} className="p-12 text-center font-medium text-zinc-400 italic">
-                      No tasks created yet.
+                      {t('noTasks')}
                     </td>
                   </tr>
                 )}
@@ -292,6 +298,7 @@ function ClientDate({ date }: { date: string | Date }) {
 }
 
 function OverdueBadge({ deadline, status }: { deadline: Date | string | null; status: string }) {
+  const t = useTranslations('TaskListView');
   const now = useSyncExternalStore(
     timeStore.subscribe,
     timeStore.getSnapshot,
@@ -310,7 +317,7 @@ function OverdueBadge({ deadline, status }: { deadline: Date | string | null; st
       suppressHydrationWarning
     >
       <AlertTriangle className="size-3" />
-      Overdue
+      {t('overdue')}
     </span>
   );
 }

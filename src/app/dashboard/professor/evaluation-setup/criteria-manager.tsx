@@ -8,6 +8,7 @@ import { createCriterion, updateCriterion, deleteCriterion } from '../evaluation
 import { ProjectsSidebar } from './projects-sidebar';
 import { CriterionBuilderCard } from './criterion-builder-card';
 import { CriterionRow } from './criterion-row';
+import { useTranslations } from 'next-intl';
 
 interface Project {
   id: number;
@@ -136,6 +137,7 @@ function reducer(state: State, action: Action): State {
 }
 
 export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerProps) {
+  const t = useTranslations('ProfessorCriteriaManager');
   const [isPending, startTransition] = useTransition();
 
   const [state, dispatch] = useReducer(reducer, null, () => ({
@@ -169,11 +171,11 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
   const handleCreate = () => {
     if (!state.selectedProjectId) return;
     if (!state.newName.trim()) {
-      toast.error('Criterion name cannot be empty');
+      toast.error(t('nameEmptyError'));
       return;
     }
     if (state.newMaxPoints <= 0) {
-      toast.error('Max points must be a positive number');
+      toast.error(t('pointsPositiveError'));
       return;
     }
 
@@ -187,20 +189,20 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
         });
 
         dispatch({ type: 'ADD_CRITERION', criterion: newCp });
-        toast.success('Criterion added successfully!');
+        toast.success(t('addSuccess'));
       } catch {
-        toast.error('Failed to add criterion');
+        toast.error(t('addError'));
       }
     });
   };
 
   const handleUpdate = (id: number) => {
     if (!state.editName.trim()) {
-      toast.error('Criterion name cannot be empty');
+      toast.error(t('nameEmptyError'));
       return;
     }
     if (state.editMaxPoints <= 0) {
-      toast.error('Max points must be a positive number');
+      toast.error(t('pointsPositiveError'));
       return;
     }
 
@@ -214,19 +216,15 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
         });
 
         dispatch({ type: 'UPDATE_CRITERION', criterion: updated });
-        toast.success('Criterion updated successfully!');
+        toast.success(t('updateSuccess'));
       } catch {
-        toast.error('Failed to update criterion');
+        toast.error(t('updateError'));
       }
     });
   };
 
   const handleDelete = (id: number) => {
-    if (
-      !confirm(
-        'Are you sure you want to delete this criterion? This will also remove any scores recorded for this criterion.',
-      )
-    ) {
+    if (!confirm(t('confirmDelete'))) {
       return;
     }
 
@@ -234,9 +232,9 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
       try {
         await deleteCriterion(id);
         dispatch({ type: 'DELETE_CRITERION', id });
-        toast.success('Criterion deleted successfully!');
+        toast.success(t('deleteSuccess'));
       } catch {
-        toast.error('Failed to delete criterion');
+        toast.error(t('deleteError'));
       }
     });
   };
@@ -256,7 +254,7 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
             <div className="bg-card flex flex-col justify-between gap-4 border-2 border-zinc-200 p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-none sm:flex-row sm:items-center dark:border-zinc-800">
               <div className="space-y-1">
                 <span className="text-[9px] font-bold tracking-widest text-purple-600 uppercase dark:text-purple-400">
-                  Grid Settings
+                  {t('gridSettings')}
                 </span>
                 <h2 className="text-xl leading-tight font-semibold text-zinc-900 uppercase dark:text-zinc-100">
                   {activeProject.name}
@@ -274,7 +272,7 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
                 className="flex shrink-0 items-center justify-center gap-2 bg-zinc-900 px-4 py-2 text-xs font-bold tracking-wider text-white uppercase transition-all hover:bg-zinc-800 active:scale-95 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
               >
                 <Plus className="size-4" />
-                Add Criterion
+                {t('addCriterion')}
               </Button>
             </div>
 
@@ -322,11 +320,10 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
                 <div className="bg-card border-2 border-dashed border-zinc-200 p-12 text-center dark:border-zinc-800">
                   <ClipboardCheck className="mx-auto mb-3 size-8 text-zinc-300" />
                   <h4 className="mb-1 text-[13px] font-semibold text-zinc-900 uppercase dark:text-zinc-100">
-                    Empty Evaluation Grid
+                    {t('emptyTitle')}
                   </h4>
                   <p className="mx-auto mb-4 max-w-sm text-xs font-medium text-zinc-400">
-                    There are no evaluation criteria established for this project yet. Use the
-                    button below to add your first criterion.
+                    {t('emptyDesc')}
                   </p>
                   <Button
                     variant="unstyled"
@@ -334,7 +331,7 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
                     className="inline-flex items-center justify-center gap-2 bg-zinc-900 px-4 py-2 text-xs font-bold tracking-wider text-white uppercase transition-all hover:bg-zinc-800 active:scale-95 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
                   >
                     <Plus className="size-4" />
-                    Add Your First Criterion
+                    {t('btnFirstCriterion')}
                   </Button>
                 </div>
               )}
@@ -344,11 +341,10 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
           <div className="bg-card border-2 border-dashed border-zinc-200 p-12 text-center dark:border-zinc-800">
             <Sparkles className="mx-auto mb-4 size-10 text-zinc-300" />
             <h3 className="mb-2 text-sm font-semibold text-zinc-900 uppercase dark:text-zinc-100">
-              No Projects Selected
+              {t('noProjectsSelectedTitle')}
             </h3>
             <p className="mx-auto max-w-md text-xs font-medium text-zinc-400">
-              Please choose a project from the directory side panel to configure its customizable
-              evaluation grid.
+              {t('noProjectsSelectedDesc')}
             </p>
           </div>
         )}

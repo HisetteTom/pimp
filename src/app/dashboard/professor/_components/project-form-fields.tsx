@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FileText, Calendar, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ProjectFormFieldsProps {
   formState: {
@@ -19,6 +20,8 @@ interface ProjectFormFieldsProps {
 }
 
 export function ProjectFormFields({ formState, onChange, isPending }: ProjectFormFieldsProps) {
+  const t = useTranslations('ProfessorProjectFormFields');
+
   return (
     <>
       <div className="space-y-2">
@@ -26,7 +29,7 @@ export function ProjectFormFields({ formState, onChange, isPending }: ProjectFor
           htmlFor="name"
           className="text-[11px] font-black tracking-widest text-zinc-500 uppercase"
         >
-          Project Name <span className="text-purple-500">*</span>
+          {t('name')} <span className="text-purple-500">*</span>
         </Label>
         <div className="relative">
           <FileText className="absolute top-3 left-3 size-4 text-zinc-400" />
@@ -47,7 +50,7 @@ export function ProjectFormFields({ formState, onChange, isPending }: ProjectFor
           htmlFor="description"
           className="text-[11px] font-black tracking-widest text-zinc-500 uppercase"
         >
-          Description
+          {t('description')}
         </Label>
         <Textarea
           id="description"
@@ -65,7 +68,7 @@ export function ProjectFormFields({ formState, onChange, isPending }: ProjectFor
             htmlFor="dateStart"
             className="text-[11px] font-black tracking-widest text-zinc-500 uppercase"
           >
-            Start Date
+            {t('startDate')}
           </Label>
           <div className="relative">
             <Calendar className="absolute top-3 left-3 size-4 text-zinc-400" />
@@ -84,7 +87,7 @@ export function ProjectFormFields({ formState, onChange, isPending }: ProjectFor
             htmlFor="dateEnd"
             className="text-[11px] font-black tracking-widest text-zinc-500 uppercase"
           >
-            End Date
+            {t('endDate')}
           </Label>
           <div className="relative">
             <Calendar className="absolute top-3 left-3 size-4 text-zinc-400" />
@@ -106,7 +109,7 @@ export function ProjectFormFields({ formState, onChange, isPending }: ProjectFor
             htmlFor="maxGroups"
             className="text-[11px] font-black tracking-widest text-zinc-500 uppercase"
           >
-            Max Teams
+            {t('maxTeams')}
           </Label>
           <div className="relative">
             <Users className="absolute top-3 left-3 size-4 text-zinc-400" />
@@ -128,7 +131,7 @@ export function ProjectFormFields({ formState, onChange, isPending }: ProjectFor
             htmlFor="maxMembersPerGroup"
             className="text-[11px] font-black tracking-widest text-zinc-500 uppercase"
           >
-            Max Members/Team
+            {t('maxMembersPerTeam')}
           </Label>
           <div className="relative">
             <Users className="absolute top-3 left-3 size-4 text-zinc-400" />

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo, useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, User as UserIcon, ChevronRight, AlertTriangle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useTranslations } from 'next-intl';
 
 interface Task {
   id: number;
@@ -23,37 +24,48 @@ interface ReadOnlyKanbanProps {
 }
 
 const COLUMNS = [
-  { id: 'todo', title: 'To Do' },
-  { id: 'in_progress', title: 'In Progress' },
-  { id: 'done', title: 'Done' },
+  { id: 'todo', titleKey: 'colTodo' },
+  { id: 'in_progress', titleKey: 'colInProgress' },
+  { id: 'done', titleKey: 'colDone' },
 ];
 
 export function ReadOnlyKanban({ initialTasks, members }: ReadOnlyKanbanProps) {
+  const t = useTranslations('ProfessorReadOnlyKanban');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
 
-  const tasksByStatus = useMemo(() => {
-    return COLUMNS.reduce(
-      (acc, col) => {
-        acc[col.id] = initialTasks.filter((t) => t.status === col.id);
-        return acc;
-      },
-      {} as Record<string, Task[]>,
-    );
-  }, [initialTasks]);
+  const tasksByStatus = COLUMNS.reduce(
+    (acc, col) => {
+      acc[col.id] = initialTasks.filter((t) => t.status === col.id);
+      return acc;
+    },
+    {} as Record<string, Task[]>,
+  );
 
-  const selectedTaskAssignees = useMemo(() => {
+  const selectedTaskAssignees = (() => {
     if (!selectedTask) return [];
     const ids =
       selectedTask.assignees?.split(',').filter(Boolean) ||
       (selectedTask.assigneeId ? [selectedTask.assigneeId] : []);
     return members.filter((m) => ids.includes(m.id));
-  }, [selectedTask, members]);
+  })();
 
   function handleSelectTask(task: Task) {
     setSelectedTask(task);
     setDetailOpen(true);
   }
+
+  const priorityLabels: Record<string, string> = {
+    high: t('priorityHigh'),
+    medium: t('priorityMedium'),
+    low: t('priorityLow'),
+  };
+
+  const statusLabels: Record<string, string> = {
+    todo: t('colTodo'),
+    in_progress: t('colInProgress'),
+    done: t('colDone'),
+  };
 
   return (
     <>
@@ -62,10 +74,14 @@ export function ReadOnlyKanban({ initialTasks, members }: ReadOnlyKanbanProps) {
           <KanbanColumn
             key={column.id}
             id={column.id}
-            title={column.title}
+            title={t(column.titleKey)}
             tasks={tasksByStatus[column.id]}
             members={members}
             onSelect={handleSelectTask}
+            emptyText={t('noTasks')}
+            inspectText={t('inspect')}
+            unassignedText={t('unassigned')}
+            overdueText={t('overdue')}
           />
         ))}
       </div>
@@ -77,7 +93,7 @@ export function ReadOnlyKanban({ initialTasks, members }: ReadOnlyKanbanProps) {
               <DialogHeader className="relative z-10 border-b border-zinc-100 pb-4 dark:border-zinc-800">
                 <div className="mb-1.5 flex items-center gap-2">
                   <Badge className="rounded-none border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[9px] font-bold text-zinc-800 uppercase dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-                    {selectedTask.status.replace('_', ' ')}
+                    {statusLabels[selectedTask.status] || selectedTask.status.replace('_', ' ')}
                   </Badge>
                   <Badge
                     className={`rounded-none px-2 py-0.5 text-[9px] font-bold uppercase ${
@@ -88,7 +104,7 @@ export function ReadOnlyKanban({ initialTasks, members }: ReadOnlyKanbanProps) {
                           : 'border border-emerald-500/20 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400'
                     }`}
                   >
-                    {selectedTask.priority} priority
+                    {priorityLabels[selectedTask.priority] || selectedTask.priority}
                   </Badge>
                 </div>
                 <DialogTitle className="text-xl font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
@@ -99,33 +115,37 @@ export function ReadOnlyKanban({ initialTasks, members }: ReadOnlyKanbanProps) {
               <div className="space-y-4">
                 <div className="space-y-1.5">
                   <span className="text-[9px] font-black tracking-widest text-zinc-400 uppercase">
-                    Description
+                    {t('description')}
                   </span>
                   <p className="text-sm leading-relaxed font-medium whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">
-                    {selectedTask.description || 'No description provided for this task.'}
+                    {selectedTask.description || t('noDescription')}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 border-t border-zinc-100 pt-2 dark:border-zinc-800">
                   <div className="space-y-1">
                     <span className="text-[9px] font-black tracking-widest text-zinc-400 uppercase">
-                      Deadline
+                      {t('deadline')}
                     </span>
                     <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-700 uppercase dark:text-zinc-300">
                       <Calendar className="text-primary size-4" />
-                      {selectedTask.deadline ? <ClientDate date={selectedTask.deadline} /> : 'None'}
+                      {selectedTask.deadline ? (
+                        <ClientDate date={selectedTask.deadline} />
+                      ) : (
+                        t('none')
+                      )}
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
                   <span className="text-[9px] font-black tracking-widest text-zinc-400 uppercase">
-                    Assigned Team Members
+                    {t('assignedMembers')}
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {selectedTaskAssignees.length === 0 ? (
                       <p className="text-xs font-semibold text-zinc-400 uppercase italic">
-                        Unassigned
+                        {t('unassigned')}
                       </p>
                     ) : (
                       selectedTaskAssignees.map((member) => (
@@ -154,12 +174,20 @@ function KanbanColumn({
   tasks,
   members,
   onSelect,
+  emptyText,
+  inspectText,
+  unassignedText,
+  overdueText,
 }: {
   id: string;
   title: string;
   tasks: Task[];
   members: { id: string; name: string }[];
   onSelect: (task: Task) => void;
+  emptyText: string;
+  inspectText: string;
+  unassignedText: string;
+  overdueText: string;
 }) {
   return (
     <div className="flex flex-col gap-y-4 rounded-none border border-zinc-200 bg-zinc-50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50">
@@ -173,13 +201,19 @@ function KanbanColumn({
       </div>
       <div className="flex min-h-[400px] flex-col gap-y-4">
         {tasks.map((task) => (
-          <KanbanCard key={task.id} task={task} members={members} onClick={() => onSelect(task)} />
+          <KanbanCard
+            key={task.id}
+            task={task}
+            members={members}
+            onClick={() => onSelect(task)}
+            inspectText={inspectText}
+            unassignedText={unassignedText}
+            overdueText={overdueText}
+          />
         ))}
         {tasks.length === 0 && (
           <div className="flex flex-1 items-center justify-center rounded-none border-2 border-dashed border-zinc-200 p-8 text-center dark:border-zinc-800">
-            <p className="text-[10px] font-semibold text-zinc-400 uppercase italic">
-              No tasks here
-            </p>
+            <p className="text-[10px] font-semibold text-zinc-400 uppercase italic">{emptyText}</p>
           </div>
         )}
       </div>
@@ -187,14 +221,27 @@ function KanbanColumn({
   );
 }
 
+const priorityStyles = {
+  low: 'border-emerald-300/80 dark:border-emerald-800/60 bg-emerald-50/10 dark:bg-emerald-950/5 shadow-[0_2px_8px_-3px_rgba(16,185,129,0.15)] hover:border-emerald-500 dark:hover:border-emerald-600 hover:shadow-[0_4px_16px_rgba(16,185,129,0.25)]',
+  medium:
+    'border-amber-300/80 dark:border-amber-800/60 bg-amber-50/10 dark:bg-amber-950/5 shadow-[0_2px_8px_-3px_rgba(245,158,11,0.15)] hover:border-amber-500 dark:hover:border-amber-600 hover:shadow-[0_4px_16px_rgba(245,158,11,0.25)]',
+  high: 'border-red-300/80 dark:border-red-800/60 bg-red-50/10 dark:bg-red-950/5 shadow-[0_2px_8px_-3px_rgba(239,68,68,0.15)] hover:border-red-500 dark:hover:border-red-600 hover:shadow-[0_4px_16px_rgba(239,68,68,0.25)]',
+} as Record<string, string>;
+
 function KanbanCard({
   task,
   members,
   onClick,
+  inspectText,
+  unassignedText,
+  overdueText,
 }: {
   task: Task;
   members: { id: string; name: string }[];
   onClick: () => void;
+  inspectText: string;
+  unassignedText: string;
+  overdueText: string;
 }) {
   const assigneeIds = task.assignees
     ? task.assignees.split(',').filter(Boolean)
@@ -203,19 +250,12 @@ function KanbanCard({
       : [];
   const assignedMembers = members.filter((m) => assigneeIds.includes(m.id));
 
-  const priorityStyles = {
-    low: 'border-emerald-300/80 dark:border-emerald-800/60 bg-emerald-50/10 dark:bg-emerald-950/5 shadow-[0_2px_8px_-3px_rgba(16,185,129,0.15)] hover:border-emerald-500 dark:hover:border-emerald-600 hover:shadow-[0_4px_16px_rgba(16,185,129,0.25)]',
-    medium:
-      'border-amber-300/80 dark:border-amber-800/60 bg-amber-50/10 dark:bg-amber-950/5 shadow-[0_2px_8px_-3px_rgba(245,158,11,0.15)] hover:border-amber-500 dark:hover:border-amber-600 hover:shadow-[0_4px_16px_rgba(245,158,11,0.25)]',
-    high: 'border-red-300/80 dark:border-red-800/60 bg-red-50/10 dark:bg-red-950/5 shadow-[0_2px_8px_-3px_rgba(239,68,68,0.15)] hover:border-red-500 dark:hover:border-red-600 hover:shadow-[0_4px_16px_rgba(239,68,68,0.25)]',
-  } as Record<string, string>;
-
   const currentStyle = priorityStyles[task.priority] || priorityStyles.medium;
 
-  const isOverdue = useMemo(() => {
+  const isOverdue = (() => {
     if (!task.deadline || task.status === 'done') return false;
     return new Date(task.deadline) < new Date();
-  }, [task.deadline, task.status]);
+  })();
 
   return (
     <Card
@@ -228,7 +268,7 @@ function KanbanCard({
           {isOverdue && (
             <span className="flex animate-pulse items-center gap-1 rounded-none border border-red-200 bg-red-50 px-1.5 py-0.5 text-[9px] font-extrabold text-red-500 uppercase dark:border-red-800 dark:bg-red-950/20">
               <AlertTriangle className="size-3" />
-              Overdue
+              {overdueText}
             </span>
           )}
           {task.deadline && (
@@ -247,7 +287,7 @@ function KanbanCard({
 
         <div className="flex items-center justify-between border-t border-zinc-100 pt-2 dark:border-zinc-800">
           <span className="flex items-center gap-0.5 text-[9px] font-black text-zinc-400 uppercase">
-            Inspect <ChevronRight className="size-3" />
+            {inspectText} <ChevronRight className="size-3" />
           </span>
           {assignedMembers.length > 0 ? (
             <div className="flex items-center overflow-hidden">
@@ -271,7 +311,9 @@ function KanbanCard({
               })}
             </div>
           ) : (
-            <span className="text-[9px] font-bold text-zinc-300 uppercase italic">Unassigned</span>
+            <span className="text-[9px] font-bold text-zinc-300 uppercase italic">
+              {unassignedText}
+            </span>
           )}
         </div>
       </div>

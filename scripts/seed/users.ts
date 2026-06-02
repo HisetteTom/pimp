@@ -5,7 +5,10 @@ import bcrypt from 'bcrypt';
 
 export async function seedUsers() {
   console.log('Hashing passwords…');
-  const ownerPassword = process.env.SEED_ADMIN_PASSWORD!;
+  const ownerPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!ownerPassword) {
+    throw new Error('SEED_ADMIN_PASSWORD environment variable is missing.');
+  }
   const [studentPasswordHash, profPasswordHash, adminPasswordHash, ownerPasswordHash] =
     await Promise.all([
       bcrypt.hash('etudiant', 10),
@@ -216,7 +219,9 @@ export async function seedUsers() {
 
   return {
     studentTestId,
+    student2TestId,
     profTestId,
+    prof2TestId,
     randomStudentIds,
     profIds,
     studentPasswordHash,

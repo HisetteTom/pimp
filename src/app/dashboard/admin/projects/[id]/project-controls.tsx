@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { createTeam, enrollStudent, unenrollStudent, assignStudentToTeam } from '../../actions';
 import { Loader2, Plus, UserPlus, UserMinus } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface TeamOption {
   id: number;
@@ -39,6 +40,7 @@ export function StudentTeamSelector({
   currentTeamId: number | null;
   teams: TeamOption[];
 }) {
+  const t = useTranslations('AdminProjectControls');
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
 
@@ -48,10 +50,10 @@ export function StudentTeamSelector({
     startTransition(async () => {
       try {
         await assignStudentToTeam(projectId, studentId, teamId);
-        toast.success('Student team updated successfully');
+        toast.success(t('teamUpdateSuccess'));
         refresh();
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to update team';
+        const message = err instanceof Error ? err.message : t('teamUpdateError');
         toast.error(message);
       }
     });
@@ -70,11 +72,11 @@ export function StudentTeamSelector({
         </SelectTrigger>
         <SelectContent className="rounded-none">
           <SelectItem value="none" className="text-xs">
-            No Team (Unassigned)
+            {t('noTeamUnassigned')}
           </SelectItem>
-          {teams.map((t) => (
-            <SelectItem key={t.id} value={t.id.toString()} className="text-xs">
-              {t.name}
+          {teams.map((teamItem) => (
+            <SelectItem key={teamItem.id} value={teamItem.id.toString()} className="text-xs">
+              {teamItem.name}
             </SelectItem>
           ))}
         </SelectContent>
@@ -91,6 +93,7 @@ export function EnrollmentTool({
   projectId: number;
   unenrolledStudents: StudentOption[];
 }) {
+  const t = useTranslations('AdminProjectControls');
   const [selectedStudent, setSelectedStudent] = useState<string>('');
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
@@ -98,18 +101,18 @@ export function EnrollmentTool({
   const handleEnroll = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedStudent) {
-      toast.error('Please select a student');
+      toast.error(t('selectStudentError'));
       return;
     }
 
     startTransition(async () => {
       try {
         await enrollStudent(projectId, selectedStudent);
-        toast.success('Student enrolled successfully');
+        toast.success(t('enrollSuccess'));
         setSelectedStudent('');
         refresh();
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to enroll student';
+        const message = err instanceof Error ? err.message : t('enrollError');
         toast.error(message);
       }
     });
@@ -125,19 +128,19 @@ export function EnrollmentTool({
           htmlFor="student-select"
           className="text-[10px] font-black tracking-widest text-zinc-400 uppercase"
         >
-          Force Enroll Student
+          {t('forceEnrollStudent')}
         </label>
         <Select value={selectedStudent} onValueChange={setSelectedStudent}>
           <SelectTrigger
             id="student-select"
             className="h-10 w-full rounded-none border-2 border-zinc-200 bg-white focus:border-purple-600 focus:ring-purple-600 dark:border-zinc-800 dark:bg-zinc-950"
           >
-            <SelectValue placeholder="Select student to add..." />
+            <SelectValue placeholder={t('selectStudentPlaceholder')} />
           </SelectTrigger>
           <SelectContent className="max-h-72 rounded-none">
             {unenrolledStudents.length === 0 ? (
               <SelectItem value="none" disabled className="text-xs">
-                No unenrolled students found
+                {t('noUnenrolledStudents')}
               </SelectItem>
             ) : (
               unenrolledStudents.map((s) => (
@@ -159,7 +162,7 @@ export function EnrollmentTool({
         ) : (
           <UserPlus className="mr-2 size-4" />
         )}
-        Enroll Student
+        {t('btnEnroll')}
       </Button>
     </form>
   );
@@ -167,6 +170,7 @@ export function EnrollmentTool({
 
 // 3. Create Team Tool
 export function CreateTeamTool({ projectId }: { projectId: number }) {
+  const t = useTranslations('AdminProjectControls');
   const [teamName, setTeamName] = useState('');
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
@@ -174,18 +178,18 @@ export function CreateTeamTool({ projectId }: { projectId: number }) {
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!teamName.trim()) {
-      toast.error('Team name cannot be empty');
+      toast.error(t('teamNameEmptyError'));
       return;
     }
 
     startTransition(async () => {
       try {
         await createTeam(projectId, teamName);
-        toast.success(`Team "${teamName}" created successfully`);
+        toast.success(t('teamCreateSuccess', { name: teamName }));
         setTeamName('');
         refresh();
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to create team';
+        const message = err instanceof Error ? err.message : t('teamCreateError');
         toast.error(message);
       }
     });
@@ -201,11 +205,11 @@ export function CreateTeamTool({ projectId }: { projectId: number }) {
           htmlFor="team-name-input"
           className="text-[10px] font-black tracking-widest text-zinc-400 uppercase"
         >
-          Create New Team
+          {t('createNewTeam')}
         </label>
         <Input
           id="team-name-input"
-          placeholder="Enter team name (e.g. Group 9)..."
+          placeholder={t('teamNamePlaceholder')}
           value={teamName}
           onChange={(e) => setTeamName(e.target.value)}
           className="h-10 w-full rounded-none border-2 border-zinc-200 bg-white focus-visible:border-purple-600 focus-visible:ring-purple-600 dark:border-zinc-800 dark:bg-zinc-950"
@@ -222,7 +226,7 @@ export function CreateTeamTool({ projectId }: { projectId: number }) {
         ) : (
           <Plus className="mr-2 size-4" />
         )}
-        Create Team
+        {t('btnCreateTeam')}
       </Button>
     </form>
   );
@@ -238,22 +242,19 @@ export function UnenrollButton({
   studentName: string;
   projectId: number;
 }) {
+  const t = useTranslations('AdminProjectControls');
   const [isPending, startTransition] = useTransition();
   const { refresh } = useRouter();
 
   const handleUnenroll = () => {
-    if (
-      confirm(
-        `Are you sure you want to remove ${studentName} from this project? This will also clear their team assignment.`,
-      )
-    ) {
+    if (confirm(t('confirmUnenroll', { name: studentName }))) {
       startTransition(async () => {
         try {
           await unenrollStudent(projectId, studentId);
-          toast.success('Student unenrolled successfully');
+          toast.success(t('unenrollSuccess'));
           refresh();
         } catch (err) {
-          const message = err instanceof Error ? err.message : 'Failed to unenroll student';
+          const message = err instanceof Error ? err.message : t('unenrollError');
           toast.error(message);
         }
       });
@@ -266,7 +267,7 @@ export function UnenrollButton({
       onClick={handleUnenroll}
       disabled={isPending}
       className="inline-flex size-8 items-center justify-center border border-zinc-200 text-zinc-700 transition-colors hover:border-red-500 hover:bg-red-500 hover:text-white dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-red-600 dark:hover:text-white"
-      title="Unenroll student"
+      title={t('tooltipUnenroll')}
     >
       {isPending ? <Loader2 className="size-4 animate-spin" /> : <UserMinus className="size-4" />}
     </Button>

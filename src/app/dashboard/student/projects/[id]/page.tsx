@@ -129,28 +129,23 @@ export default async function ProjectPage({
     };
   });
 
-  let teamTasks: (typeof task.$inferSelect)[] = [];
-  let teamLivrables: (typeof livrable.$inferSelect)[] = [];
-  let checkpoints: (typeof checkpoint.$inferSelect)[] = [];
-  let checkpointNotes: (typeof checkpointNote.$inferSelect)[] = [];
-
-  if (userTeam) {
-    [teamTasks, teamLivrables, checkpoints, checkpointNotes] = await Promise.all([
-      db.query.task.findMany({
-        where: eq(task.teamId, userTeam.id),
-      }),
-      db.query.livrable.findMany({
-        where: eq(livrable.teamId, userTeam.id),
-      }),
-      db.query.checkpoint.findMany({
-        where: eq(checkpoint.projectId, projectId),
-        orderBy: (checkpoint, { asc }) => [asc(checkpoint.dueDate)],
-      }),
-      db.query.checkpointNote.findMany({
-        where: eq(checkpointNote.teamId, userTeam.id),
-      }),
-    ]);
-  }
+  const [teamTasks, teamLivrables, checkpoints, checkpointNotes] = userTeam
+    ? await Promise.all([
+        db.query.task.findMany({
+          where: eq(task.teamId, userTeam.id),
+        }),
+        db.query.livrable.findMany({
+          where: eq(livrable.teamId, userTeam.id),
+        }),
+        db.query.checkpoint.findMany({
+          where: eq(checkpoint.projectId, projectId),
+          orderBy: (checkpoint, { asc }) => [asc(checkpoint.dueDate)],
+        }),
+        db.query.checkpointNote.findMany({
+          where: eq(checkpointNote.teamId, userTeam.id),
+        }),
+      ])
+    : [[], [], [], []];
 
   return (
     <DashboardLayout
@@ -162,6 +157,7 @@ export default async function ProjectPage({
               projectId: userTeam.projectId,
               name: userTeam.name,
               members: userTeam.members,
+              projectStatus: projectData.status,
             }
           : undefined
       }
@@ -179,6 +175,7 @@ export default async function ProjectPage({
             teams={teamsWithMembers}
             maxGroups={projectData.maxGroups}
             maxMembers={projectData.maxMembersPerGroup}
+            projectStatus={projectData.status}
           />
         ) : (
           <ProjectDashboard

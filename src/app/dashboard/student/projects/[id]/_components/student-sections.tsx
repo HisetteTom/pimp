@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Download, UploadCloud, FileText, Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export interface Member {
   id: string;
@@ -39,22 +40,32 @@ export interface Deliverable {
   createdAt: Date;
 }
 
-const FeedbackSlot = ({ title, feedback }: { title: string; feedback?: string | null }) => (
-  <div className="border-primary/20 bg-primary/5 mt-[-16px] flex flex-col gap-y-2 rounded-none border-2 p-6">
-    <h4 className="text-primary text-[10px] font-semibold tracking-widest uppercase">
-      Teacher Feedback - {title}
-    </h4>
-    {feedback ? (
-      <p className="text-sm font-medium whitespace-pre-wrap text-zinc-800 dark:text-zinc-200">
-        {feedback}
-      </p>
-    ) : (
-      <p className="text-sm font-medium text-zinc-600 italic dark:text-zinc-400">
-        No feedback from supervisor yet.
-      </p>
-    )}
-  </div>
-);
+const FeedbackSlot = ({
+  titleKey,
+  feedback,
+}: {
+  titleKey: 'overview' | 'kanban' | 'list' | 'deliverables';
+  feedback?: string | null;
+}) => {
+  const t = useTranslations('StudentSections');
+  const translatedTitle = t(titleKey);
+  return (
+    <div className="border-primary/20 bg-primary/5 mt-[-16px] flex flex-col gap-y-2 rounded-none border-2 p-6">
+      <h4 className="text-primary text-[10px] font-semibold tracking-widest uppercase">
+        {t('teacherFeedback', { title: translatedTitle })}
+      </h4>
+      {feedback ? (
+        <p className="text-sm font-medium whitespace-pre-wrap text-zinc-800 dark:text-zinc-200">
+          {feedback}
+        </p>
+      ) : (
+        <p className="text-sm font-medium text-zinc-600 italic dark:text-zinc-400">
+          {t('noFeedback')}
+        </p>
+      )}
+    </div>
+  );
+};
 
 export interface StudentOverviewSectionProps {
   project: {
@@ -101,7 +112,7 @@ export function StudentOverviewSection({
         taskStats={taskStats}
         tasksByStatus={tasksByStatus}
       />
-      <FeedbackSlot title="Overview" feedback={feedback} />
+      <FeedbackSlot titleKey="overview" feedback={feedback} />
     </div>
   );
 }
@@ -137,7 +148,7 @@ export function StudentKanbanSection({
         members={team.members}
         teamId={team.id}
       />
-      <FeedbackSlot title="Kanban" feedback={feedback} />
+      <FeedbackSlot titleKey="kanban" feedback={feedback} />
     </div>
   );
 }
@@ -168,7 +179,7 @@ export function StudentListSection({ tasks, project, team, feedback }: StudentLi
         members={team.members}
         teamId={team.id}
       />
-      <FeedbackSlot title="List" feedback={feedback} />
+      <FeedbackSlot titleKey="list" feedback={feedback} />
     </div>
   );
 }
@@ -221,6 +232,7 @@ export function StudentDeliverablesSection({
   livrables,
   feedback,
 }: StudentDeliverablesSectionProps) {
+  const t = useTranslations('StudentSections');
   const [state, dispatch] = useReducer(formReducer, {
     open: false,
     editingDeliverable: null,
@@ -251,11 +263,11 @@ export function StudentDeliverablesSection({
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!state.name) {
-      toast.error('Please enter a deliverable name.');
+      toast.error(t('pleaseEnterName'));
       return;
     }
     if (!state.editingDeliverable && !fileRef.current) {
-      toast.error('Please select a file to upload.');
+      toast.error(t('pleaseSelectFile'));
       return;
     }
 
@@ -286,8 +298,8 @@ export function StudentDeliverablesSection({
 
       toast.success(
         state.editingDeliverable
-          ? `Deliverable "${state.name}" updated and reset to pending review!`
-          : `Deliverable "${state.name}" uploaded successfully!`,
+          ? t('updateSuccess', { name: state.name })
+          : t('uploadSuccess', { name: state.name }),
       );
       dispatch({ type: 'CLOSE' });
       fileRef.current = null;
@@ -295,7 +307,7 @@ export function StudentDeliverablesSection({
     } catch (err) {
       console.error(err);
       const errMessage = err instanceof Error ? err.message : 'Unknown error';
-      toast.error(errMessage || 'An error occurred during submission.');
+      toast.error(errMessage || t('errorSubmission'));
       dispatch({ type: 'SET_UPLOADING', uploading: false });
     }
   };
@@ -303,23 +315,23 @@ export function StudentDeliverablesSection({
   return (
     <div className="flex flex-col gap-y-8">
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="text-xl font-semibold tracking-tight uppercase">Files & Deliverables</h3>
+        <h3 className="text-xl font-semibold tracking-tight uppercase">{t('filesDeliverables')}</h3>
         <Dialog open={state.open} onOpenChange={handleOpenChange}>
           <Button
             onClick={startNewUpload}
             className="text-xs font-semibold tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)]"
           >
-            Upload File
+            {t('uploadFile')}
           </Button>
           <DialogContent className="max-w-md rounded-none border-2 border-zinc-200 dark:border-zinc-800">
             <DialogHeader>
               <DialogTitle className="text-sm font-semibold tracking-wider uppercase">
-                {state.editingDeliverable ? 'Modify Deliverable' : 'Upload Deliverable'}
+                {state.editingDeliverable ? t('modifyDeliverable') : t('uploadDeliverable')}
               </DialogTitle>
               <DialogDescription className="text-xs text-zinc-500">
                 {state.editingDeliverable
-                  ? `Update deliverable "${state.editingDeliverable.name}". Modifying resets review status to pending.`
-                  : `Submit project resources, zip files, or PDFs for the team "${team.name}".`}
+                  ? t('updateDescription', { name: state.editingDeliverable.name })
+                  : t('submitDescription', { name: team.name })}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleUpload} className="space-y-4">
@@ -328,12 +340,12 @@ export function StudentDeliverablesSection({
                   htmlFor="deliv-name"
                   className="text-[10px] font-semibold tracking-widest uppercase"
                 >
-                  Deliverable Name
+                  {t('deliverableName')}
                 </Label>
                 <Input
                   id="deliv-name"
                   type="text"
-                  placeholder="e.g., Final Report, Codebase Zip"
+                  placeholder={t('deliverablePlaceholder')}
                   value={state.name}
                   onChange={(e) => dispatch({ type: 'SET_NAME', name: e.target.value })}
                   className="rounded-none border-2 border-zinc-200 dark:border-zinc-800"
@@ -345,9 +357,9 @@ export function StudentDeliverablesSection({
                   htmlFor="deliv-file"
                   className="text-[10px] font-semibold tracking-widest uppercase"
                 >
-                  File{' '}
+                  {t('file')}{' '}
                   {state.editingDeliverable && (
-                    <span className="font-normal text-zinc-400 normal-case">(Optional)</span>
+                    <span className="font-normal text-zinc-400 normal-case">{t('optional')}</span>
                   )}
                 </Label>
                 <Input
@@ -368,7 +380,7 @@ export function StudentDeliverablesSection({
                   className="rounded-none border-2 text-xs uppercase"
                   disabled={state.uploading}
                 >
-                  Cancel
+                  {t('cancel')}
                 </Button>
                 <Button
                   type="submit"
@@ -378,12 +390,12 @@ export function StudentDeliverablesSection({
                   {state.uploading ? (
                     <>
                       <Loader2 className="mr-2 size-3 animate-spin" />
-                      Submitting…
+                      {t('submitting')}
                     </>
                   ) : (
                     <>
                       <UploadCloud className="mr-2 size-4" />
-                      {state.editingDeliverable ? 'Update Deliverable' : 'Upload to Storage'}
+                      {state.editingDeliverable ? t('updateDeliverableBtn') : t('uploadStorageBtn')}
                     </>
                   )}
                 </Button>
@@ -397,16 +409,16 @@ export function StudentDeliverablesSection({
           <thead className="border-b-2 border-zinc-100 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
             <tr>
               <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                File Name
+                {t('fileName')}
               </th>
               <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                Date
+                {t('date')}
               </th>
               <th className="p-4 text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                Status
+                {t('status')}
               </th>
               <th className="p-4 text-right text-[10px] font-semibold tracking-widest text-zinc-400 uppercase">
-                Actions
+                {t('actions')}
               </th>
             </tr>
           </thead>
@@ -436,15 +448,15 @@ export function StudentDeliverablesSection({
                   <td className="p-4">
                     {l.status === 'approved' ? (
                       <Badge className="rounded-none border-none bg-emerald-500 text-[9px] font-black tracking-wider text-white uppercase hover:bg-emerald-600">
-                        Approved
+                        {t('approved')}
                       </Badge>
                     ) : l.status === 'rejected' ? (
                       <Badge className="rounded-none border-none bg-red-500 text-[9px] font-black tracking-wider text-white uppercase hover:bg-red-600">
-                        Rejected
+                        {t('rejected')}
                       </Badge>
                     ) : (
                       <Badge className="rounded-none border-none bg-amber-500 text-[9px] font-black tracking-wider text-white uppercase hover:bg-amber-600">
-                        Pending
+                        {t('pending')}
                       </Badge>
                     )}
                   </td>
@@ -455,14 +467,14 @@ export function StudentDeliverablesSection({
                         variant="outline"
                         className="inline-flex h-8 items-center border-2 border-zinc-200 bg-transparent px-3 text-[10px] font-bold tracking-wider text-zinc-600 uppercase transition-colors hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900"
                       >
-                        Modify
+                        {t('modify')}
                       </Button>
                       <a
                         href={`/api/deliverables/download/${l.id}`}
                         className="inline-flex h-8 items-center gap-1.5 border-2 border-zinc-200 bg-transparent px-3 text-[10px] font-bold tracking-wider text-zinc-600 uppercase transition-colors hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-900"
                       >
                         <Download className="size-3" />
-                        Download
+                        {t('download')}
                       </a>
                     </div>
                   </td>
@@ -471,14 +483,14 @@ export function StudentDeliverablesSection({
             ) : (
               <tr>
                 <td colSpan={4} className="p-12 text-center font-medium text-zinc-400 italic">
-                  No files uploaded yet.
+                  {t('noFiles')}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      <FeedbackSlot title="Deliverables" feedback={feedback} />
+      <FeedbackSlot titleKey="deliverables" feedback={feedback} />
     </div>
   );
 }

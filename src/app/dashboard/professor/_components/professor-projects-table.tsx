@@ -11,6 +11,7 @@ import {
 import Link from 'next/link';
 import { Clock, CheckCircle, ArrowRight } from 'lucide-react';
 import { StatusBadge } from './status-badge';
+import { useTranslations } from 'next-intl';
 
 interface ProjectRow {
   id: number;
@@ -32,11 +33,13 @@ interface ProfessorProjectsTableProps {
 }
 
 export function ProfessorProjectsTable({ projects, totalProjects }: ProfessorProjectsTableProps) {
+  const t = useTranslations('ProfessorProjectsTable');
+
   return (
     <section id="projects" className="scroll-mt-10 space-y-4">
       <div className="flex items-center gap-2">
         <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-          Active Projects
+          {t('activeProjects')}
         </h2>
         <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
         <Badge className="rounded-none bg-zinc-900 font-black text-white dark:bg-zinc-100 dark:text-zinc-900">
@@ -49,19 +52,19 @@ export function ProfessorProjectsTable({ projects, totalProjects }: ProfessorPro
           <TableHeader className="border-b-2 border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-[35%] py-4 pl-6 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                Project Subject
+                {t('projectSubject')}
               </TableHead>
               <TableHead className="w-[15%] p-4 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                Status
+                {t('status')}
               </TableHead>
               <TableHead className="w-[15%] p-4 text-center text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                Teams
+                {t('teams')}
               </TableHead>
               <TableHead className="w-[20%] p-4 text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                Timeline
+                {t('timeline')}
               </TableHead>
               <TableHead className="w-[15%] p-4 text-left text-[10px] font-black tracking-wider text-zinc-500 uppercase">
-                Action
+                {t('action')}
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -72,7 +75,7 @@ export function ProfessorProjectsTable({ projects, totalProjects }: ProfessorPro
                   colSpan={5}
                   className="h-32 text-center font-medium text-zinc-400 italic"
                 >
-                  No project proposals found. Use the button above to create one.
+                  {t('noProposals')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -90,7 +93,7 @@ export function ProfessorProjectsTable({ projects, totalProjects }: ProfessorPro
                         {p.name}
                       </span>
                       <span className="mt-0.5 block max-w-sm truncate text-[10px] font-medium text-zinc-400">
-                        {p.description || 'No description provided.'}
+                        {p.description || t('noDescription')}
                       </span>
                     </Link>
                   </TableCell>
@@ -106,11 +109,12 @@ export function ProfessorProjectsTable({ projects, totalProjects }: ProfessorPro
                     <div className="flex flex-col gap-0.5">
                       <span className="flex items-center gap-1.5">
                         <Clock className="size-3 shrink-0 text-zinc-400" />
-                        Start: {p.dateStart ? p.dateStart.split('-').reverse().join('/') : 'TBD'}
+                        {t('start')}{' '}
+                        {p.dateStart ? p.dateStart.split('-').reverse().join('/') : 'TBD'}
                       </span>
                       <span className="flex items-center gap-1.5">
                         <CheckCircle className="size-3 shrink-0 text-zinc-400" />
-                        End: {p.dateEnd ? p.dateEnd.split('-').reverse().join('/') : 'TBD'}
+                        {t('end')} {p.dateEnd ? p.dateEnd.split('-').reverse().join('/') : 'TBD'}
                       </span>
                     </div>
                   </TableCell>
@@ -119,7 +123,7 @@ export function ProfessorProjectsTable({ projects, totalProjects }: ProfessorPro
                       href={`/dashboard/professor/projects/${p.id}`}
                       className="inline-flex h-9 items-center justify-center gap-1 bg-zinc-900 px-3.5 text-[10px] font-black tracking-wider text-white uppercase transition-all hover:bg-purple-600 hover:text-white active:scale-[0.97] dark:bg-zinc-100 dark:text-black dark:hover:bg-purple-700 dark:hover:text-white"
                     >
-                      Manage
+                      {t('manage')}
                       <ArrowRight className="size-3.5" />
                     </Link>
                   </TableCell>

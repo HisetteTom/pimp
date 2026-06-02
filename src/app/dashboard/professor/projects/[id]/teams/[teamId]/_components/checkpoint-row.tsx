@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trash2, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { updateCheckpoint, deleteCheckpoint, saveCheckpointNote } from '../../../../../actions';
+import { useTranslations } from 'next-intl';
 
 function formatIsoDate(dateVal: Date | string | number | null | undefined): string {
   if (!dateVal) return '';
@@ -15,15 +16,6 @@ function formatIsoDate(dateVal: Date | string | number | null | undefined): stri
     return new Date(dateVal).toISOString().split('T')[0];
   } catch {
     return '';
-  }
-}
-
-function formatLocalDate(dateVal: Date | string | number | null | undefined): string {
-  if (!dateVal) return 'No Date';
-  try {
-    return new Date(dateVal).toLocaleDateString();
-  } catch {
-    return 'No Date';
   }
 }
 
@@ -50,6 +42,7 @@ export function CheckpointRow({
   onRefresh,
   readOnly = false,
 }: CheckpointRowProps) {
+  const t = useTranslations('ProfessorCheckpointRow');
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(() => checkpoint.title);
   const [editDueDate, setEditDueDate] = useState(() =>
@@ -60,35 +53,39 @@ export function CheckpointRow({
   const [isDeleting, startDeleteTransition] = useTransition();
   const [isSavingNote, startSaveNoteTransition] = useTransition();
 
+  function formatLocalDate(dateVal: Date | string | number | null | undefined): string {
+    if (!dateVal) return t('noDate');
+    try {
+      return new Date(dateVal).toLocaleDateString();
+    } catch {
+      return t('noDate');
+    }
+  }
+
   const handleUpdate = () => {
     if (readOnly || !editTitle.trim() || !editDueDate) return;
     startUpdateTransition(async () => {
       try {
         await updateCheckpoint(checkpoint.id, editTitle.trim(), editDueDate, projectId);
-        toast.success('Checkpoint updated successfully!');
+        toast.success(t('updateSuccess'));
         setIsEditing(false);
         onRefresh();
       } catch {
-        toast.error('Failed to update checkpoint.');
+        toast.error(t('updateError'));
       }
     });
   };
 
   const handleDelete = () => {
     if (readOnly) return;
-    if (
-      !confirm(
-        'Are you sure you want to delete this checkpoint? Notes for this checkpoint across all teams will be deleted.',
-      )
-    )
-      return;
+    if (!confirm(t('confirmDelete'))) return;
     startDeleteTransition(async () => {
       try {
         await deleteCheckpoint(checkpoint.id, projectId);
-        toast.success('Checkpoint deleted successfully!');
+        toast.success(t('deleteSuccess'));
         onRefresh();
       } catch {
-        toast.error('Failed to delete checkpoint.');
+        toast.error(t('deleteError'));
       }
     });
   };
@@ -98,10 +95,10 @@ export function CheckpointRow({
     startSaveNoteTransition(async () => {
       try {
         await saveCheckpointNote(checkpoint.id, teamId, localNote.trim(), projectId);
-        toast.success('Notes saved successfully!');
+        toast.success(t('notesSuccess'));
         onRefresh();
       } catch {
-        toast.error('Failed to save notes.');
+        toast.error(t('notesError'));
       }
     });
   };
@@ -130,14 +127,14 @@ export function CheckpointRow({
             <div className="flex flex-1 flex-col gap-4 sm:flex-row">
               <input
                 type="text"
-                aria-label="Checkpoint Title"
+                aria-label={t('checkpointTitle')}
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
                 className="focus:border-primary flex-1 rounded-none border border-zinc-200 bg-white p-2.5 text-xs font-bold uppercase outline-none dark:border-zinc-800 dark:bg-zinc-950"
               />
               <input
                 type="date"
-                aria-label="Checkpoint Due Date"
+                aria-label={t('checkpointDueDate')}
                 value={editDueDate}
                 onChange={(e) => setEditDueDate(e.target.value)}
                 className="focus:border-primary rounded-none border border-zinc-200 bg-white p-2.5 font-mono text-xs font-bold uppercase outline-none dark:border-zinc-800 dark:bg-zinc-950"
@@ -148,7 +145,7 @@ export function CheckpointRow({
                   disabled={isUpdating}
                   className="bg-primary text-primary-foreground hover:bg-primary/90 h-10 cursor-pointer rounded-none text-[10px] font-black uppercase"
                 >
-                  {isUpdating ? <Loader2 className="size-3 animate-spin" /> : 'Save'}
+                  {isUpdating ? <Loader2 className="size-3 animate-spin" /> : t('save')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -159,7 +156,7 @@ export function CheckpointRow({
                   variant="outline"
                   className="h-10 cursor-pointer rounded-none text-[10px] font-black uppercase"
                 >
-                  Cancel
+                  {t('cancel')}
                 </Button>
               </div>
             </div>
@@ -167,7 +164,7 @@ export function CheckpointRow({
             <div className="flex flex-1 items-center justify-between">
               <div className="flex flex-col gap-y-1">
                 <span className="text-[10px] font-bold tracking-wider text-zinc-400 uppercase">
-                  Checkpoint Date
+                  {t('checkpointDate')}
                 </span>
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-semibold text-zinc-800 uppercase dark:text-zinc-200">
@@ -189,7 +186,7 @@ export function CheckpointRow({
                     variant="outline"
                     className="h-8 cursor-pointer rounded-none text-[9px] font-black uppercase"
                   >
-                    Edit
+                    {t('edit')}
                   </Button>
                   <Button
                     onClick={handleDelete}
@@ -215,7 +212,7 @@ export function CheckpointRow({
               htmlFor={`note-textarea-${checkpoint.id}`}
               className="text-[9px] font-black tracking-widest text-zinc-400 uppercase"
             >
-              Meeting Notes & Remarks
+              {t('notesLabel')}
             </label>
             {!readOnly && (
               <Button
@@ -228,7 +225,7 @@ export function CheckpointRow({
                 ) : (
                   <Save className="size-3" />
                 )}
-                Save Notes
+                {t('saveNotes')}
               </Button>
             )}
           </div>

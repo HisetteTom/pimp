@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { saveTeamNotes } from '../../../../../actions';
+import { useTranslations } from 'next-intl';
 
 export interface SupervisorNotesEditorProps {
   teamId: number;
@@ -22,11 +23,12 @@ export function SupervisorNotesEditor({
   initialNotes,
   readOnly = false,
 }: SupervisorNotesEditorProps) {
+  const t = useTranslations('ProfessorSupervisorNotesEditor');
   const { refresh } = useRouter();
   const [newSectionTitle, setNewSectionTitle] = useState('');
   const [isSavingNotes, startSaveTransition] = useTransition();
 
-  const initialNotesArray = useMemo(() => {
+  const initialNotesArray = (() => {
     if (initialNotes) {
       try {
         const parsed = JSON.parse(initialNotes);
@@ -36,19 +38,20 @@ export function SupervisorNotesEditor({
     return [
       {
         id: '1',
-        title: 'Stack Used',
-        content: 'React, Next.js, TailwindCSS, Drizzle ORM, PostgreSQL',
+        title: t('defaultTitle1'),
+        content: t('defaultContent1'),
       },
       {
         id: '2',
-        title: 'Design Details',
-        content: 'Glassmorphic brutalist card styling with high-contrast UI borders',
+        title: t('defaultTitle2'),
+        content: t('defaultContent2'),
       },
     ];
-  }, [initialNotes]);
+  })();
 
-  const [notes, setNotes] =
-    useState<{ id: string; title: string; content: string }[]>(initialNotesArray);
+  const [notes, setNotes] = useState<{ id: string; title: string; content: string }[]>(
+    () => initialNotesArray,
+  );
 
   const handleAddSection = () => {
     if (readOnly || !newSectionTitle.trim()) return;
@@ -83,10 +86,10 @@ export function SupervisorNotesEditor({
     startSaveTransition(async () => {
       try {
         await saveTeamNotes(teamId, JSON.stringify(notes), projectId);
-        toast.success('Teacher notes saved successfully!');
+        toast.success(t('saveSuccess'));
         refresh();
       } catch (err) {
-        toast.error('Failed to save teacher notes.');
+        toast.error(t('saveError'));
         console.error(err);
       }
     });
@@ -96,6 +99,7 @@ export function SupervisorNotesEditor({
 
   return (
     <Card className="group hover:border-primary/50 relative flex flex-col overflow-hidden rounded-none border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-950">
+      {/* SVG grid graphic */}
       <div className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.1]">
         <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -110,7 +114,7 @@ export function SupervisorNotesEditor({
       <CardHeader className="relative z-10 flex flex-col gap-4 border-b border-zinc-100 px-6 py-3.5 sm:flex-row sm:items-center sm:justify-between dark:border-zinc-800">
         <div>
           <CardTitle className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
-            Teacher Private Notes
+            {t('title')}
           </CardTitle>
         </div>
         {!readOnly && (
@@ -124,7 +128,7 @@ export function SupervisorNotesEditor({
             ) : (
               <Save className="size-3.5" />
             )}
-            Save Notes
+            {t('saveNotes')}
           </Button>
         )}
       </CardHeader>
@@ -134,7 +138,8 @@ export function SupervisorNotesEditor({
             <div className="max-w-md flex-1">
               <input
                 type="text"
-                aria-label="New Section Title"
+                aria-label={t('placeholderNewTitle')}
+                placeholder={t('placeholderNewTitle')}
                 value={newSectionTitle}
                 onChange={(e) => setNewSectionTitle(e.target.value)}
                 className="focus:border-primary w-full rounded-none border border-zinc-200 bg-white p-2.5 text-xs font-bold uppercase outline-none dark:border-zinc-800 dark:bg-zinc-950"
@@ -147,7 +152,7 @@ export function SupervisorNotesEditor({
               className="dark:hover:bg-zinc-850 flex h-10 cursor-pointer items-center justify-center gap-1 rounded-none border-2 border-zinc-900 text-[10px] font-black uppercase transition-all hover:bg-zinc-100 dark:border-zinc-100"
             >
               <Plus className="size-3.5" />
-              Add Section
+              {t('addSection')}
             </Button>
           </div>
         )}
@@ -155,7 +160,7 @@ export function SupervisorNotesEditor({
         <div className="flex flex-col gap-y-6">
           {notes.length === 0 ? (
             <p className="py-6 text-center text-xs font-bold text-zinc-400 uppercase italic">
-              No custom notes sections. Add one above!
+              {t('emptyText')}
             </p>
           ) : (
             notes.map((section) => (
@@ -166,7 +171,7 @@ export function SupervisorNotesEditor({
                 <div className="flex items-center justify-between border-b border-zinc-100 pb-2 dark:border-zinc-800">
                   <input
                     type="text"
-                    aria-label="Section Title"
+                    aria-label={t('sectionTitle')}
                     value={section.title}
                     onChange={(e) => handleUpdateSectionTitle(section.id, e.target.value)}
                     disabled={readOnly}
@@ -177,7 +182,7 @@ export function SupervisorNotesEditor({
                       onClick={() => handleDeleteSection(section.id)}
                       variant="unstyled"
                       className="flex size-7 cursor-pointer items-center justify-center rounded-none p-0 text-zinc-600 hover:bg-zinc-100 hover:text-red-600 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-red-400"
-                      title="Delete this section"
+                      title={t('deleteSection')}
                     >
                       <Trash2 className="size-4" />
                     </Button>

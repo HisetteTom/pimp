@@ -17,7 +17,7 @@ import dynamic from 'next/dynamic';
 const ProjectCalendar = dynamic(() => import('@/components/dashboard/project-calendar'), {
   ssr: false,
 });
-import { useMemo, useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { SupervisorFeedbackCard } from './supervisor-feedback-card';
 import { ReadOnlyKanban } from './read-only-kanban';
@@ -28,6 +28,7 @@ import { TaskStatsAndBreakdown, Member, Task } from './_components/supervisor-ch
 import { TimelineAndEvolution } from './_components/supervisor-timeline';
 import { SupervisorNotesEditor } from './_components/supervisor-notes-editor';
 import { SupervisorDatesSection } from './_components/supervisor-dates-section';
+import { useTranslations } from 'next-intl';
 
 const emptySubscribe = () => () => {};
 
@@ -101,50 +102,39 @@ export function SupervisorWorkspace({
   initialScores = EMPTY_SCORES,
   role = 'professor',
 }: SupervisorWorkspaceProps) {
+  const t = useTranslations('ProfessorSupervisorWorkspace');
   const now = useSyncExternalStore(emptySubscribe, getMountTime, () => null);
 
-  const timelineProgress = useMemo(() => {
+  const timelineProgress = (() => {
     if (!project.dateStart || !project.dateEnd || !now) return 0;
     const start = new Date(project.dateStart).getTime();
     const end = new Date(project.dateEnd).getTime();
     if (now < start) return 0;
     if (now > end) return 100;
     return Math.round(((now - start) / (end - start)) * 100);
-  }, [project.dateStart, project.dateEnd, now]);
+  })();
 
-  const tasksByStatus = useMemo(
-    () => ({
-      todo: tasks.filter((t) => t.status === 'todo'),
-      in_progress: tasks.filter((t) => t.status === 'in_progress'),
-      done: tasks.filter((t) => t.status === 'done'),
-    }),
-    [tasks],
-  );
+  const tasksByStatus = {
+    todo: tasks.filter((t) => t.status === 'todo'),
+    in_progress: tasks.filter((t) => t.status === 'in_progress'),
+    done: tasks.filter((t) => t.status === 'done'),
+  };
 
-  const completionPercentage = useMemo(() => {
-    if (tasks.length === 0) return 0;
-    return Math.round((tasksByStatus.done.length / tasks.length) * 100);
-  }, [tasks, tasksByStatus]);
+  const completionPercentage =
+    tasks.length === 0 ? 0 : Math.round((tasksByStatus.done.length / tasks.length) * 100);
 
   // Simulate historical data based on current completion for the chart
-  const chartData = useMemo(
-    () => [
-      { label: 'Start', count: 0 },
-      { label: 'Mid', count: Math.floor(completionPercentage / 2) },
-      { label: 'Current', count: completionPercentage },
-    ],
-    [completionPercentage],
-  );
+  const chartData = [
+    { label: 'Start', count: 0 },
+    { label: 'Mid', count: Math.floor(completionPercentage / 2) },
+    { label: 'Current', count: completionPercentage },
+  ];
 
-  const taskStats = useMemo(
-    () =>
-      [
-        { name: 'To Do', value: tasksByStatus.todo.length },
-        { name: 'In Progress', value: tasksByStatus.in_progress.length },
-        { name: 'Done', value: tasksByStatus.done.length },
-      ].filter((s) => s.value > 0),
-    [tasksByStatus],
-  );
+  const taskStats = [
+    { name: 'To Do', value: tasksByStatus.todo.length },
+    { name: 'In Progress', value: tasksByStatus.in_progress.length },
+    { name: 'Done', value: tasksByStatus.done.length },
+  ].filter((s) => s.value > 0);
 
   return (
     <div className="space-y-8 pb-12">
@@ -155,7 +145,7 @@ export function SupervisorWorkspace({
           className="hover:text-primary inline-flex items-center gap-1.5 text-xs font-black tracking-wider text-zinc-400 uppercase transition-colors"
         >
           <ArrowLeft className="size-3.5" />
-          Back to Enrolled Teams
+          {t('back')}
         </Link>
       </div>
 
@@ -163,7 +153,7 @@ export function SupervisorWorkspace({
       <div className="border-zinc-150 flex flex-col gap-4 border-b pb-6 md:flex-row md:items-center md:justify-between dark:border-zinc-800">
         <div>
           <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-            Project Space Supervisor View
+            {t('subtitle')}
           </span>
           <h1 className="mt-1 text-4xl font-semibold tracking-tighter text-zinc-900 uppercase dark:text-zinc-100">
             {team.name} <span className="font-medium text-zinc-400">({project.name})</span>
@@ -179,56 +169,56 @@ export function SupervisorWorkspace({
               className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
             >
               <LayoutDashboard className="size-4" />
-              Overview
+              {t('tabOverview')}
             </TabsTrigger>
             <TabsTrigger
               value="list"
               className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
             >
               <CheckSquare className="size-4" />
-              List
+              {t('tabList')}
             </TabsTrigger>
             <TabsTrigger
               value="kanban"
               className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
             >
               <KanbanIcon className="size-4" />
-              Kanban
+              {t('tabKanban')}
             </TabsTrigger>
             <TabsTrigger
               value="deliverables"
               className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
             >
               <FileUp className="size-4" />
-              Deliverables
+              {t('tabDeliverables')}
             </TabsTrigger>
             <TabsTrigger
               value="dates"
               className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
             >
               <Clock className="size-4" />
-              Dates
+              {t('tabDates')}
             </TabsTrigger>
             <TabsTrigger
               value="calendar"
               className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
             >
               <Calendar className="size-4" />
-              Calendar
+              {t('tabCalendar')}
             </TabsTrigger>
             <TabsTrigger
               value="notes"
               className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
             >
               <FileText className="size-4" />
-              Notes
+              {t('tabNotes')}
             </TabsTrigger>
             <TabsTrigger
               value="evaluation"
               className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
             >
               <ClipboardCheck className="size-4" />
-              Evaluation
+              {t('tabEvaluation')}
             </TabsTrigger>
           </TabsList>
 
@@ -289,14 +279,14 @@ export function SupervisorWorkspace({
               <div className="space-y-6">
                 <div className="mb-6 flex items-center justify-between">
                   <h3 className="text-xl font-semibold tracking-tight uppercase">
-                    Student Deliverables ({livrables.length})
+                    {t('deliverablesHeader', { count: livrables.length })}
                   </h3>
                 </div>
 
                 {livrables.length === 0 ? (
                   <div className="rounded-none border-2 border-dashed border-zinc-300 bg-zinc-50/50 p-12 text-center dark:border-zinc-700 dark:bg-zinc-900/5">
                     <p className="text-sm font-bold tracking-wide text-zinc-400 uppercase italic">
-                      No deliverables submitted by this team yet.
+                      {t('noDeliverables')}
                     </p>
                   </div>
                 ) : (

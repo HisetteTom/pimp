@@ -14,6 +14,7 @@ interface DashboardLayoutProps {
     projectId: number;
     name: string;
     members: { id: string; name: string; responsabilityId: number | null }[];
+    projectStatus?: string;
   };
 }
 

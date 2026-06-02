@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Clock, Calendar, AlertCircle, ChevronRight, User, Crown } from 'lucide-react';
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Project Groups - Professor Workspace',
@@ -31,16 +32,16 @@ export default async function ProfessorProjectDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  const [t, { id }, session] = await Promise.all([
+    getTranslations('ProfessorProjectDetail'),
+    params,
+    headers().then((h) => auth.api.getSession({ headers: h })),
+  ]);
   const projectId = parseInt(id);
 
   if (isNaN(projectId)) {
     notFound();
   }
-
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
 
   if (!session || session.user.role !== 'professor') {
     redirect('/login');
@@ -124,7 +125,7 @@ export default async function ProfessorProjectDetailPage({
             className="hover:text-primary inline-flex items-center gap-1.5 text-xs font-black tracking-wider text-zinc-400 uppercase transition-colors"
           >
             <ArrowLeft className="size-3.5" />
-            Back to Dashboard
+            {t('back')}
           </Link>
         </div>
 
@@ -135,19 +136,19 @@ export default async function ProfessorProjectDetailPage({
               {projectData.name}
             </h1>
             <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-              {projectData.description || 'No description provided for this project proposal.'}
+              {projectData.description || t('noDescription')}
             </p>
             <div className="flex flex-wrap items-center gap-4 pt-2 text-xs font-bold tracking-widest text-zinc-400 uppercase">
               <span className="flex items-center gap-1.5">
                 <Calendar className="text-primary size-4" />
-                Start:{' '}
+                {t('start')}{' '}
                 {projectData.dateStart
                   ? projectData.dateStart.split('-').reverse().join('/')
                   : 'TBD'}
               </span>
               <span className="flex items-center gap-1.5">
                 <Clock className="text-primary size-4" />
-                End:{' '}
+                {t('end')}{' '}
                 {projectData.dateEnd ? projectData.dateEnd.split('-').reverse().join('/') : 'TBD'}
               </span>
             </div>
@@ -162,7 +163,7 @@ export default async function ProfessorProjectDetailPage({
         <div className="space-y-6">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-semibold tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-              Enrolled Teams ({allTeams.length})
+              {t('enrolledTeams', { count: allTeams.length })}
             </h2>
             <div className="h-px flex-1 bg-zinc-200 dark:bg-zinc-800" />
           </div>
@@ -171,29 +172,29 @@ export default async function ProfessorProjectDetailPage({
             <div className="space-y-3 rounded-none border-2 border-dashed border-zinc-200 bg-zinc-50/50 p-12 text-center dark:border-zinc-800 dark:bg-zinc-900/10">
               <AlertCircle className="mx-auto size-8 text-zinc-400" />
               <h3 className="text-sm font-semibold text-zinc-700 uppercase dark:text-zinc-300">
-                No Teams Assigned
+                {t('noTeamsTitle')}
               </h3>
               <p className="mx-auto max-w-sm text-xs font-bold tracking-wide text-zinc-400 uppercase">
-                No student teams have registered or enrolled in this project proposal yet.
+                {t('noTeamsDesc')}
               </p>
             </div>
           ) : (
             <div className="grid gap-6 md:grid-cols-2">
-              {allTeams.map((t) => {
-                const teamMembers = membersByTeam.get(t.id) || [];
-                const teamTasks = tasksByTeam.get(t.id) || [];
-                const teamLivrables = deliverablesByTeam.get(t.id) || [];
+              {allTeams.map((teamItem) => {
+                const teamMembers = membersByTeam.get(teamItem.id) || [];
+                const teamTasks = tasksByTeam.get(teamItem.id) || [];
+                const teamLivrables = deliverablesByTeam.get(teamItem.id) || [];
 
                 // Compute task stats
                 const doneTasks = teamTasks.filter((task) => task.status === 'done').length;
                 const progressPercent =
                   teamTasks.length > 0 ? Math.round((doneTasks / teamTasks.length) * 100) : 0;
 
-                const hasComments = t.feedback && t.feedback.trim().length > 0;
+                const hasComments = teamItem.feedback && teamItem.feedback.trim().length > 0;
 
                 return (
                   <Card
-                    key={t.id}
+                    key={teamItem.id}
                     className="group hover:border-primary/50 relative flex h-full flex-col justify-between overflow-hidden rounded-none border border-zinc-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-950"
                   >
                     {/* SVG grid graphic */}
@@ -201,7 +202,7 @@ export default async function ProfessorProjectDetailPage({
                       <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                           <pattern
-                            id={`grid-${t.id}`}
+                            id={`grid-${teamItem.id}`}
                             width="40"
                             height="40"
                             patternUnits="userSpaceOnUse"
@@ -214,27 +215,29 @@ export default async function ProfessorProjectDetailPage({
                             />
                           </pattern>
                         </defs>
-                        <rect width="100%" height="100%" fill={`url(#grid-${t.id})`} />
+                        <rect width="100%" height="100%" fill={`url(#grid-${teamItem.id})`} />
                       </svg>
                     </div>
 
                     <CardHeader className="relative z-10 space-y-4 p-8 pb-4">
                       <div>
                         <h3 className="text-secondary text-2xl font-semibold tracking-tighter uppercase">
-                          {t.name}
+                          {teamItem.name}
                         </h3>
                         <div className="mt-3 flex items-center gap-2">
                           {hasComments && (
                             <Badge className="rounded-none border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[9px] font-black tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
-                              Comments Added
+                              {t('commentsAdded')}
                             </Badge>
                           )}
                           <Badge
                             variant="outline"
                             className="rounded-none border-zinc-300 bg-transparent px-2.5 py-1 text-[9px] font-black tracking-wider text-zinc-500 uppercase dark:border-zinc-700"
                           >
-                            {teamLivrables.length} Deliverable
-                            {teamLivrables.length !== 1 ? 's' : ''}
+                            {t('deliverablesCount', {
+                              count: teamLivrables.length,
+                              plural: teamLivrables.length !== 1 ? 's' : '',
+                            })}
                           </Badge>
                         </div>
                       </div>
@@ -245,7 +248,7 @@ export default async function ProfessorProjectDetailPage({
                       <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
                           <span className="font-mono text-[9px] font-black tracking-[0.2em] text-zinc-400 uppercase">
-                            Progress
+                            {t('progress')}
                           </span>
                           <span className="text-secondary font-mono text-[10px] font-black">
                             {progressPercent}%
@@ -258,19 +261,19 @@ export default async function ProfessorProjectDetailPage({
                           />
                         </div>
                         <p className="text-[9px] font-bold tracking-wide text-zinc-400 uppercase">
-                          {doneTasks} of {teamTasks.length} tasks completed
+                          {t('tasksCompleted', { done: doneTasks, total: teamTasks.length })}
                         </p>
                       </div>
 
                       {/* Team Members List */}
                       <div className="space-y-3 border-t border-zinc-100 pt-4 dark:border-zinc-800">
                         <h4 className="font-mono text-[9px] font-semibold tracking-widest text-zinc-400 uppercase">
-                          Enrolled Members ({teamMembers.length})
+                          {t('enrolledMembers', { count: teamMembers.length })}
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {teamMembers.length === 0 ? (
                             <p className="text-xs font-bold text-zinc-400 uppercase italic">
-                              No members enrolled.
+                              {t('noMembers')}
                             </p>
                           ) : (
                             teamMembers.map((m) => (
@@ -292,9 +295,11 @@ export default async function ProfessorProjectDetailPage({
 
                       {/* Action Button */}
                       <div className="border-t border-zinc-100 pt-6 dark:border-zinc-800">
-                        <Link href={`/dashboard/professor/projects/${projectId}/teams/${t.id}`}>
+                        <Link
+                          href={`/dashboard/professor/projects/${projectId}/teams/${teamItem.id}`}
+                        >
                           <Button className="bg-primary text-primary-foreground hover:bg-primary/90 flex h-12 w-full items-center justify-center gap-1 rounded-none text-sm font-black tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
-                            Open Group Space
+                            {t('openGroupSpace')}
                             <ChevronRight className="size-4" />
                           </Button>
                         </Link>

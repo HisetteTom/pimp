@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,7 +21,6 @@ export function ChangePasswordForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isPending, startTransition] = useTransition();
-  const { push, refresh } = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,8 +39,7 @@ export function ChangePasswordForm() {
       try {
         await updateFirstLoginPassword(password);
         toast.success('Password updated successfully!');
-        push('/');
-        refresh();
+        window.location.href = '/';
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to update password';
         toast.error(message);

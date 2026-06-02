@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslations } from 'next-intl';
 
 function formatLocalDate(dateVal: Date | string | number | null | undefined): string {
   if (!dateVal) return 'No Date';
@@ -23,6 +24,7 @@ export interface StudentDatesSectionProps {
 }
 
 export function StudentDatesSection({ checkpoints, checkpointNotes }: StudentDatesSectionProps) {
+  const t = useTranslations('StudentDatesSection');
   return (
     <Card className="group relative flex flex-col overflow-hidden rounded-none border-2 border-zinc-200 bg-white shadow-none dark:border-zinc-800 dark:bg-zinc-950">
       <div className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.1]">
@@ -36,7 +38,7 @@ export function StudentDatesSection({ checkpoints, checkpointNotes }: StudentDat
 
       <CardHeader className="border-zinc-150 relative z-10 border-b px-6 py-4 dark:border-zinc-800">
         <CardTitle className="text-xs font-semibold tracking-widest text-zinc-400 uppercase">
-          Project Checkpoints & Meeting Notes
+          {t('title')}
         </CardTitle>
       </CardHeader>
 
@@ -44,7 +46,7 @@ export function StudentDatesSection({ checkpoints, checkpointNotes }: StudentDat
         <div className="flex flex-col gap-y-6">
           {checkpoints.length === 0 ? (
             <p className="py-8 text-center text-xs font-bold text-zinc-400 uppercase italic">
-              No checkpoints set for this project.
+              {t('noCheckpoints')}
             </p>
           ) : (
             checkpoints.map((cp) => {
@@ -68,7 +70,7 @@ export function StudentDatesSection({ checkpoints, checkpointNotes }: StudentDat
 
                   <div className="flex flex-col gap-y-2">
                     <span className="text-[9px] font-black tracking-widest text-zinc-400 uppercase">
-                      Supervisor Meeting Notes
+                      {t('supervisorNotes')}
                     </span>
                     {note?.notes ? (
                       <div className="border-primary border-l-2 bg-zinc-50/50 p-4 font-mono text-xs leading-relaxed whitespace-pre-wrap text-zinc-700 dark:bg-zinc-900/10 dark:text-zinc-300">
@@ -76,7 +78,7 @@ export function StudentDatesSection({ checkpoints, checkpointNotes }: StudentDat
                       </div>
                     ) : (
                       <p className="py-2 text-xs font-bold text-zinc-400 uppercase italic">
-                        No supervisor notes recorded for this checkpoint yet.
+                        {t('noNotes')}
                       </p>
                     )}
                   </div>

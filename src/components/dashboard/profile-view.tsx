@@ -22,6 +22,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { markAsRead, markAllAsRead } from '@/app/dashboard/actions-notification';
+import { useTranslations } from 'next-intl';
 
 interface NotificationItem {
   id: number;
@@ -46,6 +47,47 @@ interface ProfileViewProps {
   teamName?: string;
 }
 
+// Helper to get relative time
+const formatTime = (
+  dateInput: Date,
+  t: (key: string, values?: Record<string, string | number>) => string,
+) => {
+  const date = new Date(dateInput);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return t('justNow');
+  if (diffMins < 60) return t('minsAgo', { mins: diffMins });
+  if (diffHours < 24) return t('hoursAgo', { hours: diffHours });
+  if (diffDays < 7) return t('daysAgo', { days: diffDays });
+
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
+const getNotifIcon = (type: string) => {
+  switch (type) {
+    case 'project_proposed':
+      return <FolderPlus className="size-4.5 text-emerald-500" />;
+    case 'task_assigned':
+      return <CheckSquare className="size-4.5 text-purple-500" />;
+    case 'comment_added':
+      return <MessageSquare className="size-4.5 text-amber-500" />;
+    case 'note_added':
+      return <FileText className="size-4.5 text-blue-500" />;
+    case 'task_deadline_tomorrow':
+      return <Clock className="size-4.5 animate-pulse text-rose-500" />;
+    case 'checkpoint_tomorrow':
+      return <Calendar className="size-4.5 text-amber-500" />;
+    case 'project_end_tomorrow':
+      return <AlertTriangle className="size-4.5 animate-pulse text-red-600" />;
+    default:
+      return <Bell className="size-4.5 text-zinc-500" />;
+  }
+};
+
 export function ProfileView({
   user,
   initialNotifications,
@@ -54,6 +96,7 @@ export function ProfileView({
 }: ProfileViewProps) {
   const { push } = useRouter();
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations('Profile');
 
   const [optimisticNotifications, setOptimisticNotifications] = useOptimistic(
     initialNotifications,
@@ -102,44 +145,6 @@ export function ProfileView({
     }
   };
 
-  // Helper to get relative time
-  const formatTime = (dateInput: Date) => {
-    const date = new Date(dateInput);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
-
-  const getNotifIcon = (type: string) => {
-    switch (type) {
-      case 'project_proposed':
-        return <FolderPlus className="size-4.5 text-emerald-500" />;
-      case 'task_assigned':
-        return <CheckSquare className="size-4.5 text-purple-500" />;
-      case 'comment_added':
-        return <MessageSquare className="size-4.5 text-amber-500" />;
-      case 'note_added':
-        return <FileText className="size-4.5 text-blue-500" />;
-      case 'task_deadline_tomorrow':
-        return <Clock className="size-4.5 animate-pulse text-rose-500" />;
-      case 'checkpoint_tomorrow':
-        return <Calendar className="size-4.5 text-amber-500" />;
-      case 'project_end_tomorrow':
-        return <AlertTriangle className="size-4.5 animate-pulse text-red-600" />;
-      default:
-        return <Bell className="size-4.5 text-zinc-500" />;
-    }
-  };
-
   return (
     <div className="flex w-full flex-col gap-8">
       {/* PROFILE SUMMARY - VERY SMALL HEIGHT */}
@@ -166,10 +171,10 @@ export function ProfileView({
             <div className="flex items-center gap-2">
               <div className="flex flex-col">
                 <span className="text-[9px] leading-none font-black tracking-widest text-zinc-400 uppercase">
-                  Role
+                  {t('role')}
                 </span>
                 <span className="text-[12px] text-zinc-800 uppercase dark:text-zinc-200">
-                  {user.role || 'student'}
+                  {user.role === 'student' || !user.role ? t('student') : user.role}
                 </span>
               </div>
             </div>
@@ -179,7 +184,7 @@ export function ProfileView({
                 <Folder className="size-4 shrink-0 text-zinc-400" />
                 <div className="flex flex-col">
                   <span className="text-[9px] leading-none font-black tracking-widest text-zinc-400 uppercase">
-                    Project
+                    {t('project')}
                   </span>
                   <span className="text-[12px] text-zinc-800 dark:text-zinc-200">
                     {projectName}
@@ -193,7 +198,7 @@ export function ProfileView({
                 <Users className="size-4 shrink-0 text-zinc-400" />
                 <div className="flex flex-col">
                   <span className="text-[9px] leading-none font-black tracking-widest text-zinc-400 uppercase">
-                    Team
+                    {t('team')}
                   </span>
                   <span className="text-[12px] text-zinc-800 dark:text-zinc-200">{teamName}</span>
                 </div>
@@ -213,10 +218,10 @@ export function ProfileView({
               </div>
               <div>
                 <CardTitle className="text-base font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-                  Notification Center
+                  {t('notificationCenter')}
                 </CardTitle>
                 <CardDescription className="mt-0.5 text-xs font-bold tracking-widest text-zinc-400 uppercase">
-                  Manage your recent platform updates
+                  {t('manageNotifications')}
                 </CardDescription>
               </div>
             </div>
@@ -234,7 +239,7 @@ export function ProfileView({
                 ) : (
                   <Check className="size-3 text-emerald-500" />
                 )}
-                Mark All Read
+                {t('markAllRead')}
               </Button>
             )}
           </CardHeader>
@@ -246,10 +251,10 @@ export function ProfileView({
                   <BellOff className="size-8 text-zinc-400" />
                 </div>
                 <h3 className="text-sm font-semibold tracking-wider text-zinc-800 uppercase dark:text-zinc-200">
-                  All caught up!
+                  {t('allCaughtUp')}
                 </h3>
                 <p className="mt-1 max-w-[280px] text-xs font-bold tracking-widest text-zinc-400 uppercase dark:text-zinc-500">
-                  No notifications yet. New updates will appear here.
+                  {t('noNotifications')}
                 </p>
               </div>
             ) : (
@@ -288,7 +293,7 @@ export function ProfileView({
 
                           <span className="flex shrink-0 items-center gap-1.5 text-[10px] font-bold tracking-wider whitespace-nowrap text-zinc-400 uppercase">
                             <Calendar className="size-3" />
-                            {formatTime(notif.createdAt)}
+                            {formatTime(notif.createdAt, t)}
                           </span>
                         </div>
 
@@ -305,7 +310,7 @@ export function ProfileView({
 
                         {notif.link && (
                           <span className="mt-2 inline-flex items-center gap-1 text-[9px] font-black tracking-widest text-purple-600 uppercase hover:underline dark:text-purple-400">
-                            View details{' '}
+                            {t('viewDetails')}{' '}
                             <ArrowRight className="size-2 transition-transform group-hover:translate-x-0.5" />
                           </span>
                         )}
@@ -318,10 +323,10 @@ export function ProfileView({
                         <button
                           type="button"
                           onClick={(e) => handleMarkAsRead(notif.id, e)}
-                          title="Mark as read"
+                          title={t('markAsRead')}
                           className="flex size-3 cursor-pointer items-center justify-center rounded-full border border-purple-500 bg-purple-600 p-0 shadow-[0_0_8px_rgba(147,51,234,0.4)] transition-all hover:border-emerald-400 hover:bg-emerald-500"
                         >
-                          <span className="sr-only">Mark Read</span>
+                          <span className="sr-only">{t('markRead')}</span>
                         </button>
                       ) : (
                         <div className="flex size-3 items-center justify-center rounded-full border border-transparent bg-zinc-200 p-0 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-zinc-800/80">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -21,6 +21,7 @@ import { Plus } from 'lucide-react';
 import { TaskDialog } from './task-dialog';
 import { TaskDetailDialog } from './task-detail-dialog';
 import { Task, KanbanCard, SortableTaskCard } from './_components/kanban-components';
+import { useTranslations } from 'next-intl';
 
 interface KanbanBoardProps {
   initialTasks: Task[];
@@ -29,17 +30,18 @@ interface KanbanBoardProps {
   teamId: number;
 }
 
-const COLUMNS = [
-  { id: 'todo', title: 'To Do' },
-  { id: 'in_progress', title: 'In Progress' },
-  { id: 'done', title: 'Done' },
-];
-
 export function KanbanBoard({ initialTasks, projectId, members, teamId }: KanbanBoardProps) {
+  const t = useTranslations('KanbanBoard');
   const [tasks, setTasks] = useState<Task[]>(() => initialTasks);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+
+  const COLUMNS = [
+    { id: 'todo', title: t('todo') },
+    { id: 'in_progress', title: t('inProgress') },
+    { id: 'done', title: t('done') },
+  ];
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -50,14 +52,11 @@ export function KanbanBoard({ initialTasks, projectId, members, teamId }: Kanban
     useSensor(KeyboardSensor),
   );
 
-  const tasksByStatus = useMemo<Record<string, Task[]>>(
-    () => ({
-      todo: tasks.filter((t) => t.status === 'todo'),
-      in_progress: tasks.filter((t) => t.status === 'in_progress'),
-      done: tasks.filter((t) => t.status === 'done'),
-    }),
-    [tasks],
-  );
+  const tasksByStatus: Record<string, Task[]> = {
+    todo: tasks.filter((t) => t.status === 'todo'),
+    in_progress: tasks.filter((t) => t.status === 'in_progress'),
+    done: tasks.filter((t) => t.status === 'done'),
+  };
 
   const handleSelectTask = (task: Task) => {
     setSelectedTask(task);
@@ -134,7 +133,7 @@ export function KanbanBoard({ initialTasks, projectId, members, teamId }: Kanban
         await updateTaskStatus(activeId, activeTaskObj.status, projectId);
       } catch {
         setTasks(initialTasks);
-        toast.error('Failed to update task status');
+        toast.error(t('failedUpdate'));
       }
     }
   }
@@ -197,6 +196,7 @@ function KanbanColumn({
   teamId: number;
   onSelect: (task: Task) => void;
 }) {
+  const t = useTranslations('KanbanBoard');
   const { setNodeRef } = useSortable({ id });
 
   return (
@@ -230,7 +230,7 @@ function KanbanColumn({
           ))}
           {tasks.length === 0 && (
             <div className="flex-1 rounded-lg border-2 border-dashed border-zinc-200 p-8 text-center dark:border-zinc-800">
-              <p className="text-[10px] font-bold text-zinc-400 uppercase italic">No tasks here</p>
+              <p className="text-[10px] font-bold text-zinc-400 uppercase italic">{t('noTasks')}</p>
             </div>
           )}
         </div>

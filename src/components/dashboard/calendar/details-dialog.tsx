@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Calendar as CalendarIcon, User as UserIcon, Clock } from 'lucide-react';
@@ -19,14 +18,14 @@ export function DetailsDialog({
   onOpenChange,
   members,
 }: DetailsDialogProps) {
-  const selectedTaskAssignees = useMemo(() => {
+  const selectedTaskAssignees = (() => {
     if (!selectedEvent || selectedEvent.type !== 'task' || !selectedEvent.task) return [];
     const taskObj = selectedEvent.task;
     const ids =
       taskObj.assignees?.split(',').filter(Boolean) ||
       (taskObj.assigneeId ? [taskObj.assigneeId] : []);
     return members.filter((m) => ids.includes(m.id));
-  }, [selectedEvent, members]);
+  })();
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

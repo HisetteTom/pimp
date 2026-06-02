@@ -7,6 +7,7 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { eq } from 'drizzle-orm';
 import { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata: Metadata = {
   title: 'Student Dashboard',
@@ -14,12 +15,13 @@ export const metadata: Metadata = {
 };
 
 export default async function StudentDashboardPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const [t, session] = await Promise.all([
+    getTranslations('Dashboard'),
+    headers().then((h) => auth.api.getSession({ headers: h })),
+  ]);
 
   if (!session) {
-    return <div>Unauthorized</div>;
+    return <div>{t('unauthorized')}</div>;
   }
 
   const [allProjects, allUsers, refused, allTeams, userEnrollments, allEnrollments] =
@@ -103,7 +105,7 @@ export default async function StudentDashboardPage() {
       <div className="space-y-10 pb-10">
         <div id="top" className="scroll-mt-10">
           <h1 className="text-secondary text-4xl font-semibold tracking-tighter uppercase">
-            My Dashboard
+            {t('title')}
           </h1>
         </div>
 
@@ -111,7 +113,7 @@ export default async function StudentDashboardPage() {
         <section id="my-projects" className="scroll-mt-10 space-y-4">
           <div className="flex items-center gap-2">
             <h2 className="text-secondary text-2xl font-semibold tracking-tight uppercase">
-              My Projects
+              {t('myProjects')}
             </h2>
             <div className="bg-secondary/10 h-px flex-1" />
             <Badge className="bg-secondary text-secondary-foreground font-black">
@@ -121,9 +123,7 @@ export default async function StudentDashboardPage() {
 
           {myProjects.length === 0 ? (
             <div className="border-secondary/10 bg-secondary/5 rounded-xl border-2 border-dashed p-8 text-center">
-              <p className="text-muted-foreground font-medium italic">
-                You are not yet assigned to a project.
-              </p>
+              <p className="text-muted-foreground font-medium italic">{t('noProjects')}</p>
             </div>
           ) : (
             <div className="grid gap-8 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
@@ -137,7 +137,7 @@ export default async function StudentDashboardPage() {
                   status={p.status}
                   dateStart={p.dateStart || undefined}
                   dateEnd={p.dateEnd || undefined}
-                  deadline={p.dateEnd || 'Not defined'}
+                  deadline={p.dateEnd || t('notDefined')}
                   groups={teamsByProject.get(p.id) || 0}
                   maxGroups={p.maxGroups}
                   membersList={p.membersList}
@@ -152,7 +152,7 @@ export default async function StudentDashboardPage() {
         <section id="proposals" className="scroll-mt-10 space-y-4">
           <div className="flex items-center gap-2">
             <h2 className="text-primary text-2xl font-semibold tracking-tight uppercase">
-              Proposals
+              {t('proposals')}
             </h2>
             <div className="bg-primary/10 h-px flex-1" />
             <Badge className="bg-primary text-primary-foreground font-black">
@@ -162,9 +162,7 @@ export default async function StudentDashboardPage() {
 
           {proposedProjects.length === 0 ? (
             <div className="border-primary/10 bg-primary/5 rounded-xl border-2 border-dashed p-8 text-center">
-              <p className="text-muted-foreground font-medium italic">
-                No proposals available at the moment.
-              </p>
+              <p className="text-muted-foreground font-medium italic">{t('noProposals')}</p>
             </div>
           ) : (
             <div className="grid gap-8 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
@@ -178,7 +176,7 @@ export default async function StudentDashboardPage() {
                   status={p.status}
                   dateStart={p.dateStart || undefined}
                   dateEnd={p.dateEnd || undefined}
-                  deadline={p.dateEnd || 'Not defined'}
+                  deadline={p.dateEnd || t('notDefined')}
                   groups={teamsByProject.get(p.id) || 0}
                   maxGroups={p.maxGroups}
                   membersList={p.membersList}

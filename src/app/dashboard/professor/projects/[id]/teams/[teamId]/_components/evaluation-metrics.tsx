@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { useTranslations } from 'next-intl';
 
 interface EvaluationMetricsProps {
   totalScoreInfo: {
@@ -10,11 +11,13 @@ interface EvaluationMetricsProps {
 }
 
 export function EvaluationMetrics({ totalScoreInfo }: EvaluationMetricsProps) {
+  const t = useTranslations('ProfessorEvaluationMetrics');
+
   return (
     <Card className="bg-card rounded-none border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-none dark:border-zinc-800">
       <CardHeader className="flex flex-row items-center justify-between gap-y-0 pb-2">
         <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-          Live Score
+          {t('liveScore')}
         </span>
       </CardHeader>
       <CardContent>

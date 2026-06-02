@@ -1,10 +1,11 @@
 'use client';
 
-import { useMemo, useSyncExternalStore } from 'react';
+import { useSyncExternalStore } from 'react';
 import { Card } from '@/components/ui/card';
 import { Calendar, AlertTriangle } from 'lucide-react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useTranslations } from 'next-intl';
 
 export interface Task {
   id: number;
@@ -30,6 +31,13 @@ function ClientDate({ date }: { date: string | Date }) {
   );
 }
 
+const priorityStyles = {
+  low: 'border-emerald-300/80 dark:border-emerald-800/60 bg-emerald-50/10 dark:bg-emerald-950/5 shadow-[0_2px_8px_-3px_rgba(16,185,129,0.15)] hover:border-emerald-500 dark:hover:border-emerald-600 hover:shadow-[0_4px_16px_rgba(16,185,129,0.25)]',
+  medium:
+    'border-amber-300/80 dark:border-amber-800/60 bg-amber-50/10 dark:bg-amber-950/5 shadow-[0_2px_8px_-3px_rgba(245,158,11,0.15)] hover:border-amber-500 dark:hover:border-amber-600 hover:shadow-[0_4px_16px_rgba(245,158,11,0.25)]',
+  high: 'border-red-300/80 dark:border-red-800/60 bg-red-50/10 dark:bg-red-950/5 shadow-[0_2px_8px_-3px_rgba(239,68,68,0.15)] hover:border-red-500 dark:hover:border-red-600 hover:shadow-[0_4px_16px_rgba(239,68,68,0.25)]',
+} as Record<string, string>;
+
 export function KanbanCard({
   task,
   isOverlay,
@@ -39,6 +47,8 @@ export function KanbanCard({
   isOverlay?: boolean;
   members: { id: string; name: string }[];
 }) {
+  const t = useTranslations('KanbanCard');
+
   const assigneeIds = task.assignees
     ? task.assignees.split(',').filter(Boolean)
     : task.assigneeId
@@ -46,19 +56,12 @@ export function KanbanCard({
       : [];
   const assignedMembers = members.filter((m) => assigneeIds.includes(m.id));
 
-  const priorityStyles = {
-    low: 'border-emerald-300/80 dark:border-emerald-800/60 bg-emerald-50/10 dark:bg-emerald-950/5 shadow-[0_2px_8px_-3px_rgba(16,185,129,0.15)] hover:border-emerald-500 dark:hover:border-emerald-600 hover:shadow-[0_4px_16px_rgba(16,185,129,0.25)]',
-    medium:
-      'border-amber-300/80 dark:border-amber-800/60 bg-amber-50/10 dark:bg-amber-950/5 shadow-[0_2px_8px_-3px_rgba(245,158,11,0.15)] hover:border-amber-500 dark:hover:border-amber-600 hover:shadow-[0_4px_16px_rgba(245,158,11,0.25)]',
-    high: 'border-red-300/80 dark:border-red-800/60 bg-red-50/10 dark:bg-red-950/5 shadow-[0_2px_8px_-3px_rgba(239,68,68,0.15)] hover:border-red-500 dark:hover:border-red-600 hover:shadow-[0_4px_16px_rgba(239,68,68,0.25)]',
-  } as Record<string, string>;
-
   const currentStyle = priorityStyles[task.priority] || priorityStyles.medium;
 
-  const isOverdue = useMemo(() => {
+  const isOverdue = (() => {
     if (!task.deadline || task.status === 'done') return false;
     return new Date(task.deadline) < new Date();
-  }, [task.deadline, task.status]);
+  })();
 
   return (
     <Card
@@ -69,7 +72,7 @@ export function KanbanCard({
           {isOverdue && (
             <span className="flex animate-pulse items-center gap-1 rounded-none border border-red-200 bg-red-50 px-1.5 py-0.5 text-[9px] font-extrabold text-red-500 uppercase dark:border-red-800 dark:bg-red-950/20">
               <AlertTriangle className="size-3" />
-              Overdue
+              {t('overdue')}
             </span>
           )}
           {task.deadline && (
@@ -107,7 +110,9 @@ export function KanbanCard({
               })}
             </div>
           ) : (
-            <span className="text-[9px] font-bold text-zinc-300 uppercase italic">Unassigned</span>
+            <span className="text-[9px] font-bold text-zinc-300 uppercase italic">
+              {t('unassigned')}
+            </span>
           )}
         </div>
       </div>

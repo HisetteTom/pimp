@@ -23,6 +23,7 @@ import {
 import { updateTask, deleteTask } from '../../actions';
 import { toast } from 'sonner';
 import { Trash2, Check } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface Task {
   id: number;
@@ -50,6 +51,7 @@ export function TaskDetailDialog({
   members,
   projectId,
 }: TaskDetailDialogProps) {
+  const t = useTranslations('TaskDetailDialog');
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>(() => {
@@ -91,27 +93,27 @@ export function TaskDetailDialog({
         assignees: assignees || null,
         projectId,
       });
-      toast.success('Task updated');
+      toast.success(t('updatedToast'));
       onOpenChange(false);
       setLoading(false);
     } catch {
-      toast.error('Failed to update task');
+      toast.error(t('failedUpdateToast'));
       setLoading(false);
     }
   }
 
   async function handleDelete() {
     if (!task) return;
-    if (!confirm('Are you sure you want to delete this task?')) return;
+    if (!confirm(t('deleteConfirm'))) return;
     setDeleting(true);
 
     try {
       await deleteTask(task.id, projectId);
-      toast.success('Task deleted');
+      toast.success(t('deletedToast'));
       onOpenChange(false);
       setDeleting(false);
     } catch {
-      toast.error('Failed to delete task');
+      toast.error(t('failedDeleteToast'));
       setDeleting(false);
     }
   }
@@ -122,17 +124,15 @@ export function TaskDetailDialog({
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold tracking-tighter uppercase">
-              Task Details
+              {t('title')}
             </DialogTitle>
-            <DialogDescription>
-              View and edit task details, assignment, and priority.
-            </DialogDescription>
+            <DialogDescription>{t('descriptionSub')}</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-2">
             <div className="grid gap-2">
               <Label htmlFor="detail-name" className="text-xs font-bold text-zinc-400 uppercase">
-                Task Name
+                {t('taskName')}
               </Label>
               <Input
                 id="detail-name"
@@ -148,7 +148,7 @@ export function TaskDetailDialog({
                 htmlFor="detail-description"
                 className="text-xs font-bold text-zinc-400 uppercase"
               >
-                Description
+                {t('description')}
               </Label>
               <Textarea
                 id="detail-description"
@@ -165,16 +165,16 @@ export function TaskDetailDialog({
                   htmlFor="detail-priority"
                   className="text-xs font-bold text-zinc-400 uppercase"
                 >
-                  Priority
+                  {t('priority')}
                 </Label>
                 <Select name="priority" defaultValue={task.priority}>
                   <SelectTrigger id="detail-priority">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="low">{t('low')}</SelectItem>
+                    <SelectItem value="medium">{t('medium')}</SelectItem>
+                    <SelectItem value="high">{t('high')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -184,7 +184,7 @@ export function TaskDetailDialog({
                   htmlFor="detail-deadline"
                   className="text-xs font-bold text-zinc-400 uppercase"
                 >
-                  Deadline
+                  {t('deadline')}
                 </Label>
                 <Input
                   id="detail-deadline"
@@ -197,7 +197,7 @@ export function TaskDetailDialog({
 
             <div className="grid gap-2">
               <Label className="text-xs font-bold text-zinc-400 uppercase">
-                Assigned Team Members
+                {t('assignedMembers')}
               </Label>
               <div className="max-h-[160px] space-y-1 overflow-y-auto rounded-lg border border-zinc-200 bg-zinc-50/50 p-2 dark:border-zinc-800 dark:bg-zinc-900/50">
                 {members.map((member) => {
@@ -248,9 +248,7 @@ export function TaskDetailDialog({
                   );
                 })}
                 {members.length === 0 && (
-                  <p className="py-4 text-center text-xs text-zinc-400 italic">
-                    No team members available.
-                  </p>
+                  <p className="py-4 text-center text-xs text-zinc-400 italic">{t('noMembers')}</p>
                 )}
               </div>
             </div>
@@ -265,7 +263,7 @@ export function TaskDetailDialog({
               className="text-destructive hover:bg-destructive/10 p-2 text-xs font-bold tracking-wider uppercase"
             >
               <Trash2 className="mr-1.5 size-4" />
-              Delete
+              {t('delete')}
             </Button>
             <div className="ml-auto flex gap-2">
               <Button
@@ -275,14 +273,14 @@ export function TaskDetailDialog({
                 disabled={loading || deleting}
                 className="text-xs font-bold tracking-wider uppercase"
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button
                 type="submit"
                 disabled={loading || deleting}
                 className="text-xs font-bold tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)]"
               >
-                {loading ? 'Saving...' : 'Save Changes'}
+                {loading ? t('saving') : t('saveChanges')}
               </Button>
             </div>
           </DialogFooter>
