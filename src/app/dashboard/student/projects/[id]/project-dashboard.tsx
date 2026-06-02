@@ -8,6 +8,7 @@ import {
   Kanban as KanbanIcon,
   Clock,
   Calendar as CalendarIcon,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useState, useSyncExternalStore } from 'react';
 import {
@@ -45,6 +46,7 @@ export interface ProjectDashboardProps {
     description?: string | null;
     dateStart?: string | null;
     dateEnd?: string | null;
+    showEvaluationGrid: boolean;
   };
   team: {
     id: number;
@@ -64,6 +66,12 @@ export interface ProjectDashboardProps {
   }[];
   checkpointNotes: { id: number; checkpointId: number; teamId: number; notes: string | null }[];
   initialTab?: string;
+  criteria: {
+    id: number;
+    name: string;
+    description?: string | null;
+    maxPoints: number;
+  }[];
 }
 
 export function ProjectDashboard({
@@ -74,6 +82,7 @@ export function ProjectDashboard({
   checkpoints,
   checkpointNotes,
   initialTab,
+  criteria,
 }: ProjectDashboardProps) {
   const t = useTranslations('ProjectDashboard');
   const now = useSyncExternalStore(emptySubscribe, getMountTime, () => null);
@@ -93,7 +102,9 @@ export function ProjectDashboard({
     setPrevInitialTab(initialTab);
     if (
       initialTab &&
-      ['overview', 'list', 'kanban', 'deliverables', 'dates', 'calendar'].includes(initialTab)
+      ['overview', 'list', 'kanban', 'deliverables', 'dates', 'calendar', 'evaluation'].includes(
+        initialTab,
+      )
     ) {
       setActiveTab(initialTab);
     }
@@ -215,6 +226,15 @@ export function ProjectDashboard({
             <CalendarIcon className="size-4" />
             {t('calendar')}
           </TabsTrigger>
+          {project.showEvaluationGrid && (
+            <TabsTrigger
+              value="evaluation"
+              className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
+            >
+              <ClipboardCheck className="size-4" />
+              {t('evaluationGrid')}
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <div className="py-8">
@@ -272,6 +292,59 @@ export function ProjectDashboard({
               onSelectTask={handleSelectTask}
             />
           </TabsContent>
+
+          {project.showEvaluationGrid && (
+            <TabsContent value="evaluation" className="mt-0">
+              <div className="bg-card border-2 border-zinc-200 p-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] transition-shadow hover:shadow-none dark:border-zinc-800">
+                <div className="mb-6 flex flex-col gap-y-1 border-b border-zinc-100 pb-4 dark:border-zinc-800">
+                  <span className="text-[9px] font-bold tracking-widest text-purple-600 uppercase dark:text-purple-400">
+                    {t('evaluationGridSubtitle')}
+                  </span>
+                  <h2 className="text-xl leading-tight font-semibold text-zinc-900 uppercase dark:text-zinc-100">
+                    {t('evaluationGridTitle')}
+                  </h2>
+                </div>
+
+                {criteria.length === 0 ? (
+                  <p className="text-sm font-medium text-zinc-500">{t('noCriteria')}</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm text-zinc-500 dark:text-zinc-400">
+                      <thead className="bg-zinc-50 text-[10px] font-bold tracking-wider text-zinc-400 uppercase dark:bg-zinc-900/50">
+                        <tr>
+                          <th scope="col" className="px-6 py-4">
+                            {t('criterionName')}
+                          </th>
+                          <th scope="col" className="px-6 py-4">
+                            {t('criterionDescription')}
+                          </th>
+                          <th scope="col" className="px-6 py-4 text-right">
+                            {t('criterionMaxPoints')}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                        {criteria.map((c) => (
+                          <tr
+                            key={c.id}
+                            className="bg-white transition-colors hover:bg-zinc-50 dark:bg-zinc-950/20 dark:hover:bg-zinc-900/30"
+                          >
+                            <td className="px-6 py-4 font-semibold text-zinc-900 dark:text-zinc-100">
+                              {c.name}
+                            </td>
+                            <td className="px-6 py-4 text-xs">{c.description || '-'}</td>
+                            <td className="px-6 py-4 text-right font-mono text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                              /{c.maxPoints}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          )}
         </div>
       </Tabs>
       <div className="hidden" aria-hidden="true">

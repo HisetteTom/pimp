@@ -6,6 +6,8 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { EventClickArg, DatesSetArg } from '@fullcalendar/core';
+import frLocale from '@fullcalendar/core/locales/fr';
+import { useLocale } from 'next-intl';
 import { DetailsDialog } from './details-dialog';
 import { CalendarHeader } from './calendar-header';
 import { Checkpoint, CheckpointNote, CalendarEventProps, Task as BaseTask } from './types';
@@ -100,6 +102,7 @@ export function ProjectCalendar<TTask extends BaseTask = BaseTask>({
   onSelectTask,
 }: ProjectCalendarProps<TTask>) {
   const [state, dispatch] = useReducer(calendarReducer, initialState);
+  const locale = useLocale();
   const { onlyTeacherDates, hideInProgress, selectedEvent, modalOpen, viewTitle, currentView } =
     state;
 
@@ -297,6 +300,8 @@ export function ProjectCalendar<TTask extends BaseTask = BaseTask>({
         editable={false}
         selectable={false}
         dayMaxEvents={true}
+        locales={[frLocale]}
+        locale={locale}
       />
 
       <DetailsDialog

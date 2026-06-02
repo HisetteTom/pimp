@@ -87,7 +87,8 @@
     "startDate": "Date de Début",
     "endDate": "Date de Fin",
     "maxTeams": "Nombre Max d'Équipes",
-    "maxMembersPerTeam": "Membres Max par Équipe"
+    "maxMembersPerTeam": "Membres Max par Équipe",
+    "showEvaluationGrid": "Afficher la grille d'évaluation aux étudiants"
   },
   "ProfessorTargetingSection": {
     "targetCohorts": "Promotions Cibles",
@@ -312,7 +313,11 @@
     "emptyDesc": "Aucun critère d'évaluation n'a encore été établi pour ce projet. Utilisez le bouton ci-dessous pour ajouter votre premier critère.",
     "btnFirstCriterion": "Ajouter votre premier critère",
     "noProjectsSelectedTitle": "Aucun Projet Sélectionné",
-    "noProjectsSelectedDesc": "Veuillez choisir un projet dans le volet latéral pour configurer sa grille d'évaluation."
+    "noProjectsSelectedDesc": "Veuillez choisir un projet dans le volet latéral pour configurer sa grille d'évaluation.",
+    "showGridToStudents": "Afficher la grille d'évaluation aux étudiants",
+    "visibleSuccess": "La grille d'évaluation est maintenant visible pour les étudiants",
+    "hiddenSuccess": "La grille d'évaluation est maintenant masquée pour les étudiants",
+    "toggleVisibilityError": "Échec de la mise à jour de la visibilité de la grille d'évaluation"
   },
   "ProfessorCriterionBuilder": {
     "title": "Nouveau Critère d'Évaluation",

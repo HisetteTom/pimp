@@ -1,4 +1,4 @@
-import { pgTable, integer, date, text } from 'drizzle-orm/pg-core';
+import { pgTable, integer, date, text, boolean } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export const project = pgTable('project', {
@@ -23,4 +23,5 @@ export const project = pgTable('project', {
     .array()
     .notNull()
     .default(sql`'{}'::text[]`),
+  showEvaluationGrid: boolean('show_evaluation_grid').notNull().default(false),
 });

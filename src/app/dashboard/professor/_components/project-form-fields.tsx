@@ -14,8 +14,9 @@ interface ProjectFormFieldsProps {
     dateEnd: string;
     maxGroups: string;
     maxMembersPerGroup: string;
+    showEvaluationGrid?: boolean;
   };
-  onChange: (field: string, value: string) => void;
+  onChange: (field: string, value: string | boolean) => void;
   isPending: boolean;
 }
 
@@ -148,6 +149,23 @@ export function ProjectFormFields({ formState, onChange, isPending }: ProjectFor
             />
           </div>
         </div>
+      </div>
+
+      <div className="flex items-center gap-3 pt-2">
+        <input
+          id="showEvaluationGrid"
+          type="checkbox"
+          checked={formState.showEvaluationGrid || false}
+          onChange={(e) => onChange('showEvaluationGrid', e.target.checked)}
+          disabled={isPending}
+          className="size-4 cursor-pointer rounded border-2 border-zinc-300 accent-purple-600 focus:ring-purple-500/50"
+        />
+        <Label
+          htmlFor="showEvaluationGrid"
+          className="cursor-pointer text-xs font-bold tracking-widest text-zinc-600 uppercase select-none dark:text-zinc-400"
+        >
+          {t('showEvaluationGrid')}
+        </Label>
       </div>
     </>
   );

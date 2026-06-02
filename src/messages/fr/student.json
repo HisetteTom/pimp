@@ -35,7 +35,14 @@
     "kanban": "Kanban",
     "deliverables": "Livrables",
     "dates": "Dates",
-    "calendar": "Calendrier"
+    "calendar": "Calendrier",
+    "evaluationGrid": "Grille d'évaluation",
+    "evaluationGridTitle": "Grille d'évaluation du projet",
+    "evaluationGridSubtitle": "Critères de notation",
+    "noCriteria": "Aucun critère défini pour ce projet pour le moment.",
+    "criterionName": "Critère",
+    "criterionDescription": "Description",
+    "criterionMaxPoints": "Points Max"
   },
   "TeamSelection": {
     "availableTeams": "Équipes Disponibles",

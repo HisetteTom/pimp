@@ -8,6 +8,7 @@ import {
   projectEnrollment,
   checkpoint,
   checkpointNote,
+  evaluationCriterion,
 } from '@/db/schema';
 import { auth } from '@/lib/auth';
 import { eq, inArray } from 'drizzle-orm';
@@ -129,7 +130,7 @@ export default async function ProjectPage({
     };
   });
 
-  const [teamTasks, teamLivrables, checkpoints, checkpointNotes] = userTeam
+  const [teamTasks, teamLivrables, checkpoints, checkpointNotes, criteria] = userTeam
     ? await Promise.all([
         db.query.task.findMany({
           where: eq(task.teamId, userTeam.id),
@@ -144,8 +145,11 @@ export default async function ProjectPage({
         db.query.checkpointNote.findMany({
           where: eq(checkpointNote.teamId, userTeam.id),
         }),
+        db.query.evaluationCriterion.findMany({
+          where: eq(evaluationCriterion.projectId, projectId),
+        }),
       ])
-    : [[], [], [], []];
+    : [[], [], [], [], []];
 
   return (
     <DashboardLayout
@@ -186,6 +190,7 @@ export default async function ProjectPage({
             checkpoints={checkpoints}
             checkpointNotes={checkpointNotes}
             initialTab={tab}
+            criteria={criteria}
           />
         )}
       </div>

@@ -32,6 +32,7 @@ interface EditProjectDialogProps {
     targetPromos: string[];
     targetUsers: string[];
     coTeachers: string[];
+    showEvaluationGrid: boolean;
   };
 }
 
@@ -42,10 +43,11 @@ type FormState = {
   dateEnd: string;
   maxGroups: string;
   maxMembersPerGroup: string;
+  showEvaluationGrid: boolean;
 };
 
 type FormAction =
-  | { type: 'SET_FIELD'; field: string; value: string }
+  | { type: 'SET_FIELD'; field: string; value: string | boolean }
   | { type: 'RESET'; payload: FormState };
 
 function formReducer(state: FormState, action: FormAction): FormState {
@@ -72,6 +74,7 @@ export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
     dateEnd: projectData.dateEnd || '',
     maxGroups: projectData.maxGroups.toString(),
     maxMembersPerGroup: projectData.maxMembersPerGroup.toString(),
+    showEvaluationGrid: projectData.showEvaluationGrid || false,
   };
 
   const initialDialogState = {
@@ -102,6 +105,7 @@ export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
           dateEnd: projectData.dateEnd || '',
           maxGroups: projectData.maxGroups.toString(),
           maxMembersPerGroup: projectData.maxMembersPerGroup.toString(),
+          showEvaluationGrid: projectData.showEvaluationGrid || false,
         },
       });
       dispatch({ type: 'SET_TARGET_PROMOS', promos: projectData.targetPromos || [] });
@@ -136,6 +140,7 @@ export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
           targetPromos: state.targetPromos,
           targetUsers: state.targetUsers,
           coTeachers: state.coTeachers,
+          showEvaluationGrid: formState.showEvaluationGrid,
         });
 
         toast.success(t('updateSuccess'));

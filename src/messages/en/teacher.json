@@ -87,7 +87,8 @@
     "startDate": "Start Date",
     "endDate": "End Date",
     "maxTeams": "Max Teams",
-    "maxMembersPerTeam": "Max Members/Team"
+    "maxMembersPerTeam": "Max Members/Team",
+    "showEvaluationGrid": "Show evaluation grid to students"
   },
   "ProfessorTargetingSection": {
     "targetCohorts": "Target Cohorts / Promos",
@@ -312,7 +313,11 @@
     "emptyDesc": "There are no evaluation criteria established for this project yet. Use the button below to add your first criterion.",
     "btnFirstCriterion": "Add Your First Criterion",
     "noProjectsSelectedTitle": "No Projects Selected",
-    "noProjectsSelectedDesc": "Please choose a project from the directory side panel to configure its customizable evaluation grid."
+    "noProjectsSelectedDesc": "Please choose a project from the directory side panel to configure its customizable evaluation grid.",
+    "showGridToStudents": "Show notation grid to students",
+    "visibleSuccess": "Notation grid is now visible to students",
+    "hiddenSuccess": "Notation grid is now hidden from students",
+    "toggleVisibilityError": "Failed to update notation grid visibility"
   },
   "ProfessorCriterionBuilder": {
     "title": "New Criterion Builder",

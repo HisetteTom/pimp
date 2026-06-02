@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/db';
-import { evaluationCriterion, teamEvaluationScore, team } from '@/db/schema';
+import { evaluationCriterion, teamEvaluationScore, team, project } from '@/db/schema';
 import { auth } from '@/lib/auth';
 import { eq, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -159,5 +159,25 @@ export async function saveTeamEvaluation(data: {
   } catch (error) {
     console.error('Failed to save team evaluation:', error);
     throw new Error('Failed to save team evaluation');
+  }
+}
+
+export async function updateProjectEvaluationGridVisibility(projectId: number, show: boolean) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session || session.user.role !== 'professor') {
+    throw new Error('Unauthorized: Professor role required');
+  }
+
+  try {
+    await db.update(project).set({ showEvaluationGrid: show }).where(eq(project.id, projectId));
+
+    revalidatePath('/dashboard/professor/evaluation-setup');
+    revalidatePath(`/dashboard/student/projects/${projectId}`);
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update evaluation grid visibility:', error);
+    throw new Error('Failed to update evaluation grid visibility');
   }
 }

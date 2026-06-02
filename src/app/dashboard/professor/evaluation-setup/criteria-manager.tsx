@@ -1,10 +1,16 @@
 'use client';
 
-import { useTransition, useReducer, useEffect } from 'react';
+import { useTransition, useReducer, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Plus, ClipboardCheck, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { createCriterion, updateCriterion, deleteCriterion } from '../evaluation-actions';
+import { Label } from '@/components/ui/label';
+import {
+  createCriterion,
+  updateCriterion,
+  deleteCriterion,
+  updateProjectEvaluationGridVisibility,
+} from '../evaluation-actions';
 import { ProjectsSidebar } from './projects-sidebar';
 import { CriterionBuilderCard } from './criterion-builder-card';
 import { CriterionRow } from './criterion-row';
@@ -15,6 +21,7 @@ interface Project {
   name: string;
   description: string | null;
   status: string;
+  showEvaluationGrid: boolean;
 }
 
 interface Criterion {
@@ -139,6 +146,13 @@ function reducer(state: State, action: Action): State {
 export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerProps) {
   const t = useTranslations('ProfessorCriteriaManager');
   const [isPending, startTransition] = useTransition();
+  const [projectsList, setProjectsList] = useState<Project[]>(projects);
+  const [prevProjects, setPrevProjects] = useState<Project[]>(projects);
+
+  if (projects !== prevProjects) {
+    setPrevProjects(projects);
+    setProjectsList(projects);
+  }
 
   const [state, dispatch] = useReducer(reducer, null, () => ({
     selectedProjectId: projects.length > 0 ? projects[0].id : null,
@@ -158,7 +172,7 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
     dispatch({ type: 'SET_CRITERIA', criteria: initialCriteria });
   }, [initialCriteria]);
 
-  const activeProject = projects.find((p) => p.id === state.selectedProjectId);
+  const activeProject = projectsList.find((p) => p.id === state.selectedProjectId);
 
   // Compute criteria list for selected project inline during render
   const projectCriteria = state.criteria.reduce<Criterion[]>((acc, item) => {
@@ -264,6 +278,39 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
                     {activeProject.description}
                   </p>
                 )}
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    id={`toggle-visibility-${activeProject.id}`}
+                    type="checkbox"
+                    checked={activeProject.showEvaluationGrid || false}
+                    onChange={async (e) => {
+                      const show = e.target.checked;
+                      setProjectsList((prev) =>
+                        prev.map((p) =>
+                          p.id === activeProject.id ? { ...p, showEvaluationGrid: show } : p,
+                        ),
+                      );
+                      try {
+                        await updateProjectEvaluationGridVisibility(activeProject.id, show);
+                        toast.success(t(show ? 'visibleSuccess' : 'hiddenSuccess'));
+                      } catch {
+                        toast.error(t('toggleVisibilityError'));
+                        setProjectsList((prev) =>
+                          prev.map((p) =>
+                            p.id === activeProject.id ? { ...p, showEvaluationGrid: !show } : p,
+                          ),
+                        );
+                      }
+                    }}
+                    className="size-4 cursor-pointer rounded border-2 border-zinc-300 accent-purple-600 focus:ring-purple-500/50"
+                  />
+                  <Label
+                    htmlFor={`toggle-visibility-${activeProject.id}`}
+                    className="cursor-pointer text-[10px] font-black tracking-widest text-zinc-500 uppercase select-none"
+                  >
+                    {t('showGridToStudents')}
+                  </Label>
+                </div>
               </div>
               <Button
                 variant="unstyled"

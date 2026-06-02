@@ -51,6 +51,7 @@ export async function createProject(data: {
   targetPromos?: string[];
   targetUsers?: string[];
   coTeachers?: string[];
+  showEvaluationGrid?: boolean;
 }) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -74,6 +75,7 @@ export async function createProject(data: {
         targetPromos: data.targetPromos || [],
         targetUsers: data.targetUsers || [],
         coTeachers: data.coTeachers || [],
+        showEvaluationGrid: data.showEvaluationGrid || false,
       })
       .returning();
 
@@ -374,6 +376,7 @@ export async function updateProject(
     targetPromos?: string[];
     targetUsers?: string[];
     coTeachers?: string[];
+    showEvaluationGrid?: boolean;
   },
 ) {
   const session = await auth.api.getSession({
@@ -396,6 +399,7 @@ export async function updateProject(
         targetPromos: data.targetPromos || [],
         targetUsers: data.targetUsers || [],
         coTeachers: data.coTeachers || [],
+        showEvaluationGrid: data.showEvaluationGrid ?? false,
       })
       .where(eq(project.id, projectId));
 

@@ -28,9 +28,10 @@ const initialFormState = {
   dateEnd: '',
   maxGroups: '8',
   maxMembersPerGroup: '5',
+  showEvaluationGrid: false,
 };
 
-type FormAction = { type: 'SET_FIELD'; field: string; value: string } | { type: 'RESET' };
+type FormAction = { type: 'SET_FIELD'; field: string; value: string | boolean } | { type: 'RESET' };
 
 function formReducer(state: typeof initialFormState, action: FormAction) {
   switch (action.type) {
@@ -113,6 +114,7 @@ export function CreateProjectDialog() {
           targetPromos: state.targetPromos,
           targetUsers: state.targetUsers,
           coTeachers: state.coTeachers,
+          showEvaluationGrid: formState.showEvaluationGrid,
         });
 
         toast.success(t('createSuccess'));
