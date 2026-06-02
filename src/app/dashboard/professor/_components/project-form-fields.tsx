@@ -156,6 +156,7 @@ export function ProjectFormFields({ formState, onChange, isPending }: ProjectFor
           id="showEvaluationGrid"
           type="checkbox"
           checked={formState.showEvaluationGrid || false}
+          aria-label={t('showEvaluationGrid')}
           onChange={(e) => onChange('showEvaluationGrid', e.target.checked)}
           disabled={isPending}
           className="size-4 cursor-pointer rounded border-2 border-zinc-300 accent-purple-600 focus:ring-purple-500/50"

@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   description: 'Configure your language and application preferences.',
 };
 
+const sqlStrings = ['', ' = ANY(', ')'];
+const templateStrings = Object.assign(sqlStrings, {
+  raw: sqlStrings,
+}) as unknown as TemplateStringsArray;
+
 export default async function ProfessorSettingsPage() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -22,11 +27,6 @@ export default async function ProfessorSettingsPage() {
   if (!session || session.user.role !== 'professor') {
     redirect('/login');
   }
-
-  const sqlStrings = ['', ' = ANY(', ')'];
-  const templateStrings = Object.assign(sqlStrings, {
-    raw: sqlStrings,
-  }) as unknown as TemplateStringsArray;
 
   const [cookieStore, t, profProjects] = await Promise.all([
     cookies(),

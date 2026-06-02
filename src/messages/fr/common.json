@@ -17,7 +17,8 @@
     "toggleTheme": "Basculer le thème",
     "teachers": "Enseignants",
     "allProjects": "Tous les Projets",
-    "evaluationSetup": "Configuration de l'Évaluation"
+    "evaluationSetup": "Configuration de l'Évaluation",
+    "exportGrades": "Exporter les notes"
   },
   "Settings": {
     "title": "Paramètres",

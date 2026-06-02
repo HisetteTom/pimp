@@ -146,13 +146,7 @@ function reducer(state: State, action: Action): State {
 export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerProps) {
   const t = useTranslations('ProfessorCriteriaManager');
   const [isPending, startTransition] = useTransition();
-  const [projectsList, setProjectsList] = useState<Project[]>(projects);
-  const [prevProjects, setPrevProjects] = useState<Project[]>(projects);
-
-  if (projects !== prevProjects) {
-    setPrevProjects(projects);
-    setProjectsList(projects);
-  }
+  const [toggledVisibilities, setToggledVisibilities] = useState<Record<number, boolean>>({});
 
   const [state, dispatch] = useReducer(reducer, null, () => ({
     selectedProjectId: projects.length > 0 ? projects[0].id : null,
@@ -172,7 +166,12 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
     dispatch({ type: 'SET_CRITERIA', criteria: initialCriteria });
   }, [initialCriteria]);
 
-  const activeProject = projectsList.find((p) => p.id === state.selectedProjectId);
+  const projectsWithToggled = projects.map((p) => ({
+    ...p,
+    showEvaluationGrid: toggledVisibilities[p.id] ?? p.showEvaluationGrid,
+  }));
+
+  const activeProject = projectsWithToggled.find((p) => p.id === state.selectedProjectId);
 
   // Compute criteria list for selected project inline during render
   const projectCriteria = state.criteria.reduce<Criterion[]>((acc, item) => {
@@ -256,7 +255,7 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
   return (
     <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
       <ProjectsSidebar
-        projects={projects}
+        projects={projectsWithToggled}
         selectedProjectId={state.selectedProjectId}
         criteria={state.criteria}
         onSelectProject={(id) => dispatch({ type: 'SET_SELECTED_PROJECT', projectId: id })}
@@ -283,23 +282,22 @@ export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerPr
                     id={`toggle-visibility-${activeProject.id}`}
                     type="checkbox"
                     checked={activeProject.showEvaluationGrid || false}
+                    aria-label={t('showGridToStudents')}
                     onChange={async (e) => {
                       const show = e.target.checked;
-                      setProjectsList((prev) =>
-                        prev.map((p) =>
-                          p.id === activeProject.id ? { ...p, showEvaluationGrid: show } : p,
-                        ),
-                      );
+                      setToggledVisibilities((prev) => ({
+                        ...prev,
+                        [activeProject.id]: show,
+                      }));
                       try {
                         await updateProjectEvaluationGridVisibility(activeProject.id, show);
                         toast.success(t(show ? 'visibleSuccess' : 'hiddenSuccess'));
                       } catch {
                         toast.error(t('toggleVisibilityError'));
-                        setProjectsList((prev) =>
-                          prev.map((p) =>
-                            p.id === activeProject.id ? { ...p, showEvaluationGrid: !show } : p,
-                          ),
-                        );
+                        setToggledVisibilities((prev) => ({
+                          ...prev,
+                          [activeProject.id]: !show,
+                        }));
                       }
                     }}
                     className="size-4 cursor-pointer rounded border-2 border-zinc-300 accent-purple-600 focus:ring-purple-500/50"
