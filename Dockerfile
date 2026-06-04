@@ -31,7 +31,6 @@ COPY --from=builder --chown=bun:bun /app/.next/static ./.next/static
 COPY --from=builder --chown=bun:bun /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder --chown=bun:bun /app/src/db ./src/db
 
-# Install complete production dependencies for the custom server
 COPY package.json bun.lock* ./
 RUN bun install --production --frozen-lockfile
 
