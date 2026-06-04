@@ -9,6 +9,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { RiSendPlane2Line, RiMessage3Line } from '@remixicon/react';
 import { cn } from '@/lib/utils';
 import { authClient } from '@/lib/auth-client';
+import { getSocket } from '@/lib/socket-client';
 
 interface ChatMessage {
   id: number;
@@ -30,9 +31,14 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
   const { data: session } = authClient.useSession();
   const currentUserId = session?.user?.id;
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [chatState, setChatState] = useState<{
+    messages: ChatMessage[];
+    loading: boolean;
+  }>({
+    messages: [],
+    loading: true,
+  });
   const [inputText, setInputText] = useState('');
-  const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,46 +48,99 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
     messagesEndRef.current?.scrollIntoView({ behavior });
   };
 
-  // Core polling effect
+  const onMessagesFetched = (msgs: ChatMessage[]) => {
+    setChatState({ messages: msgs, loading: false });
+    // Scroll to bottom immediately on first load
+    setTimeout(() => scrollToBottom('auto'), 50);
+  };
+
+  const onFetchFailed = () => {
+    setChatState((prev) => ({ ...prev, loading: false }));
+  };
+
+  const onMessageReceived = (newMessage: ChatMessage) => {
+    setChatState((prev) => {
+      // Prevent duplicate real database messages
+      if (prev.messages.some((m) => m.id === newMessage.id)) return prev;
+
+      // Replace/filter out matching optimistic message if any
+      // Optimistic messages have id > 1000000000000 (Date.now())
+      const filtered = prev.messages.filter(
+        (m) =>
+          !(
+            m.senderId === newMessage.senderId &&
+            m.id > 1000000000000 &&
+            m.text === newMessage.text
+          ),
+      );
+
+      return {
+        ...prev,
+        messages: [
+          ...filtered,
+          {
+            ...newMessage,
+            createdAt: new Date(newMessage.createdAt), // Parse to Date object
+          },
+        ],
+      };
+    });
+  };
+
+  // Core socket.io connection and real-time message handling
   useEffect(() => {
     let active = true;
 
-    async function fetchMessages(isFirstLoad = false) {
+    async function fetchMessages() {
       try {
         const msgs = await getChatMessages(teamId);
         if (active) {
-          setMessages(msgs);
-          if (isFirstLoad) {
-            setLoading(false);
-            // Scroll to bottom immediately on first load
-            setTimeout(() => scrollToBottom('auto'), 50);
-          } else {
-            // Scroll to bottom smoothly on subsequent loads if new messages arrived
-            scrollToBottom('smooth');
-          }
+          onMessagesFetched(msgs);
         }
       } catch (err) {
         console.error('Failed to fetch chat messages:', err);
-        if (isFirstLoad && active) {
-          setLoading(false);
+        if (active) {
+          onFetchFailed();
         }
       }
     }
 
     // Initial load
-    fetchMessages(true);
+    fetchMessages();
     markChatAsRead(teamId).catch(() => {});
 
-    // Poll every 3 seconds
-    const interval = setInterval(() => {
-      fetchMessages();
+    // Setup Socket.IO
+    const socket = getSocket();
+
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    socket.emit('join_team', teamId);
+
+    const handleMessage = (newMessage: ChatMessage) => {
+      if (!active) return;
+      onMessageReceived(newMessage);
+      // Mark as read when receiving a message
       markChatAsRead(teamId).catch(() => {});
-    }, 3000);
+      setTimeout(() => scrollToBottom('smooth'), 10);
+    };
+
+    socket.on('message', handleMessage);
+
+    // Backup polling/read-marking for read receipts (every 10 seconds)
+    const readReceiptInterval = setInterval(() => {
+      if (active) {
+        markChatAsRead(teamId).catch(() => {});
+      }
+    }, 10000);
 
     return () => {
       active = false;
-      clearInterval(interval);
+      socket.off('message', handleMessage);
+      clearInterval(readReceiptInterval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teamId]);
 
   // Send message handler
@@ -100,22 +159,25 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
       senderRole: (session?.user as { role?: string })?.role || 'student',
     };
 
-    setMessages((prev) => [...prev, optimisticMessage]);
+    setChatState((prev) => ({
+      ...prev,
+      messages: [...prev.messages, optimisticMessage],
+    }));
     setInputText('');
     setSending(true);
     setTimeout(() => scrollToBottom('smooth'), 10);
 
     try {
       await sendChatMessage(teamId, trimmed);
-      // Fetch latest messages instantly
-      const latest = await getChatMessages(teamId);
-      setMessages(latest);
       setSending(false);
       setTimeout(() => scrollToBottom('smooth'), 10);
     } catch (err) {
       console.error('Failed to send message:', err);
       // Rollback optimistic message if failed
-      setMessages((prev) => prev.filter((m) => m.id !== optimisticMessage.id));
+      setChatState((prev) => ({
+        ...prev,
+        messages: prev.messages.filter((m) => m.id !== optimisticMessage.id),
+      }));
       setInputText(trimmed); // restore text
       setSending(false);
     }
@@ -145,14 +207,14 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
         className="flex-1 overflow-y-auto bg-zinc-50/30 p-6 dark:bg-zinc-950/30"
         ref={containerRef}
       >
-        {loading ? (
+        {chatState.loading ? (
           <div className="flex h-full w-full items-center justify-center">
             {/* Polished ellipsis character used */}
             <span className="animate-pulse text-xs font-black tracking-wider text-zinc-400 uppercase">
               Loading chat…
             </span>
           </div>
-        ) : messages.length === 0 ? (
+        ) : chatState.messages.length === 0 ? (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2">
             <RiMessage3Line className="size-8 text-zinc-300" />
             <p className="text-xs font-bold text-zinc-400 uppercase">No messages yet</p>
@@ -160,7 +222,7 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            {messages.map((msg) => {
+            {chatState.messages.map((msg) => {
               const isOwn = msg.senderId === currentUserId;
               const isTeacher = msg.senderRole === 'professor' || msg.senderRole === 'jury';
 

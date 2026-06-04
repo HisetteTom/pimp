@@ -6,9 +6,7 @@ import { auth } from '@/lib/auth';
 import { eq, and, gt, asc, inArray, sql } from 'drizzle-orm';
 import { headers } from 'next/headers';
 
-// 1. Fetch messages for a team
 export async function getChatMessages(teamId: number) {
-  // Inline Auth Check for React Doctor
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -55,9 +53,7 @@ export async function getChatMessages(teamId: number) {
   return messages;
 }
 
-// 2. Send a message to a team
 export async function sendChatMessage(teamId: number, text: string) {
-  // Inline Auth Check for React Doctor
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -71,33 +67,59 @@ export async function sendChatMessage(teamId: number, text: string) {
     throw new Error('Message cannot be empty');
   }
 
-  // Insert message
-  const [inserted] = await db
-    .insert(chatMessage)
-    .values({
-      teamId,
-      senderId: currentUser.id,
-      text: trimmed,
-    })
-    .returning();
+  // Parallelize message insert, read receipt update, and sender details fetch
+  const [[inserted], , [senderInfo]] = await Promise.all([
+    db
+      .insert(chatMessage)
+      .values({
+        teamId,
+        senderId: currentUser.id,
+        text: trimmed,
+      })
+      .returning(),
+    db
+      .insert(chatReadReceipt)
+      .values({
+        userId: currentUser.id,
+        teamId,
+        lastReadAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [chatReadReceipt.userId, chatReadReceipt.teamId],
+        set: { lastReadAt: new Date() },
+      }),
+    db
+      .select({
+        name: user.name,
+        role: sql<string>`coalesce((${user.role})::text, 'student')`,
+      })
+      .from(user)
+      .where(eq(user.id, currentUser.id))
+      .limit(1),
+  ]);
 
-  // Auto update sender's read receipt to now
-  await db
-    .insert(chatReadReceipt)
-    .values({
-      userId: currentUser.id,
-      teamId,
-      lastReadAt: new Date(),
-    })
-    .onConflictDoUpdate({
-      target: [chatReadReceipt.userId, chatReadReceipt.teamId],
-      set: { lastReadAt: new Date() },
-    });
+  const broadcastMessage = {
+    id: inserted.id,
+    text: inserted.text,
+    createdAt: inserted.createdAt,
+    senderId: inserted.senderId,
+    senderName: senderInfo?.name || 'Me',
+    senderRole: senderInfo?.role || 'student',
+  };
+
+  // Broadcast to Socket.IO room if initialized
+  const io = (
+    global as unknown as {
+      io?: { to: (room: string) => { emit: (event: string, data: unknown) => void } };
+    }
+  ).io;
+  if (io) {
+    io.to(`team_${teamId}`).emit('message', broadcastMessage);
+  }
 
   return inserted;
 }
 
-// 3. Mark team chat as read
 export async function markChatAsRead(teamId: number) {
   // Inline Auth Check for React Doctor
   const session = await auth.api.getSession({
@@ -124,7 +146,6 @@ export async function markChatAsRead(teamId: number) {
   return { success: true };
 }
 
-// 4. Get total unread messages count for sidebar
 export async function getUnreadChatCount() {
   try {
     // Inline Auth Check for React Doctor
@@ -240,9 +261,7 @@ export async function getUnreadChatCount() {
   }
 }
 
-// 5. Get list of supervised teams for a teacher
 export async function getSupervisedTeams() {
-  // Inline Auth Check for React Doctor
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -329,9 +348,7 @@ export async function getSupervisedTeams() {
   return supervisedTeamsWithCounts;
 }
 
-// 6. Get student's own team details (for direct chat headers)
 export async function getStudentTeamChatInfo() {
-  // Inline Auth Check for React Doctor
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -385,4 +402,95 @@ export async function getStudentTeamChatInfo() {
     projectName: projInfo?.projectName || 'Unnamed Project',
     supervisorName,
   };
+}
+
+export async function getStudentTeams() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session || !session.user) {
+    throw new Error('Unauthorized');
+  }
+  const currentUser = session.user;
+
+  // Get all active enrollments
+  const enrollments = await db
+    .select({
+      projectId: projectEnrollment.projectId,
+      teamId: projectEnrollment.teamId,
+    })
+    .from(projectEnrollment)
+    .where(eq(projectEnrollment.userId, currentUser.id));
+
+  if (enrollments.length === 0) {
+    return [];
+  }
+
+  const teamIds = enrollments.map((e) => e.teamId).filter((tId): tId is number => tId !== null);
+  if (teamIds.length === 0) {
+    return [];
+  }
+
+  const projectIds = enrollments.map((e) => e.projectId);
+
+  // Get all projects, teams, and read receipts in parallel
+  const [enrolledProjects, studentTeams, receipts] = await Promise.all([
+    db
+      .select({ id: project.id, name: project.name })
+      .from(project)
+      .where(inArray(project.id, projectIds)),
+    db
+      .select({
+        id: team.id,
+        name: team.name,
+        projectId: team.projectId,
+      })
+      .from(team)
+      .where(inArray(team.id, teamIds)),
+    db
+      .select()
+      .from(chatReadReceipt)
+      .where(
+        and(eq(chatReadReceipt.userId, currentUser.id), inArray(chatReadReceipt.teamId, teamIds)),
+      ),
+  ]);
+
+  const projectMap = new Map(enrolledProjects.map((p) => [p.id, p.name]));
+  const receiptMap = new Map(receipts.map((r) => [r.teamId, r.lastReadAt]));
+
+  // Concurrent fetch using Promise.all
+  const studentTeamsWithCounts = await Promise.all(
+    studentTeams.map(async (t) => {
+      const lastRead = receiptMap.get(t.id);
+
+      const countPromise = lastRead
+        ? db
+            .select({ count: sql<number>`count(*)` })
+            .from(chatMessage)
+            .where(and(eq(chatMessage.teamId, t.id), gt(chatMessage.createdAt, lastRead)))
+        : db
+            .select({ count: sql<number>`count(*)` })
+            .from(chatMessage)
+            .where(eq(chatMessage.teamId, t.id));
+
+      const membersPromise = db
+        .select({ name: user.name })
+        .from(projectEnrollment)
+        .innerJoin(user, eq(projectEnrollment.userId, user.id))
+        .where(eq(projectEnrollment.teamId, t.id));
+
+      const [[res], members] = await Promise.all([countPromise, membersPromise]);
+      const unreadCount = Number(res?.count || 0);
+
+      return {
+        id: t.id,
+        name: t.name,
+        projectName: projectMap.get(t.projectId) || 'Unknown Project',
+        unreadCount,
+        members: members.map((m) => m.name),
+      };
+    }),
+  );
+
+  return studentTeamsWithCounts;
 }

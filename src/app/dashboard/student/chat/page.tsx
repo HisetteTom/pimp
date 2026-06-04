@@ -1,6 +1,6 @@
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
-import { ChatWindow } from '@/components/dashboard/chat-window';
-import { getStudentTeamChatInfo } from '@/app/dashboard/actions-chat';
+import { StudentChatView } from '@/components/dashboard/student-chat-view';
+import { getStudentTeams } from '@/app/dashboard/actions-chat';
 import { db } from '@/db';
 import { project, team, projectEnrollment, user } from '@/db/schema';
 import { auth } from '@/lib/auth';
@@ -26,9 +26,9 @@ export default async function StudentChatPage() {
     );
   }
 
-  // 1. Fetch Student Chat Info & Active Enrollments in parallel
-  const [chatInfo, enrollments] = await Promise.all([
-    getStudentTeamChatInfo(),
+  // 1. Fetch student teams and enrollments in parallel
+  const [studentTeams, enrollments] = await Promise.all([
+    getStudentTeams(),
     db.select().from(projectEnrollment).where(eq(projectEnrollment.userId, session.user.id)),
   ]);
 
@@ -98,24 +98,7 @@ export default async function StudentChatPage() {
           </p>
         </div>
 
-        {!chatInfo ? (
-          <div className="flex h-96 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-900/30">
-            <span className="text-xs font-black tracking-widest text-zinc-400 uppercase">
-              No Enrolled Team
-            </span>
-            <p className="text-xs text-zinc-400">
-              You must be registered in a team and project to join the group discussion.
-            </p>
-          </div>
-        ) : (
-          <ChatWindow
-            key={chatInfo.teamId}
-            teamId={chatInfo.teamId}
-            teamName={chatInfo.teamName}
-            projectName={chatInfo.projectName}
-            subtitle={`Supervisor: ${chatInfo.supervisorName}`}
-          />
-        )}
+        <StudentChatView initialTeams={studentTeams} />
       </div>
     </DashboardLayout>
   );
