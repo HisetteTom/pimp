@@ -32,7 +32,7 @@ COPY --from=builder --chown=bun:bun /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder --chown=bun:bun /app/src/db ./src/db
 
 COPY package.json bun.lock* ./
-RUN bun install --production --frozen-lockfile
+RUN /usr/local/bin/bun install --production --frozen-lockfile
 
 USER bun
 
