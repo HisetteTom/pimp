@@ -30,6 +30,7 @@ COPY --from=builder --chown=bun:bun /app/.next/standalone ./
 COPY --from=builder --chown=bun:bun /app/.next/static ./.next/static
 COPY --from=builder --chown=bun:bun /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder --chown=bun:bun /app/src/db ./src/db
+COPY --from=builder --chown=bun:bun /app/drizzle ./drizzle
 
 COPY --from=builder --chown=bun:bun /app/node_modules ./node_modules
 
