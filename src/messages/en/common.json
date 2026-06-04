@@ -18,7 +18,8 @@
     "teachers": "Teachers",
     "allProjects": "All Projects",
     "evaluationSetup": "Evaluation Setup",
-    "exportGrades": "Export Grades"
+    "exportGrades": "Export Grades",
+    "chat": "Chat"
   },
   "Settings": {
     "title": "Settings",

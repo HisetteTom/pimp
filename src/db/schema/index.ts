@@ -11,3 +11,5 @@ export * from './project_enrollment';
 export * from './checkpoint';
 export * from './evaluation';
 export * from './notification';
+export * from './chat_message';
+export * from './chat_read_receipt';

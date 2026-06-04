@@ -18,7 +18,8 @@
     "teachers": "Enseignants",
     "allProjects": "Tous les Projets",
     "evaluationSetup": "Configuration de l'Évaluation",
-    "exportGrades": "Exporter les notes"
+    "exportGrades": "Exporter les notes",
+    "chat": "Chat"
   },
   "Settings": {
     "title": "Paramètres",

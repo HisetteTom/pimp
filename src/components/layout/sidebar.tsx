@@ -16,12 +16,14 @@ import {
   Moon,
   Crown,
   Download,
+  MessageSquare,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { authClient } from '@/lib/auth-client';
 import { leaveTeam } from '@/app/dashboard/student/actions';
-import { useTransition, useSyncExternalStore } from 'react';
+import { useTransition, useSyncExternalStore, useState, useEffect } from 'react';
+import { getUnreadChatCount } from '@/app/dashboard/actions-chat';
 import { useTheme } from 'next-themes';
 import { useTranslations } from 'next-intl';
 
@@ -46,6 +48,27 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
   const [isPending, startTransition] = useTransition();
   const { data: session } = authClient.useSession();
   const { setTheme, resolvedTheme } = useTheme();
+
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+  useEffect(() => {
+    // Initial fetch
+    getUnreadChatCount()
+      .then(setUnreadChatCount)
+      .catch(() => {});
+
+    // Dynamic background polling every 10 seconds
+    const interval = setInterval(async () => {
+      try {
+        const count = await getUnreadChatCount();
+        setUnreadChatCount(count);
+      } catch {
+        // Silently catch polling errors
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, []);
   const mounted = useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -73,6 +96,12 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
       ? [
           { href: '/dashboard/professor#top', label: t('dashboard'), icon: LayoutDashboard },
           { href: '/dashboard/professor#projects', label: t('allProjects'), icon: FolderRoot },
+          {
+            href: '/dashboard/professor/chat',
+            label: t('chat'),
+            icon: MessageSquare,
+            badge: unreadChatCount,
+          },
           ...(isProfessor
             ? [
                 {
@@ -92,6 +121,12 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
           { href: '/dashboard/student#top', label: t('dashboard'), icon: LayoutDashboard },
           { href: '/dashboard/student#my-projects', label: t('myProjects'), icon: FolderRoot },
           { href: '/dashboard/student#proposals', label: t('proposals'), icon: Lightbulb },
+          {
+            href: '/dashboard/student/chat',
+            label: t('chat'),
+            icon: MessageSquare,
+            badge: unreadChatCount,
+          },
         ];
 
   const dashboardLink = isAdmin
@@ -174,7 +209,12 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
 }
 
 interface SidebarNavigationProps {
-  navItems: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[];
+  navItems: {
+    href: string;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    badge?: number;
+  }[];
   pathname: string;
 }
 
@@ -199,7 +239,12 @@ function SidebarNavigation({ navItems, pathname }: SidebarNavigationProps) {
                   : 'group-hover:text-white dark:group-hover:text-zinc-900',
               )}
             />
-            {item.label}
+            <span className="flex-1 truncate">{item.label}</span>
+            {item.badge !== undefined && item.badge > 0 && (
+              <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-red-500 text-[8px] font-black text-white ring-1 ring-white dark:ring-zinc-950">
+                {item.badge}
+              </span>
+            )}
           </span>
         </Link>
       ))}
