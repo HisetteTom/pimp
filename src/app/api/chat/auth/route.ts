@@ -3,6 +3,10 @@ import { auth } from '@/lib/auth';
 import { db } from '@/db';
 import { projectEnrollment } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
+import { Server as SocketServer } from 'socket.io';
+
+// Dummy reference to ensure socket.io is traced in Next.js standalone build
+const _dummyTracer: typeof SocketServer | null = null;
 
 export async function GET(request: NextRequest) {
   try {
