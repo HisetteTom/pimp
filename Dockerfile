@@ -31,8 +31,7 @@ COPY --from=builder --chown=bun:bun /app/.next/static ./.next/static
 COPY --from=builder --chown=bun:bun /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=builder --chown=bun:bun /app/src/db ./src/db
 
-COPY package.json bun.lock* ./
-RUN /usr/local/bin/bun install --production --frozen-lockfile
+COPY --from=builder --chown=bun:bun /app/node_modules ./node_modules
 
 USER bun
 
