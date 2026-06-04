@@ -10,6 +10,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "bun scripts/seed-data.ts",
+    "db:seed-lookups": "bun src/db/seed-lookups.ts",
     "db:dbml": "bun scripts/generate-dbml.ts",
     "setup": "bun scripts/setup.ts",
     "format": "prettier --write .",

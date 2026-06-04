@@ -11,7 +11,7 @@ export const compte = pgTable(
     password: varchar('password', { length: 255 }),
     role: varchar('role', { length: 255 }),
     projectId: integer('project_id').references(() => project.id),
-    responsabilityId: integer('responsability_id').references(() => responsability.id),
+    responsabilityId: integer('responsability_id'),
   },
   (table) => {
     return {

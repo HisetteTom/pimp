@@ -14,7 +14,7 @@ export const projectEnrollment = pgTable(
       .notNull()
       .references(() => project.id),
     teamId: integer('team_id').references(() => team.id),
-    responsabilityId: integer('responsability_id').references(() => responsability.id),
+    responsabilityId: integer('responsability_id'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
   (table) => ({

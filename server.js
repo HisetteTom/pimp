@@ -6,15 +6,6 @@ const port = process.env.PORT || 3000;
 
 if (process.env.NODE_ENV === 'production') {
   // Production Standalone Server runner
-  const { execSync } = require('child_process');
-  try {
-    console.log('> Running database migrations and seeding lookup tables...');
-    execSync('bun src/db/migrate-and-seed.ts', { stdio: 'inherit' });
-  } catch (err) {
-    console.error('> Database migration/seeding failed:', err);
-    process.exit(1);
-  }
-
   const path = require('path');
   const fs = require('fs');
   const dir = path.join(__dirname);
