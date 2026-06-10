@@ -10,8 +10,19 @@ import { projectEnrollment } from '../../src/db/schema/project_enrollment';
 import { compte } from '../../src/db/schema/compte';
 import { responsability } from '../../src/db/schema/responsability';
 import { notification } from '../../src/db/schema/notification';
-import { ListObjectsV2Command, DeleteObjectsCommand } from '@aws-sdk/client-s3';
-import { s3Client, BUCKET_NAME } from '../../src/lib/storage';
+import { S3Client, ListObjectsV2Command, DeleteObjectsCommand } from '@aws-sdk/client-s3';
+
+const s3Client = new S3Client({
+  endpoint: process.env.STORAGE_ENDPOINT || 'http://localhost:9010',
+  region: process.env.STORAGE_REGION || 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.STORAGE_ACCESS_KEY || 'pimp-dev-access-key',
+    secretAccessKey: process.env.STORAGE_SECRET_KEY || 'pimp-dev-secret-key',
+  },
+  forcePathStyle: true,
+});
+
+const BUCKET_NAME = process.env.STORAGE_BUCKET || 'pimp-deliverables';
 
 async function cleanS3Bucket() {
   console.log('Cleaning S3 / RustFS deliverables bucket...');

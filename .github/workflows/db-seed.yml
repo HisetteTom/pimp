@@ -30,6 +30,7 @@ jobs:
       - name: Copy and Execute Seeding inside App Container
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' << 'EOF'
+            set -e
             export DOTENV_PRIVATE_KEY_PRODUCTION='${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}'
             cd /home/${{ secrets.SSH_USER }}/app
 
@@ -43,6 +44,7 @@ jobs:
             }
 
             run_dotenvx bash -c '
+              set -e
               echo "Waiting for database container..."
               until docker exec pimp-db-prod pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; do
                 sleep 1
