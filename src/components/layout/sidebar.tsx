@@ -82,7 +82,7 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
   };
 
   const role = session?.user ? (session.user as { role?: string }).role : undefined;
-  const isProfessor = role === 'professor';
+  const isProfessor = role === 'professor' || role === 'owner';
   const isJury = role === 'jury';
   const isStaff = isProfessor || isJury;
   const isAdmin = role === 'admin';

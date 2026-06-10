@@ -35,7 +35,7 @@ export default async function ProfessorDashboardPage() {
     headers().then((h) => auth.api.getSession({ headers: h })),
   ]);
 
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     return <AccessDenied />;
   }
 

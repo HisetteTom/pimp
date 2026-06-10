@@ -25,7 +25,7 @@ export default async function ProfessorChatPage() {
     headers: await headers(),
   });
 
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     return <AccessDenied />;
   }
 

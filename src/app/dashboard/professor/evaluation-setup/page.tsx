@@ -28,7 +28,7 @@ export default async function EvaluationSetupPage() {
     headers().then((h) => auth.api.getSession({ headers: h })),
   ]);
 
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-zinc-50 p-8 dark:bg-zinc-950">
         <Card className="bg-card max-w-md rounded-none border-2 border-red-500/20 shadow-xl">

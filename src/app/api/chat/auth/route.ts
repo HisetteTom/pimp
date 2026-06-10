@@ -5,7 +5,6 @@ import { projectEnrollment } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { Server as SocketServer } from 'socket.io';
 
-// Dummy reference to ensure socket.io is traced in Next.js standalone build
 const _dummyTracer = SocketServer;
 
 export async function GET(request: NextRequest) {
@@ -30,7 +29,7 @@ export async function GET(request: NextRequest) {
     }
 
     const role = (session.user as { role?: string }).role || 'student';
-    const isStaff = role === 'professor' || role === 'jury';
+    const isStaff = role === 'professor' || role === 'jury' || role === 'owner';
     const isAdmin = role === 'admin';
 
     if (isStaff || isAdmin) {

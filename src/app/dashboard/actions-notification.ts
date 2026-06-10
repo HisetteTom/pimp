@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/db';
-import { notification, project, projectEnrollment, checkpoint, task } from '@/db/schema';
+import { notification, project, projectEnrollment, checkpoint, task, user } from '@/db/schema';
 import { auth } from '@/lib/auth';
 import { eq, and, desc, ne } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
@@ -14,6 +14,10 @@ export async function getNotifications() {
 
   if (!session) {
     throw new Error('Unauthorized');
+  }
+
+  if (session.user.role === 'owner') {
+    return [];
   }
 
   const userId = session.user.id;
@@ -248,6 +252,16 @@ export async function createNotification({
   }
 
   try {
+    const [recipient] = await db
+      .select({ role: user.role })
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
+
+    if (recipient && recipient.role === 'owner') {
+      return; // No notifications at all for owner
+    }
+
     await db.insert(notification).values({
       userId,
       title,

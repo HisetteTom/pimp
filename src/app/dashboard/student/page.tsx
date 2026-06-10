@@ -67,11 +67,12 @@ export default async function StudentDashboardPage() {
   for (const p of allProjects) {
     if (refusedIds.has(p.id)) continue;
 
+    const isEnrolled = enrolledProjectIds.has(p.id);
     const targetPromosSet = new Set(p.targetPromos || []);
     const targetUsersSet = new Set(p.targetUsers || []);
     const isTargeted = targetPromosSet.has(userPromo) || targetUsersSet.has(session.user.id);
 
-    if (!isTargeted) continue;
+    if (!isEnrolled && !isTargeted) continue;
 
     const projectEnrollments = enrollmentsByProject.get(p.id) || [];
     const membersList = projectEnrollments.map((e) => {
@@ -83,7 +84,7 @@ export default async function StudentDashboardPage() {
       };
     });
 
-    if (enrolledProjectIds.has(p.id)) {
+    if (isEnrolled) {
       myProjects.push({ ...p, membersList });
     } else if (p.status === 'proposed') {
       proposedProjects.push({ ...p, membersList });

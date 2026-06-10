@@ -24,7 +24,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     user.role !== 'student' &&
     user.role !== 'professor' &&
     user.role !== 'jury' &&
-    user.role !== 'admin'
+    user.role !== 'admin' &&
+    user.role !== 'owner'
   ) {
     redirect('/login');
   }

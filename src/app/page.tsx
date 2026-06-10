@@ -21,7 +21,11 @@ export default async function HomePage() {
     redirect('/dashboard/student');
   }
 
-  if (session.user.role === 'professor' || session.user.role === 'jury') {
+  if (
+    session.user.role === 'professor' ||
+    session.user.role === 'jury' ||
+    session.user.role === 'owner'
+  ) {
     redirect('/dashboard/professor');
   }
 

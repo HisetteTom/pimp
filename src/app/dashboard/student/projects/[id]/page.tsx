@@ -60,8 +60,9 @@ export default async function ProjectPage({
   const targetPromosSet = new Set(projectData.targetPromos || []);
   const targetUsersSet = new Set(projectData.targetUsers || []);
   const isTargeted = targetPromosSet.has(userPromo) || targetUsersSet.has(session.user.id);
+  const isEnrolled = userEnrollments.some((e) => e.projectId === projectId);
 
-  if (!isTargeted) {
+  if (!isEnrolled && !isTargeted) {
     notFound();
   }
 

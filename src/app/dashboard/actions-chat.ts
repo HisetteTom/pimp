@@ -17,7 +17,7 @@ export async function getChatMessages(teamId: number) {
 
   // Validate user has access to this team's chat
   const role = (currentUser as { role?: string }).role || 'student';
-  const isStaff = role === 'professor' || role === 'jury';
+  const isStaff = role === 'professor' || role === 'jury' || role === 'owner';
   const isAdmin = role === 'admin';
 
   if (!isStaff && !isAdmin) {
@@ -158,7 +158,7 @@ export async function getUnreadChatCount() {
     const currentUser = session.user;
 
     const role = (currentUser as { role?: string }).role || 'student';
-    const isStaff = role === 'professor' || role === 'jury';
+    const isStaff = role === 'professor' || role === 'jury' || role === 'owner';
     const isAdmin = role === 'admin';
 
     if (isAdmin) {

@@ -1,31 +1,42 @@
-table account {
-  id text [pk, not null]
-  account_id text [not null]
-  provider_id text [not null]
-  user_id text [not null]
-  access_token text
-  refresh_token text
-  id_token text
-  access_token_expires_at timestamp
-  refresh_token_expires_at timestamp
-  scope text
-  password text
-  created_at timestamp [not null]
-  updated_at timestamp [not null]
+table project {
+  id integer [pk, not null]
+  name text [not null]
+  description text
+  status text [not null, default: 'proposed']
+  "date-start" date
+  "date-end" date
+  max_groups integer [not null, default: 8]
+  max_members_per_group integer [not null, default: 5]
+  teacher_id text
+  target_promos text[] [not null, default: `'{}'::text[]`]
+  target_users text[] [not null, default: `'{}'::text[]`]
+  co_teachers text[] [not null, default: `'{}'::text[]`]
+  show_evaluation_grid boolean [not null, default: false]
 }
 
-table checkpoint {
+table team {
   id integer [pk, not null]
+  name text [not null]
   project_id integer [not null]
-  title text [not null]
-  due_date timestamp [not null]
+  grade text
+  feedback text
+  notes text
 }
 
-table checkpoint_note {
+table task {
   id integer [pk, not null]
-  checkpoint_id integer [not null]
+  name text [not null]
+  description text
+  status varchar(255) [not null, default: 'todo']
+  priority varchar(255) [not null, default: 'medium']
+  deadline timestamp
   team_id integer [not null]
-  notes text [not null, default: '']
+  assignee_id text
+  assignees text
+  responsability_id integer
+  in_progress_at timestamp
+  completed_at timestamp
+  created_at timestamp [not null, default: `now()`]
 }
 
 table comment {
@@ -49,12 +60,8 @@ table compte {
   }
 }
 
-table evaluation_criterion {
+table responsability {
   id integer [pk, not null]
-  project_id integer [not null]
-  name text [not null]
-  description text
-  max_points integer [not null, default: 20]
 }
 
 table livrable {
@@ -67,26 +74,67 @@ table livrable {
   created_at timestamp [not null, default: `now()`]
 }
 
-table notification {
-  id integer [pk, not null]
+table account {
+  id text [pk, not null]
+  account_id text [not null]
+  provider_id text [not null]
   user_id text [not null]
-  title text [not null]
-  message text [not null]
-  type varchar(50) [not null]
-  link text
-  is_read boolean [not null, default: false]
-  created_at timestamp [not null, default: `now()`]
+  access_token text
+  refresh_token text
+  id_token text
+  access_token_expires_at timestamp
+  refresh_token_expires_at timestamp
+  scope text
+  password text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
 }
 
-table project {
-  id integer [pk, not null]
+table session {
+  id text [pk, not null]
+  expires_at timestamp [not null]
+  token text [not null, unique]
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  ip_address text
+  user_agent text
+  user_id text [not null]
+}
+
+table user {
+  id text [pk, not null]
   name text [not null]
-  description text
-  status text [not null, default: 'proposed']
-  "date-start" date
-  "date-end" date
-  max_groups integer [not null, default: 8]
-  max_members_per_group integer [not null, default: 5]
+  email text [not null, unique]
+  email_verified boolean [not null]
+  image text
+  created_at timestamp [not null]
+  updated_at timestamp [not null]
+  username text [unique]
+  display_username text
+  role text
+  promo text
+  project_id integer
+  team_id integer
+  responsability_id integer
+  requires_password_change boolean [not null, default: false]
+}
+
+table verification {
+  id text [pk, not null]
+  identifier text [not null]
+  value text [not null]
+  expires_at timestamp [not null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+table refused_project {
+  user_id text [not null]
+  project_id integer [not null]
+
+  indexes {
+    (user_id, project_id) [pk]
+  }
 }
 
 table project_enrollment {
@@ -101,53 +149,26 @@ table project_enrollment {
   }
 }
 
-table refused_project {
-  user_id text [not null]
+table checkpoint {
+  id integer [pk, not null]
   project_id integer [not null]
-
-  indexes {
-    (user_id, project_id) [pk]
-  }
+  title text [not null]
+  due_date timestamp [not null]
 }
 
-table responsability {
+table checkpoint_note {
   id integer [pk, not null]
+  checkpoint_id integer [not null]
+  team_id integer [not null]
+  notes text [not null, default: '']
 }
 
-table session {
-  id text [pk, not null]
-  expires_at timestamp [not null]
-  token text [not null, unique]
-  created_at timestamp [not null]
-  updated_at timestamp [not null]
-  ip_address text
-  user_agent text
-  user_id text [not null]
-}
-
-table task {
+table evaluation_criterion {
   id integer [pk, not null]
+  project_id integer [not null]
   name text [not null]
   description text
-  status varchar(255) [not null, default: 'todo']
-  priority varchar(255) [not null, default: 'medium']
-  deadline timestamp
-  team_id integer [not null]
-  assignee_id text
-  assignees text
-  responsability_id integer
-  in_progress_at timestamp
-  completed_at timestamp
-  created_at timestamp [not null, default: `now()`]
-}
-
-table team {
-  id integer [pk, not null]
-  name text [not null]
-  project_id integer [not null]
-  grade text
-  feedback text
-  notes text
+  max_points integer [not null, default: 20]
 }
 
 table team_evaluation_score {
@@ -158,38 +179,22 @@ table team_evaluation_score {
   comment text
 }
 
-table user {
-  id text [pk, not null]
-  name text [not null]
-  email text [not null, unique]
-  email_verified boolean [not null]
-  image text
-  created_at timestamp [not null]
-  updated_at timestamp [not null]
-  username text [unique]
-  display_username text
-  role text
-  project_id integer
-  team_id integer
-  responsability_id integer
+table notification {
+  id integer [pk, not null]
+  user_id text [not null]
+  title text [not null]
+  message text [not null]
+  type varchar(50) [not null]
+  link text
+  is_read boolean [not null, default: false]
+  created_at timestamp [not null, default: `now()`]
 }
 
-table verification {
-  id text [pk, not null]
-  identifier text [not null]
-  value text [not null]
-  expires_at timestamp [not null]
-  created_at timestamp
-  updated_at timestamp
-}
+ref team_project_id_project_id_fk: team.project_id > project.id [delete: no action, update: no action]
 
-ref account_user_id_user_id_fk: account.user_id > user.id [delete: no action, update: no action]
+ref task_team_id_team_id_fk: task.team_id > team.id [delete: no action, update: no action]
 
-ref checkpoint_project_id_project_id_fk: checkpoint.project_id > project.id [delete: cascade, update: no action]
-
-ref checkpoint_note_checkpoint_id_checkpoint_id_fk: checkpoint_note.checkpoint_id > checkpoint.id [delete: cascade, update: no action]
-
-ref checkpoint_note_team_id_team_id_fk: checkpoint_note.team_id > team.id [delete: cascade, update: no action]
+ref task_assignee_id_user_id_fk: task.assignee_id > user.id [delete: no action, update: no action]
 
 ref comment_project_id_project_id_fk: comment.project_id > project.id [delete: no action, update: no action]
 
@@ -197,13 +202,19 @@ ref comment_task_id_task_id_fk: comment.task_id > task.id [delete: no action, up
 
 ref compte_project_id_project_id_fk: compte.project_id > project.id [delete: no action, update: no action]
 
-ref compte_responsability_id_responsability_id_fk: compte.responsability_id > responsability.id [delete: no action, update: no action]
-
-ref evaluation_criterion_project_id_project_id_fk: evaluation_criterion.project_id > project.id [delete: cascade, update: no action]
-
 ref livrable_team_id_team_id_fk: livrable.team_id > team.id [delete: no action, update: no action]
 
-ref notification_user_id_user_id_fk: notification.user_id > user.id [delete: cascade, update: no action]
+ref account_user_id_user_id_fk: account.user_id > user.id [delete: no action, update: no action]
+
+ref session_user_id_user_id_fk: session.user_id > user.id [delete: no action, update: no action]
+
+ref user_project_id_project_id_fk: user.project_id > project.id [delete: no action, update: no action]
+
+ref user_team_id_team_id_fk: user.team_id > team.id [delete: no action, update: no action]
+
+ref refused_project_user_id_user_id_fk: refused_project.user_id > user.id [delete: no action, update: no action]
+
+ref refused_project_project_id_project_id_fk: refused_project.project_id > project.id [delete: no action, update: no action]
 
 ref project_enrollment_user_id_user_id_fk: project_enrollment.user_id > user.id [delete: no action, update: no action]
 
@@ -211,28 +222,16 @@ ref project_enrollment_project_id_project_id_fk: project_enrollment.project_id >
 
 ref project_enrollment_team_id_team_id_fk: project_enrollment.team_id > team.id [delete: no action, update: no action]
 
-ref project_enrollment_responsability_id_responsability_id_fk: project_enrollment.responsability_id > responsability.id [delete: no action, update: no action]
+ref checkpoint_project_id_project_id_fk: checkpoint.project_id > project.id [delete: cascade, update: no action]
 
-ref refused_project_user_id_user_id_fk: refused_project.user_id > user.id [delete: no action, update: no action]
+ref checkpoint_note_checkpoint_id_checkpoint_id_fk: checkpoint_note.checkpoint_id > checkpoint.id [delete: cascade, update: no action]
 
-ref refused_project_project_id_project_id_fk: refused_project.project_id > project.id [delete: no action, update: no action]
+ref checkpoint_note_team_id_team_id_fk: checkpoint_note.team_id > team.id [delete: cascade, update: no action]
 
-ref session_user_id_user_id_fk: session.user_id > user.id [delete: no action, update: no action]
-
-ref task_team_id_team_id_fk: task.team_id > team.id [delete: no action, update: no action]
-
-ref task_assignee_id_user_id_fk: task.assignee_id > user.id [delete: no action, update: no action]
-
-ref task_responsability_id_responsability_id_fk: task.responsability_id > responsability.id [delete: no action, update: no action]
-
-ref team_project_id_project_id_fk: team.project_id > project.id [delete: no action, update: no action]
+ref evaluation_criterion_project_id_project_id_fk: evaluation_criterion.project_id > project.id [delete: cascade, update: no action]
 
 ref team_evaluation_score_team_id_team_id_fk: team_evaluation_score.team_id > team.id [delete: cascade, update: no action]
 
 ref team_evaluation_score_criterion_id_evaluation_criterion_id_fk: team_evaluation_score.criterion_id > evaluation_criterion.id [delete: cascade, update: no action]
 
-ref user_project_id_project_id_fk: user.project_id > project.id [delete: no action, update: no action]
-
-ref user_team_id_team_id_fk: user.team_id > team.id [delete: no action, update: no action]
-
-ref user_responsability_id_responsability_id_fk: user.responsability_id > responsability.id [delete: no action, update: no action]
+ref notification_user_id_user_id_fk: notification.user_id > user.id [delete: cascade, update: no action]

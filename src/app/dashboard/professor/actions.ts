@@ -9,6 +9,8 @@ import {
   checkpoint,
   checkpointNote,
   user,
+  comment,
+  task,
 } from '@/db/schema';
 import { auth } from '@/lib/auth';
 import { eq, and, inArray } from 'drizzle-orm';
@@ -20,7 +22,12 @@ export async function getProjectFormDropdowns() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || (session.user.role !== 'professor' && session.user.role !== 'jury')) {
+  if (
+    !session ||
+    (session.user.role !== 'professor' &&
+      session.user.role !== 'jury' &&
+      session.user.role !== 'owner')
+  ) {
     throw new Error('Unauthorized');
   }
 
@@ -56,7 +63,7 @@ export async function createProject(data: {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -140,7 +147,7 @@ export async function updateProjectStatus(projectId: number, status: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -164,7 +171,7 @@ export async function validateDeliverable(
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -218,7 +225,7 @@ export async function evaluateTeam(
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -236,7 +243,7 @@ export async function saveTeamNotes(teamId: number, notes: string, projectId: nu
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -254,7 +261,7 @@ export async function createCheckpoint(projectId: number, title: string, dueDate
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -285,7 +292,7 @@ export async function updateCheckpoint(
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -309,7 +316,7 @@ export async function deleteCheckpoint(checkpointId: number, projectId: number) 
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -332,7 +339,7 @@ export async function saveCheckpointNote(
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -382,7 +389,7 @@ export async function updateProject(
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -409,4 +416,47 @@ export async function updateProject(
     console.error('Failed to update project:', error);
     throw new Error('Failed to update project');
   }
+}
+
+export async function deleteTeam(teamId: number) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session || (session.user.role !== 'owner' && session.user.role !== 'admin')) {
+    throw new Error('Unauthorized: Only owners or admins can delete teams');
+  }
+
+  const [teamData] = await db
+    .select({ projectId: team.projectId })
+    .from(team)
+    .where(eq(team.id, teamId))
+    .limit(1);
+
+  if (!teamData) {
+    throw new Error('Team not found');
+  }
+
+  const teamTasks = await db.select({ id: task.id }).from(task).where(eq(task.teamId, teamId));
+  const taskIds = teamTasks.map((t) => t.id);
+
+  await db.transaction(async (tx) => {
+    if (taskIds.length > 0) {
+      // Delete comments referencing these tasks
+      await tx.delete(comment).where(inArray(comment.taskId, taskIds));
+      // Delete tasks
+      await tx.delete(task).where(inArray(task.id, taskIds));
+    }
+
+    await tx.delete(livrable).where(eq(livrable.teamId, teamId));
+
+    await tx
+      .update(projectEnrollment)
+      .set({ teamId: null, responsabilityId: null })
+      .where(eq(projectEnrollment.teamId, teamId));
+
+    await tx.delete(team).where(eq(team.id, teamId));
+  });
+
+  revalidatePath(`/dashboard/professor/projects/${teamData.projectId}`);
+  revalidatePath(`/dashboard/professor`);
 }

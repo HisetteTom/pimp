@@ -43,7 +43,7 @@ export default async function SupervisorTeamPage({
   });
 
   const role = session?.user?.role;
-  if (!session || (role !== 'professor' && role !== 'jury')) {
+  if (!session || (role !== 'professor' && role !== 'jury' && role !== 'owner')) {
     redirect('/login');
   }
 

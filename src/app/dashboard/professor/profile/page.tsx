@@ -25,18 +25,22 @@ export default async function ProfessorProfilePage() {
     headers: await headers(),
   });
 
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     redirect('/login');
   }
+
+  const isOwner = session.user.role === 'owner';
 
   // Fetch projects and notifications in parallel
   const [allProjects, userNotifications] = await Promise.all([
     fetchSidebarProjects(session.user.id),
-    db
-      .select()
-      .from(notification)
-      .where(eq(notification.userId, session.user.id))
-      .orderBy(desc(notification.createdAt)),
+    isOwner
+      ? Promise.resolve([])
+      : db
+          .select()
+          .from(notification)
+          .where(eq(notification.userId, session.user.id))
+          .orderBy(desc(notification.createdAt)),
   ]);
 
   const userProjectsSidebarData = allProjects.map((p) => ({

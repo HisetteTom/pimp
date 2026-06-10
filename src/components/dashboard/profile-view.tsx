@@ -209,138 +209,140 @@ export function ProfileView({
       </Card>
 
       {/* NOTIFICATION CENTER - BELOW THE PROFILE */}
-      <div className="w-full">
-        <Card className="flex min-h-[400px] flex-col rounded-none border-zinc-200/80 bg-white/70 shadow-md backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/70">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-zinc-800/80">
-            <div className="flex items-center gap-3">
-              <div className="rounded bg-purple-500/10 p-2 text-purple-600">
-                <Bell className="size-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
-                  {t('notificationCenter')}
-                </CardTitle>
-                <CardDescription className="mt-0.5 text-xs font-bold tracking-widest text-zinc-400 uppercase">
-                  {t('manageNotifications')}
-                </CardDescription>
-              </div>
-            </div>
-
-            {unreadCount > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleMarkAllAsRead}
-                disabled={isPending}
-                className="flex cursor-pointer items-center gap-1.5 rounded-none border-zinc-200 text-[10px] font-black tracking-widest uppercase transition-all hover:bg-zinc-100 active:scale-95 dark:border-zinc-800 dark:hover:bg-zinc-900"
-              >
-                {isPending ? (
-                  <Loader2 className="size-3 animate-spin text-zinc-500" />
-                ) : (
-                  <Check className="size-3 text-emerald-500" />
-                )}
-                {t('markAllRead')}
-              </Button>
-            )}
-          </CardHeader>
-
-          <CardContent className="flex flex-1 flex-col p-0">
-            {optimisticNotifications.length === 0 ? (
-              <div className="my-auto flex flex-1 flex-col items-center justify-center p-12 text-center">
-                <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900">
-                  <BellOff className="size-8 text-zinc-400" />
+      {user.role !== 'owner' && (
+        <div className="w-full">
+          <Card className="flex min-h-[400px] flex-col rounded-none border-zinc-200/80 bg-white/70 shadow-md backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/70">
+            <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-zinc-800/80">
+              <div className="flex items-center gap-3">
+                <div className="rounded bg-purple-500/10 p-2 text-purple-600">
+                  <Bell className="size-5" />
                 </div>
-                <h3 className="text-sm font-semibold tracking-wider text-zinc-800 uppercase dark:text-zinc-200">
-                  {t('allCaughtUp')}
-                </h3>
-                <p className="mt-1 max-w-[280px] text-xs font-bold tracking-widest text-zinc-400 uppercase dark:text-zinc-500">
-                  {t('noNotifications')}
-                </p>
+                <div>
+                  <CardTitle className="text-base font-black tracking-tight text-zinc-900 uppercase dark:text-zinc-100">
+                    {t('notificationCenter')}
+                  </CardTitle>
+                  <CardDescription className="mt-0.5 text-xs font-bold tracking-widest text-zinc-400 uppercase">
+                    {t('manageNotifications')}
+                  </CardDescription>
+                </div>
               </div>
-            ) : (
-              <div className="max-h-[600px] scrollbar-thin divide-y divide-zinc-100 overflow-y-auto dark:divide-zinc-900/60">
-                {optimisticNotifications.map((notif) => (
-                  <div
-                    key={notif.id}
-                    className={cn(
-                      'group relative flex w-full items-start gap-4 px-6 py-4.5 transition-all hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30',
-                      !notif.isRead && 'border-l-2 border-l-purple-600 bg-purple-500/[0.02]',
-                    )}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleNotificationClick(notif)}
-                      className="flex w-full cursor-pointer items-start gap-4 border-0 bg-transparent p-0 text-left outline-none"
-                    >
-                      {/* Notification Type Icon */}
-                      <div className="mt-1 flex shrink-0 items-center justify-center rounded bg-zinc-100 p-2 transition-transform duration-200 group-hover:scale-105 dark:bg-zinc-900">
-                        {getNotifIcon(notif.type)}
-                      </div>
 
-                      {/* Content */}
-                      <div className="min-w-0 flex-1 pr-4">
-                        <div className="flex items-center justify-between gap-2">
-                          <span
+              {unreadCount > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleMarkAllAsRead}
+                  disabled={isPending}
+                  className="flex cursor-pointer items-center gap-1.5 rounded-none border-zinc-200 text-[10px] font-black tracking-widest uppercase transition-all hover:bg-zinc-100 active:scale-95 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                >
+                  {isPending ? (
+                    <Loader2 className="size-3 animate-spin text-zinc-500" />
+                  ) : (
+                    <Check className="size-3 text-emerald-500" />
+                  )}
+                  {t('markAllRead')}
+                </Button>
+              )}
+            </CardHeader>
+
+            <CardContent className="flex flex-1 flex-col p-0">
+              {optimisticNotifications.length === 0 ? (
+                <div className="my-auto flex flex-1 flex-col items-center justify-center p-12 text-center">
+                  <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-900">
+                    <BellOff className="size-8 text-zinc-400" />
+                  </div>
+                  <h3 className="text-sm font-semibold tracking-wider text-zinc-800 uppercase dark:text-zinc-200">
+                    {t('allCaughtUp')}
+                  </h3>
+                  <p className="mt-1 max-w-[280px] text-xs font-bold tracking-widest text-zinc-400 uppercase dark:text-zinc-500">
+                    {t('noNotifications')}
+                  </p>
+                </div>
+              ) : (
+                <div className="max-h-[600px] scrollbar-thin divide-y divide-zinc-100 overflow-y-auto dark:divide-zinc-900/60">
+                  {optimisticNotifications.map((notif) => (
+                    <div
+                      key={notif.id}
+                      className={cn(
+                        'group relative flex w-full items-start gap-4 px-6 py-4.5 transition-all hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30',
+                        !notif.isRead && 'border-l-2 border-l-purple-600 bg-purple-500/[0.02]',
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleNotificationClick(notif)}
+                        className="flex w-full cursor-pointer items-start gap-4 border-0 bg-transparent p-0 text-left outline-none"
+                      >
+                        {/* Notification Type Icon */}
+                        <div className="mt-1 flex shrink-0 items-center justify-center rounded bg-zinc-100 p-2 transition-transform duration-200 group-hover:scale-105 dark:bg-zinc-900">
+                          {getNotifIcon(notif.type)}
+                        </div>
+
+                        {/* Content */}
+                        <div className="min-w-0 flex-1 pr-4">
+                          <div className="flex items-center justify-between gap-2">
+                            <span
+                              className={cn(
+                                'text-[13px] font-black tracking-tight uppercase',
+                                notif.isRead
+                                  ? 'text-zinc-700 dark:text-zinc-300'
+                                  : 'text-zinc-900 dark:text-zinc-50',
+                              )}
+                            >
+                              {notif.title}
+                            </span>
+
+                            <span className="flex shrink-0 items-center gap-1.5 text-[10px] font-bold tracking-wider whitespace-nowrap text-zinc-400 uppercase">
+                              <Calendar className="size-3" />
+                              {formatTime(notif.createdAt, t)}
+                            </span>
+                          </div>
+
+                          <p
                             className={cn(
-                              'text-[13px] font-black tracking-tight uppercase',
+                              'truncate-2-lines mt-1 text-[12px] leading-relaxed font-medium',
                               notif.isRead
-                                ? 'text-zinc-700 dark:text-zinc-300'
-                                : 'text-zinc-900 dark:text-zinc-50',
+                                ? 'text-zinc-500 dark:text-zinc-400'
+                                : 'text-zinc-800 dark:text-zinc-200',
                             )}
                           >
-                            {notif.title}
-                          </span>
+                            {notif.message}
+                          </p>
 
-                          <span className="flex shrink-0 items-center gap-1.5 text-[10px] font-bold tracking-wider whitespace-nowrap text-zinc-400 uppercase">
-                            <Calendar className="size-3" />
-                            {formatTime(notif.createdAt, t)}
-                          </span>
-                        </div>
-
-                        <p
-                          className={cn(
-                            'truncate-2-lines mt-1 text-[12px] leading-relaxed font-medium',
-                            notif.isRead
-                              ? 'text-zinc-500 dark:text-zinc-400'
-                              : 'text-zinc-800 dark:text-zinc-200',
+                          {notif.link && (
+                            <span className="mt-2 inline-flex items-center gap-1 text-[9px] font-black tracking-widest text-purple-600 uppercase hover:underline dark:text-purple-400">
+                              {t('viewDetails')}{' '}
+                              <ArrowRight className="size-2 transition-transform group-hover:translate-x-0.5" />
+                            </span>
                           )}
-                        >
-                          {notif.message}
-                        </p>
+                        </div>
+                      </button>
 
-                        {notif.link && (
-                          <span className="mt-2 inline-flex items-center gap-1 text-[9px] font-black tracking-widest text-purple-600 uppercase hover:underline dark:text-purple-400">
-                            {t('viewDetails')}{' '}
-                            <ArrowRight className="size-2 transition-transform group-hover:translate-x-0.5" />
-                          </span>
+                      {/* Action Dot / Action Hover Button */}
+                      <div className="z-10 flex shrink-0 items-center justify-center self-center">
+                        {!notif.isRead ? (
+                          <button
+                            type="button"
+                            onClick={(e) => handleMarkAsRead(notif.id, e)}
+                            title={t('markAsRead')}
+                            className="flex size-3 cursor-pointer items-center justify-center rounded-full border border-purple-500 bg-purple-600 p-0 shadow-[0_0_8px_rgba(147,51,234,0.4)] transition-all hover:border-emerald-400 hover:bg-emerald-500"
+                          >
+                            <span className="sr-only">{t('markRead')}</span>
+                          </button>
+                        ) : (
+                          <div className="flex size-3 items-center justify-center rounded-full border border-transparent bg-zinc-200 p-0 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-zinc-800/80">
+                            <Check className="size-2 text-zinc-400" />
+                          </div>
                         )}
                       </div>
-                    </button>
-
-                    {/* Action Dot / Action Hover Button */}
-                    <div className="z-10 flex shrink-0 items-center justify-center self-center">
-                      {!notif.isRead ? (
-                        <button
-                          type="button"
-                          onClick={(e) => handleMarkAsRead(notif.id, e)}
-                          title={t('markAsRead')}
-                          className="flex size-3 cursor-pointer items-center justify-center rounded-full border border-purple-500 bg-purple-600 p-0 shadow-[0_0_8px_rgba(147,51,234,0.4)] transition-all hover:border-emerald-400 hover:bg-emerald-500"
-                        >
-                          <span className="sr-only">{t('markRead')}</span>
-                        </button>
-                      ) : (
-                        <div className="flex size-3 items-center justify-center rounded-full border border-transparent bg-zinc-200 p-0 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-zinc-800/80">
-                          <Check className="size-2 text-zinc-400" />
-                        </div>
-                      )}
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

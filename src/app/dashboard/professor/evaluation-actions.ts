@@ -16,7 +16,7 @@ export async function createCriterion(data: {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -48,7 +48,7 @@ export async function updateCriterion(data: {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -75,7 +75,7 @@ export async function deleteCriterion(id: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 
@@ -104,7 +104,12 @@ export async function saveTeamEvaluation(data: {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || (session.user.role !== 'professor' && session.user.role !== 'jury')) {
+  if (
+    !session ||
+    (session.user.role !== 'professor' &&
+      session.user.role !== 'jury' &&
+      session.user.role !== 'owner')
+  ) {
     throw new Error('Unauthorized: Professor or Jury role required');
   }
 
@@ -166,7 +171,7 @@ export async function updateProjectEvaluationGridVisibility(projectId: number, s
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     throw new Error('Unauthorized: Professor role required');
   }
 

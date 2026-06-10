@@ -10,7 +10,6 @@ import { createNotification } from '@/app/dashboard/actions-notification';
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Authenticate user
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -19,7 +18,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // 2. Parse request form data
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const teamIdStr = formData.get('teamId') as string | null;
@@ -35,7 +33,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid teamId' }, { status: 400 });
     }
 
-    // 3. Verify user belongs to the team
     const enrollment = await db.query.projectEnrollment.findFirst({
       where: and(
         eq(projectEnrollment.userId, session.user.id),
@@ -64,10 +61,8 @@ export async function POST(req: NextRequest) {
 
     // Only upload a new file if provided
     if (file && file.size > 0) {
-      // 4. Ensure BUCKET exists in RustFS
       await ensureBucketExists();
 
-      // 5. Delete old file from S3 if updating
       if (existingDeliverable?.source) {
         try {
           await s3Client.send(
@@ -81,12 +76,10 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 6. Prepare file upload details
       const buffer = Buffer.from(await file.arrayBuffer());
       const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
       uniqueKey = `teams/${teamId}/${Date.now()}-${cleanFileName}`;
 
-      // 7. Upload to RustFS S3-compatible storage
       await s3Client.send(
         new PutObjectCommand({
           Bucket: BUCKET_NAME,
@@ -126,7 +119,6 @@ export async function POST(req: NextRequest) {
       resultDeliverable = inserted;
     }
 
-    // 8. Notify the Professor
     try {
       const teamRecord = await db.query.team.findFirst({
         where: eq(team.id, teamId),

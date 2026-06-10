@@ -7,6 +7,7 @@ import { notFound, redirect } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { ProjectStatusSelector } from './project-status-selector';
 import { EditProjectDialog } from './edit-project-dialog';
+import { DeleteTeamButton } from './delete-team-button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,7 @@ export default async function ProfessorProjectDetailPage({
     notFound();
   }
 
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     redirect('/login');
   }
 
@@ -294,7 +295,7 @@ export default async function ProfessorProjectDetailPage({
                       </div>
 
                       {/* Action Button */}
-                      <div className="border-t border-zinc-100 pt-6 dark:border-zinc-800">
+                      <div className="space-y-3 border-t border-zinc-100 pt-6 dark:border-zinc-800">
                         <Link
                           href={`/dashboard/professor/projects/${projectId}/teams/${teamItem.id}`}
                         >
@@ -303,6 +304,9 @@ export default async function ProfessorProjectDetailPage({
                             <ChevronRight className="size-4" />
                           </Button>
                         </Link>
+                        {session.user.role === 'owner' && (
+                          <DeleteTeamButton teamId={teamItem.id} teamName={teamItem.name} />
+                        )}
                       </div>
                     </CardContent>
                   </Card>

@@ -24,7 +24,7 @@ export default async function ProfessorSettingsPage() {
     headers: await headers(),
   });
 
-  if (!session || session.user.role !== 'professor') {
+  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
     redirect('/login');
   }
 

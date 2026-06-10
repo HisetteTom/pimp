@@ -9,7 +9,6 @@ import { eq, and } from 'drizzle-orm';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // 1. Authenticate user
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -24,7 +23,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return new Response('Invalid deliverable ID', { status: 400 });
     }
 
-    // 2. Fetch deliverable details from DB
     const deliverable = await db.query.livrable.findFirst({
       where: eq(livrable.id, deliverableId),
     });
@@ -33,7 +31,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return new Response('Deliverable not found', { status: 404 });
     }
 
-    // 3. Authorization check
     if (session.user.role === 'student') {
       const enrollment = await db.query.projectEnrollment.findFirst({
         where: and(
@@ -47,7 +44,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           status: 403,
         });
       }
-    } else if (session.user.role !== 'professor' && session.user.role !== 'jury') {
+    } else if (
+      session.user.role !== 'professor' &&
+      session.user.role !== 'jury' &&
+      session.user.role !== 'owner'
+    ) {
       return new Response('Forbidden: Invalid role', { status: 403 });
     }
 
@@ -55,7 +56,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return new Response('Deliverable has no source file', { status: 400 });
     }
 
-    // 4. Fetch the file from RustFS
     const s3Response = await s3Client.send(
       new GetObjectCommand({
         Bucket: BUCKET_NAME,
@@ -68,7 +68,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return new Response('File content is empty', { status: 404 });
     }
 
-    // 5. Convert stream to standard response stream
     const stream =
       typeof (body as unknown as { transformToWebStream?: () => ReadableStream })
         .transformToWebStream === 'function'
