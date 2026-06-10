@@ -21,11 +21,17 @@ export const metadata: Metadata = {
   description: 'View and manage enrolled student teams and their project spaces.',
 };
 
-async function fetchSidebarProjects(teacherId: string) {
+async function fetchSidebarProjects(userId: string, role: string) {
+  if (role === 'jury') {
+    return await db
+      .select()
+      .from(project)
+      .where(sql`${userId} = ANY(${project.juries})`);
+  }
   return await db
     .select()
     .from(project)
-    .where(or(eq(project.teacherId, teacherId), sql`${teacherId} = ANY(${project.coTeachers})`));
+    .where(or(eq(project.teacherId, userId), sql`${userId} = ANY(${project.coTeachers})`));
 }
 
 export default async function ProfessorProjectDetailPage({
@@ -44,7 +50,12 @@ export default async function ProfessorProjectDetailPage({
     notFound();
   }
 
-  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
+  if (
+    !session ||
+    (session.user.role !== 'professor' &&
+      session.user.role !== 'owner' &&
+      session.user.role !== 'jury')
+  ) {
     redirect('/login');
   }
 
@@ -53,7 +64,7 @@ export default async function ProfessorProjectDetailPage({
     db.query.project.findFirst({
       where: eq(project.id, projectId),
     }),
-    fetchSidebarProjects(session.user.id),
+    fetchSidebarProjects(session.user.id, session.user.role || 'student'),
     db.select().from(team).where(eq(team.projectId, projectId)),
     db.select().from(projectEnrollment).where(eq(projectEnrollment.projectId, projectId)),
     db.select().from(user),
@@ -61,6 +72,11 @@ export default async function ProfessorProjectDetailPage({
 
   if (!projectData) {
     notFound();
+  }
+
+  const isJury = session.user.role === 'jury';
+  if (isJury && !projectData.juries.includes(session.user.id)) {
+    redirect('/dashboard/professor');
   }
 
   const teamIds = allTeams.map((t) => t.id);
@@ -154,10 +170,12 @@ export default async function ProfessorProjectDetailPage({
               </span>
             </div>
           </div>
-          <div className="flex items-end gap-3">
-            <EditProjectDialog projectData={projectData} />
-            <ProjectStatusSelector projectId={projectId} initialStatus={projectData.status} />
-          </div>
+          {session.user.role !== 'jury' && (
+            <div className="flex items-end gap-3">
+              <EditProjectDialog projectData={projectData} />
+              <ProjectStatusSelector projectId={projectId} initialStatus={projectData.status} />
+            </div>
+          )}
         </div>
 
         {/* Teams Overview Section */}

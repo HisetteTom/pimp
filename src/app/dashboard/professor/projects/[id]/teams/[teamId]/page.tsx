@@ -18,11 +18,17 @@ import { notFound, redirect } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { SupervisorWorkspace } from './supervisor-workspace';
 
-async function fetchSidebarProjects(teacherId: string) {
+async function fetchSidebarProjects(userId: string, role: string) {
+  if (role === 'jury') {
+    return await db
+      .select()
+      .from(project)
+      .where(sql`${userId} = ANY(${project.juries})`);
+  }
   return await db
     .select()
     .from(project)
-    .where(or(eq(project.teacherId, teacherId), sql`${teacherId} = ANY(${project.coTeachers})`));
+    .where(or(eq(project.teacherId, userId), sql`${userId} = ANY(${project.coTeachers})`));
 }
 
 export default async function SupervisorTeamPage({
@@ -51,7 +57,7 @@ export default async function SupervisorTeamPage({
     db.query.project.findFirst({
       where: eq(project.id, projectId),
     }),
-    fetchSidebarProjects(session.user.id),
+    fetchSidebarProjects(session.user.id, session.user.role || 'student'),
     db.query.team.findFirst({
       where: and(eq(team.id, teamId), eq(team.projectId, projectId)),
     }),
@@ -59,6 +65,11 @@ export default async function SupervisorTeamPage({
 
   if (!projectData || !teamData) {
     notFound();
+  }
+
+  const isJury = session.user.role === 'jury';
+  if (isJury && !projectData.juries.includes(session.user.id)) {
+    redirect('/dashboard/professor');
   }
 
   // Fetch team members, tasks, and deliverables

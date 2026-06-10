@@ -114,48 +114,58 @@ export async function saveTeamEvaluation(data: {
   }
 
   try {
-    // 1. Update Team global grades/comments
-    await db
-      .update(team)
-      .set({
-        grade: data.globalGrade,
-        feedback: data.juryFeedback,
-        notes: data.supervisorNotes,
-      })
-      .where(eq(team.id, data.teamId));
+    if (session.user.role === 'jury') {
+      // Jury only updates their commentary (feedback)
+      await db
+        .update(team)
+        .set({
+          feedback: data.juryFeedback,
+        })
+        .where(eq(team.id, data.teamId));
+    } else {
+      // 1. Update Team global grades/comments
+      await db
+        .update(team)
+        .set({
+          grade: data.globalGrade,
+          feedback: data.juryFeedback,
+          notes: data.supervisorNotes,
+        })
+        .where(eq(team.id, data.teamId));
 
-    // 2. Save individual criterion scores (Upsert style in parallel)
-    await Promise.all(
-      data.scores.map(async (item) => {
-        const existing = await db
-          .select()
-          .from(teamEvaluationScore)
-          .where(
-            and(
-              eq(teamEvaluationScore.teamId, data.teamId),
-              eq(teamEvaluationScore.criterionId, item.criterionId),
-            ),
-          )
-          .limit(1);
+      // 2. Save individual criterion scores (Upsert style in parallel)
+      await Promise.all(
+        data.scores.map(async (item) => {
+          const existing = await db
+            .select()
+            .from(teamEvaluationScore)
+            .where(
+              and(
+                eq(teamEvaluationScore.teamId, data.teamId),
+                eq(teamEvaluationScore.criterionId, item.criterionId),
+              ),
+            )
+            .limit(1);
 
-        if (existing.length > 0) {
-          await db
-            .update(teamEvaluationScore)
-            .set({
+          if (existing.length > 0) {
+            await db
+              .update(teamEvaluationScore)
+              .set({
+                score: item.score !== undefined ? item.score : null,
+                comment: item.comment || null,
+              })
+              .where(eq(teamEvaluationScore.id, existing[0].id));
+          } else {
+            await db.insert(teamEvaluationScore).values({
+              teamId: data.teamId,
+              criterionId: item.criterionId,
               score: item.score !== undefined ? item.score : null,
               comment: item.comment || null,
-            })
-            .where(eq(teamEvaluationScore.id, existing[0].id));
-        } else {
-          await db.insert(teamEvaluationScore).values({
-            teamId: data.teamId,
-            criterionId: item.criterionId,
-            score: item.score !== undefined ? item.score : null,
-            comment: item.comment || null,
-          });
-        }
-      }),
-    );
+            });
+          }
+        }),
+      );
+    }
 
     // 3. Trigger notification for all team members (Grading notifications disabled for now)
 

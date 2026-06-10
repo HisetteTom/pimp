@@ -32,6 +32,7 @@ interface EditProjectDialogProps {
     targetPromos: string[];
     targetUsers: string[];
     coTeachers: string[];
+    juries: string[];
     showEvaluationGrid: boolean;
   };
 }
@@ -80,11 +81,14 @@ export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
   const initialDialogState = {
     students: [],
     professors: [],
+    juriesList: [],
     targetPromos: projectData.targetPromos || [],
     targetUsers: projectData.targetUsers || [],
     coTeachers: projectData.coTeachers || [],
+    juries: projectData.juries || [],
     studentSearch: '',
     profSearch: '',
+    jurySearch: '',
     checkpoints: [],
   };
 
@@ -111,10 +115,11 @@ export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
       dispatch({ type: 'SET_TARGET_PROMOS', promos: projectData.targetPromos || [] });
       dispatch({ type: 'SET_TARGET_USERS', users: projectData.targetUsers || [] });
       dispatch({ type: 'SET_CO_TEACHERS', teachers: projectData.coTeachers || [] });
+      dispatch({ type: 'SET_JURIES', juries: projectData.juries || [] });
 
       getProjectFormDropdowns()
-        .then(({ students, professors }) => {
-          dispatch({ type: 'SET_DROPDOWNS', students, professors });
+        .then(({ students, professors, juries }) => {
+          dispatch({ type: 'SET_DROPDOWNS', students, professors, juries });
         })
         .catch(console.error);
     }
@@ -140,6 +145,7 @@ export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
           targetPromos: state.targetPromos,
           targetUsers: state.targetUsers,
           coTeachers: state.coTeachers,
+          juries: state.juries,
           showEvaluationGrid: formState.showEvaluationGrid,
         });
 
@@ -189,12 +195,17 @@ export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
             setTargetUsers={(users) => dispatch({ type: 'SET_TARGET_USERS', users })}
             coTeachers={state.coTeachers}
             setCoTeachers={(teachers) => dispatch({ type: 'SET_CO_TEACHERS', teachers })}
+            juries={state.juries}
+            setJuries={(juries) => dispatch({ type: 'SET_JURIES', juries })}
             students={state.students}
             professors={state.professors}
+            juriesList={state.juriesList}
             studentSearch={state.studentSearch}
             setStudentSearch={(search) => dispatch({ type: 'SET_STUDENT_SEARCH', search })}
             profSearch={state.profSearch}
             setProfSearch={(search) => dispatch({ type: 'SET_PROF_SEARCH', search })}
+            jurySearch={state.jurySearch}
+            setJurySearch={(search) => dispatch({ type: 'SET_JURY_SEARCH', search })}
             isPending={isPending}
           />
 

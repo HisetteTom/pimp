@@ -12,6 +12,7 @@ export const chatReadReceipt = pgTable(
       .references(() => team.id, { onDelete: 'cascade' })
       .notNull(),
     lastReadAt: timestamp('last_read_at').notNull().defaultNow(),
+    lastReadPrivateAt: timestamp('last_read_private_at').notNull().defaultNow(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.userId, table.teamId] }),

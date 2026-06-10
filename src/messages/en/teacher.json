@@ -99,7 +99,10 @@
     "noPromo": "No Promo",
     "inviteCollaborators": "Invite Collaborators ({count} selected)",
     "filterProfessors": "Filter professors...",
-    "noProfessorsFound": "No other professors found"
+    "noProfessorsFound": "No other professors found",
+    "inviteJuries": "Invite Juries ({count} selected)",
+    "filterJuries": "Filter juries...",
+    "noJuriesFound": "No juries found"
   },
   "ProfessorCheckpointsEditor": {
     "title": "Project Checkpoints (Meetings/Deadlines)",

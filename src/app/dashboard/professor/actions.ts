@@ -43,8 +43,9 @@ export async function getProjectFormDropdowns() {
 
   const students = allUsers.filter((u) => u.role === 'student');
   const professors = allUsers.filter((u) => u.role === 'professor' && u.id !== session.user.id);
+  const juries = allUsers.filter((u) => u.role === 'jury');
 
-  return { students, professors };
+  return { students, professors, juries };
 }
 
 export async function createProject(data: {
@@ -58,6 +59,7 @@ export async function createProject(data: {
   targetPromos?: string[];
   targetUsers?: string[];
   coTeachers?: string[];
+  juries?: string[];
   showEvaluationGrid?: boolean;
 }) {
   const session = await auth.api.getSession({
@@ -82,6 +84,7 @@ export async function createProject(data: {
         targetPromos: data.targetPromos || [],
         targetUsers: data.targetUsers || [],
         coTeachers: data.coTeachers || [],
+        juries: data.juries || [],
         showEvaluationGrid: data.showEvaluationGrid || false,
       })
       .returning();
@@ -383,6 +386,7 @@ export async function updateProject(
     targetPromos?: string[];
     targetUsers?: string[];
     coTeachers?: string[];
+    juries?: string[];
     showEvaluationGrid?: boolean;
   },
 ) {
@@ -406,6 +410,7 @@ export async function updateProject(
         targetPromos: data.targetPromos || [],
         targetUsers: data.targetUsers || [],
         coTeachers: data.coTeachers || [],
+        juries: data.juries || [],
         showEvaluationGrid: data.showEvaluationGrid ?? false,
       })
       .where(eq(project.id, projectId));
@@ -441,19 +446,26 @@ export async function deleteTeam(teamId: number) {
 
   await db.transaction(async (tx) => {
     if (taskIds.length > 0) {
-      // Delete comments referencing these tasks
+      // Delete comments referencing these tasks first
       await tx.delete(comment).where(inArray(comment.taskId, taskIds));
-      // Delete tasks
-      await tx.delete(task).where(inArray(task.id, taskIds));
     }
 
-    await tx.delete(livrable).where(eq(livrable.teamId, teamId));
+    // Run independent tasks, livrables, and enrollment updates in parallel
+    const operations: Promise<unknown>[] = [
+      tx.delete(livrable).where(eq(livrable.teamId, teamId)),
+      tx
+        .update(projectEnrollment)
+        .set({ teamId: null, responsabilityId: null })
+        .where(eq(projectEnrollment.teamId, teamId)),
+    ];
 
-    await tx
-      .update(projectEnrollment)
-      .set({ teamId: null, responsabilityId: null })
-      .where(eq(projectEnrollment.teamId, teamId));
+    if (taskIds.length > 0) {
+      operations.push(tx.delete(task).where(inArray(task.id, taskIds)));
+    }
 
+    await Promise.all(operations);
+
+    // Delete team last after removing/updating references
     await tx.delete(team).where(eq(team.id, teamId));
   });
 

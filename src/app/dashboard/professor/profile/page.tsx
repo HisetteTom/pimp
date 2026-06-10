@@ -13,11 +13,17 @@ export const metadata: Metadata = {
   description: 'View your user profile and notifications on PIMP.',
 };
 
-async function fetchSidebarProjects(teacherId: string) {
+async function fetchSidebarProjects(userId: string, role: string) {
+  if (role === 'jury') {
+    return await db
+      .select()
+      .from(project)
+      .where(sql`${userId} = ANY(${project.juries})`);
+  }
   return await db
     .select()
     .from(project)
-    .where(or(eq(project.teacherId, teacherId), sql`${teacherId} = ANY(${project.coTeachers})`));
+    .where(or(eq(project.teacherId, userId), sql`${userId} = ANY(${project.coTeachers})`));
 }
 
 export default async function ProfessorProfilePage() {
@@ -25,16 +31,22 @@ export default async function ProfessorProfilePage() {
     headers: await headers(),
   });
 
-  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
+  if (
+    !session ||
+    (session.user.role !== 'professor' &&
+      session.user.role !== 'owner' &&
+      session.user.role !== 'jury')
+  ) {
     redirect('/login');
   }
 
   const isOwner = session.user.role === 'owner';
 
   // Fetch projects and notifications in parallel
+  const isJury = session.user.role === 'jury';
   const [allProjects, userNotifications] = await Promise.all([
-    fetchSidebarProjects(session.user.id),
-    isOwner
+    fetchSidebarProjects(session.user.id, session.user.role || 'student'),
+    isOwner || isJury
       ? Promise.resolve([])
       : db
           .select()

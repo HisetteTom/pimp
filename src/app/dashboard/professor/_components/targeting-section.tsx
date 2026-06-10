@@ -3,7 +3,7 @@
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { StudentDropdownItem, ProfDropdownItem } from './project-dialog-types';
+import { StudentDropdownItem, ProfDropdownItem, JuryDropdownItem } from './project-dialog-types';
 import { useTranslations } from 'next-intl';
 
 interface TargetingSectionProps {
@@ -13,12 +13,17 @@ interface TargetingSectionProps {
   setTargetUsers: (users: string[]) => void;
   coTeachers: string[];
   setCoTeachers: (teachers: string[]) => void;
+  juries: string[];
+  setJuries: (juries: string[]) => void;
   students: StudentDropdownItem[];
   professors: ProfDropdownItem[];
+  juriesList: JuryDropdownItem[];
   studentSearch: string;
   setStudentSearch: (search: string) => void;
   profSearch: string;
   setProfSearch: (search: string) => void;
+  jurySearch: string;
+  setJurySearch: (search: string) => void;
   isPending: boolean;
 }
 
@@ -29,12 +34,17 @@ export function TargetingSection({
   setTargetUsers,
   coTeachers,
   setCoTeachers,
+  juries,
+  setJuries,
   students,
   professors,
+  juriesList,
   studentSearch,
   setStudentSearch,
   profSearch,
   setProfSearch,
+  jurySearch,
+  setJurySearch,
   isPending,
 }: TargetingSectionProps) {
   const t = useTranslations('ProfessorTargetingSection');
@@ -50,6 +60,12 @@ export function TargetingSection({
     (p) =>
       p.name.toLowerCase().includes(profSearch.toLowerCase()) ||
       p.email.toLowerCase().includes(profSearch.toLowerCase()),
+  );
+
+  const filteredJuries = juriesList.filter(
+    (j) =>
+      j.name.toLowerCase().includes(jurySearch.toLowerCase()) ||
+      j.email.toLowerCase().includes(jurySearch.toLowerCase()),
   );
 
   return (
@@ -193,6 +209,61 @@ export function TargetingSection({
                   />
                   <span className="text-zinc-700 dark:text-zinc-300">
                     {p.name} - <span className="text-zinc-500">{p.email}</span>
+                  </span>
+                </label>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Invite Juries */}
+      <div className="space-y-2">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <Label
+            htmlFor="jury-search"
+            className="text-[11px] font-black tracking-widest text-zinc-500 uppercase"
+          >
+            {t('inviteJuries', { count: juries.length })}
+          </Label>
+          <Input
+            id="jury-search"
+            placeholder={t('filterJuries')}
+            className="h-8 rounded-none border border-zinc-200 text-xs sm:w-48 dark:border-zinc-800"
+            value={jurySearch}
+            onChange={(e) => setJurySearch(e.target.value)}
+            disabled={isPending}
+          />
+        </div>
+        <div className="h-28 space-y-1 overflow-y-auto rounded-none border border-zinc-200 bg-zinc-50/50 p-2 dark:border-zinc-800 dark:bg-zinc-900/20">
+          {filteredJuries.length === 0 ? (
+            <p className="p-2 text-xs text-zinc-400 italic">{t('noJuriesFound')}</p>
+          ) : (
+            filteredJuries.map((j) => {
+              const checked = juries.includes(j.id);
+              return (
+                <label
+                  key={j.id}
+                  htmlFor={`jury-chk-${j.id}`}
+                  className="flex cursor-pointer items-center gap-2 rounded-none p-1 text-xs font-medium hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                >
+                  <input
+                    type="checkbox"
+                    id={`jury-chk-${j.id}`}
+                    aria-label={`Invite jury ${j.name}`}
+                    checked={checked}
+                    disabled={isPending}
+                    onChange={() => {
+                      setJuries(
+                        juries.includes(j.id)
+                          ? juries.filter((id) => id !== j.id)
+                          : [...juries, j.id],
+                      );
+                    }}
+                    className="size-4 rounded border-zinc-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="text-zinc-700 dark:text-zinc-300">
+                    {j.name} - <span className="text-zinc-500">{j.email}</span>
                   </span>
                 </label>
               );

@@ -162,29 +162,33 @@ export function SupervisorWorkspace({
       </div>
 
       <div className="flex flex-col gap-y-6">
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs defaultValue={role === 'jury' ? 'deliverables' : 'overview'} className="w-full">
           <TabsList className="no-scrollbar h-12 w-full justify-start gap-8 overflow-x-auto rounded-none border-b-2 border-zinc-100 bg-transparent p-0 dark:border-zinc-800">
-            <TabsTrigger
-              value="overview"
-              className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
-            >
-              <LayoutDashboard className="size-4" />
-              {t('tabOverview')}
-            </TabsTrigger>
-            <TabsTrigger
-              value="list"
-              className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
-            >
-              <CheckSquare className="size-4" />
-              {t('tabList')}
-            </TabsTrigger>
-            <TabsTrigger
-              value="kanban"
-              className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
-            >
-              <KanbanIcon className="size-4" />
-              {t('tabKanban')}
-            </TabsTrigger>
+            {role !== 'jury' && (
+              <>
+                <TabsTrigger
+                  value="overview"
+                  className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
+                >
+                  <LayoutDashboard className="size-4" />
+                  {t('tabOverview')}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="list"
+                  className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
+                >
+                  <CheckSquare className="size-4" />
+                  {t('tabList')}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="kanban"
+                  className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
+                >
+                  <KanbanIcon className="size-4" />
+                  {t('tabKanban')}
+                </TabsTrigger>
+              </>
+            )}
             <TabsTrigger
               value="deliverables"
               className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
@@ -192,27 +196,31 @@ export function SupervisorWorkspace({
               <FileUp className="size-4" />
               {t('tabDeliverables')}
             </TabsTrigger>
-            <TabsTrigger
-              value="dates"
-              className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
-            >
-              <Clock className="size-4" />
-              {t('tabDates')}
-            </TabsTrigger>
-            <TabsTrigger
-              value="calendar"
-              className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
-            >
-              <Calendar className="size-4" />
-              {t('tabCalendar')}
-            </TabsTrigger>
-            <TabsTrigger
-              value="notes"
-              className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
-            >
-              <FileText className="size-4" />
-              {t('tabNotes')}
-            </TabsTrigger>
+            {role !== 'jury' && (
+              <>
+                <TabsTrigger
+                  value="dates"
+                  className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
+                >
+                  <Clock className="size-4" />
+                  {t('tabDates')}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="calendar"
+                  className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
+                >
+                  <Calendar className="size-4" />
+                  {t('tabCalendar')}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="notes"
+                  className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
+                >
+                  <FileText className="size-4" />
+                  {t('tabNotes')}
+                </TabsTrigger>
+              </>
+            )}
             <TabsTrigger
               value="evaluation"
               className="data-[state=active]:border-primary h-full gap-2 rounded-none px-2 text-xs font-semibold tracking-widest uppercase data-[state=active]:border-b-4 data-[state=active]:bg-transparent"
@@ -223,57 +231,61 @@ export function SupervisorWorkspace({
           </TabsList>
 
           <div className="py-8">
-            <TabsContent value="overview" className="mt-0 flex flex-col gap-y-8">
-              <TimelineAndEvolution
-                project={project}
-                timelineProgress={timelineProgress}
-                chartData={chartData}
-                completionPercentage={completionPercentage}
-              />
+            {role !== 'jury' && (
+              <>
+                <TabsContent value="overview" className="mt-0 flex flex-col gap-y-8">
+                  <TimelineAndEvolution
+                    project={project}
+                    timelineProgress={timelineProgress}
+                    chartData={chartData}
+                    completionPercentage={completionPercentage}
+                  />
 
-              <TaskStatsAndBreakdown
-                tasks={tasks}
-                taskStats={taskStats}
-                tasksByStatus={tasksByStatus}
-                members={members}
-              />
+                  <TaskStatsAndBreakdown
+                    tasks={tasks}
+                    taskStats={taskStats}
+                    tasksByStatus={tasksByStatus}
+                    members={members}
+                  />
 
-              <SupervisorFeedbackCard
-                key={`${team.id}-overview-${team.feedback}`}
-                teamId={team.id}
-                projectId={project.id}
-                teamName={team.name}
-                initialFeedback={team.feedback}
-                type="overview"
-                readOnly={role === 'jury'}
-              />
-            </TabsContent>
+                  <SupervisorFeedbackCard
+                    key={`${team.id}-overview-${team.feedback}`}
+                    teamId={team.id}
+                    projectId={project.id}
+                    teamName={team.name}
+                    initialFeedback={team.feedback}
+                    type="overview"
+                    readOnly={role === 'jury'}
+                  />
+                </TabsContent>
 
-            <TabsContent value="list" className="mt-0 flex flex-col gap-y-8">
-              <ReadOnlyTaskListView initialTasks={tasks} members={members} />
-              <SupervisorFeedbackCard
-                key={`${team.id}-list-${team.feedback}`}
-                teamId={team.id}
-                projectId={project.id}
-                teamName={team.name}
-                initialFeedback={team.feedback}
-                type="kanban"
-                readOnly={role === 'jury'}
-              />
-            </TabsContent>
+                <TabsContent value="list" className="mt-0 flex flex-col gap-y-8">
+                  <ReadOnlyTaskListView initialTasks={tasks} members={members} />
+                  <SupervisorFeedbackCard
+                    key={`${team.id}-list-${team.feedback}`}
+                    teamId={team.id}
+                    projectId={project.id}
+                    teamName={team.name}
+                    initialFeedback={team.feedback}
+                    type="kanban"
+                    readOnly={role === 'jury'}
+                  />
+                </TabsContent>
 
-            <TabsContent value="kanban" className="mt-0 flex flex-col gap-y-8">
-              <ReadOnlyKanban initialTasks={tasks} members={members} />
-              <SupervisorFeedbackCard
-                key={`${team.id}-kanban-${team.feedback}`}
-                teamId={team.id}
-                projectId={project.id}
-                teamName={team.name}
-                initialFeedback={team.feedback}
-                type="kanban"
-                readOnly={role === 'jury'}
-              />
-            </TabsContent>
+                <TabsContent value="kanban" className="mt-0 flex flex-col gap-y-8">
+                  <ReadOnlyKanban initialTasks={tasks} members={members} />
+                  <SupervisorFeedbackCard
+                    key={`${team.id}-kanban-${team.feedback}`}
+                    teamId={team.id}
+                    projectId={project.id}
+                    teamName={team.name}
+                    initialFeedback={team.feedback}
+                    type="kanban"
+                    readOnly={role === 'jury'}
+                  />
+                </TabsContent>
+              </>
+            )}
 
             <TabsContent value="deliverables" className="mt-0 flex flex-col gap-y-8">
               <div className="space-y-6">
@@ -306,46 +318,52 @@ export function SupervisorWorkspace({
                   </div>
                 )}
               </div>
-              <SupervisorFeedbackCard
-                key={`${team.id}-deliverables-${team.feedback}`}
-                teamId={team.id}
-                projectId={project.id}
-                teamName={team.name}
-                initialFeedback={team.feedback}
-                type="deliverables"
-                readOnly={role === 'jury'}
-              />
+              {role !== 'jury' && (
+                <SupervisorFeedbackCard
+                  key={`${team.id}-deliverables-${team.feedback}`}
+                  teamId={team.id}
+                  projectId={project.id}
+                  teamName={team.name}
+                  initialFeedback={team.feedback}
+                  type="deliverables"
+                  readOnly={role === 'jury'}
+                />
+              )}
             </TabsContent>
 
-            <TabsContent value="dates" className="mt-0 flex flex-col gap-y-8">
-              <SupervisorDatesSection
-                projectId={project.id}
-                teamId={team.id}
-                checkpoints={checkpoints}
-                checkpointNotes={checkpointNotes}
-                readOnly={role === 'jury'}
-              />
-            </TabsContent>
+            {role !== 'jury' && (
+              <>
+                <TabsContent value="dates" className="mt-0 flex flex-col gap-y-8">
+                  <SupervisorDatesSection
+                    projectId={project.id}
+                    teamId={team.id}
+                    checkpoints={checkpoints}
+                    checkpointNotes={checkpointNotes}
+                    readOnly={role === 'jury'}
+                  />
+                </TabsContent>
 
-            <TabsContent value="calendar" className="mt-0">
-              <ProjectCalendar
-                project={project}
-                tasks={tasks}
-                checkpoints={checkpoints}
-                checkpointNotes={checkpointNotes}
-                members={members}
-              />
-            </TabsContent>
+                <TabsContent value="calendar" className="mt-0">
+                  <ProjectCalendar
+                    project={project}
+                    tasks={tasks}
+                    checkpoints={checkpoints}
+                    checkpointNotes={checkpointNotes}
+                    members={members}
+                  />
+                </TabsContent>
 
-            <TabsContent value="notes" className="mt-0 flex flex-col gap-y-8">
-              <SupervisorNotesEditor
-                key={team.id}
-                teamId={team.id}
-                projectId={project.id}
-                initialNotes={team.notes ?? null}
-                readOnly={role === 'jury'}
-              />
-            </TabsContent>
+                <TabsContent value="notes" className="mt-0 flex flex-col gap-y-8">
+                  <SupervisorNotesEditor
+                    key={team.id}
+                    teamId={team.id}
+                    projectId={project.id}
+                    initialNotes={team.notes ?? null}
+                    readOnly={role === 'jury'}
+                  />
+                </TabsContent>
+              </>
+            )}
 
             <TabsContent value="evaluation" className="mt-0 flex flex-col gap-y-8">
               <TeamEvaluationTab

@@ -39,19 +39,22 @@ export async function seedTeams({
   const teamsData = [];
   let nameIndex = 0;
   for (const p of activeProjects) {
-    // Add exactly 1 team per active project to avoid multiple student leads per project
-    teamsData.push({
-      name: `${teamNames[nameIndex % teamNames.length]} - Team 1`,
-      projectId: p.id,
-      grade:
-        p.status === 'presented' || p.status === 'closed'
-          ? getInt({ min: 12, max: 19 }).toString()
-          : null,
-      feedback:
-        p.status === 'presented' || p.status === 'closed'
-          ? 'Impressive delivery, well-structured codebase and solid testing.'
-          : null,
-    });
+    // Add 5 teams per active project to seed more realistic data
+    const numTeams = 5;
+    for (let tNum = 1; tNum <= numTeams; tNum++) {
+      teamsData.push({
+        name: `${teamNames[nameIndex % teamNames.length]} - G${tNum}`,
+        projectId: p.id,
+        grade:
+          p.status === 'presented' || p.status === 'closed'
+            ? getInt({ min: 12, max: 19 }).toString()
+            : null,
+        feedback:
+          p.status === 'presented' || p.status === 'closed'
+            ? 'Impressive delivery, well-structured codebase and solid testing.'
+            : null,
+      });
+    }
     nameIndex++;
   }
 

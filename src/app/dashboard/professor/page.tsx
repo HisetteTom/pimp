@@ -16,17 +16,23 @@ export const metadata: Metadata = {
   description: 'Monitor student projects, validate deliverables, and grade teams.',
 };
 
-async function fetchProfessorProjects(teacherId: string) {
+async function fetchProfessorProjects(userId: string, role: string) {
   const sqlStrings = ['', ' = ANY(', ')'];
   const templateStrings = Object.assign(sqlStrings, {
     raw: sqlStrings,
   }) as unknown as TemplateStringsArray;
+
+  if (role === 'jury') {
+    return await db
+      .select()
+      .from(project)
+      .where(sql(templateStrings, userId, project.juries));
+  }
+
   return await db
     .select()
     .from(project)
-    .where(
-      or(eq(project.teacherId, teacherId), sql(templateStrings, teacherId, project.coTeachers)),
-    );
+    .where(or(eq(project.teacherId, userId), sql(templateStrings, userId, project.coTeachers)));
 }
 
 export default async function ProfessorDashboardPage() {
@@ -35,14 +41,19 @@ export default async function ProfessorDashboardPage() {
     headers().then((h) => auth.api.getSession({ headers: h })),
   ]);
 
-  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
+  if (
+    !session ||
+    (session.user.role !== 'professor' &&
+      session.user.role !== 'owner' &&
+      session.user.role !== 'jury')
+  ) {
     return <AccessDenied />;
   }
 
   // Fetch all resources in parallel
   const [allProjects, allTeams, allEnrollments, allUsers, allTasks, allDeliverables] =
     await Promise.all([
-      fetchProfessorProjects(session.user.id),
+      fetchProfessorProjects(session.user.id, session.user.role || 'student'),
       db.select().from(team),
       db.select().from(projectEnrollment),
       db.select().from(user),
@@ -126,7 +137,7 @@ export default async function ProfessorDashboardPage() {
               {t('subtitle')}
             </p>
           </div>
-          <CreateProjectDialog />
+          {session.user.role !== 'jury' && <CreateProjectDialog />}
         </div>
 
         {/* Metrics Grid */}

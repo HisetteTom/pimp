@@ -24,4 +24,8 @@ export const project = pgTable('project', {
     .notNull()
     .default(sql`'{}'::text[]`),
   showEvaluationGrid: boolean('show_evaluation_grid').notNull().default(false),
+  juries: text('juries')
+    .array()
+    .notNull()
+    .default(sql`'{}'::text[]`),
 });

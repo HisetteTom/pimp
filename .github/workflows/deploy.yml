@@ -77,7 +77,7 @@ jobs:
       - name: Transfer Compose and Env files
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /home/${{ secrets.SSH_USER }}/app"
-          scp compose.prod.yaml .env.production scripts/seed-admin.sql ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/app/
+          scp compose.prod.yaml .env.production ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/app/
           if [ -d drizzle ]; then
             scp -r drizzle ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/app/
           fi
@@ -106,31 +106,15 @@ jobs:
             run_dotenvx docker compose -f compose.prod.yaml pull
             run_dotenvx docker compose -f compose.prod.yaml up -d --remove-orphans
 
-            # Wipe DB, apply Drizzle schema, and seed owner via pure PostgreSQL
+            # Wait for database, and run Drizzle push schema
             run_dotenvx bash -c '
               echo "Waiting for database to be ready..."
               until docker exec pimp-db-prod pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; do
                 sleep 1
               done
 
-              echo "Wiping database schema..."
-              docker exec -i pimp-db-prod psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-
-              if [ -d drizzle ]; then
-                echo "Applying SQL schema..."
-                cat drizzle/*.sql | docker exec -i pimp-db-prod psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
-              fi
-
-              echo "Seeding owner admin..."
-              USER_ID=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || echo "00000000-0000-0000-0000-000000000001")
-              ACCOUNT_ID=$(cat /proc/sys/kernel/random/uuid 2>/dev/null || echo "00000000-0000-0000-0000-000000000002")
-
-              docker exec -i pimp-db-prod psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
-                -v user_id="$USER_ID" \
-                -v account_id="$ACCOUNT_ID" \
-                -v email="$SEED_ADMIN_EMAIL" \
-                -v password="$SEED_ADMIN_PASSWORD" \
-                < seed-admin.sql
+              echo "Pushing database schema via Drizzle..."
+              docker exec -i pimp-app-prod bunx drizzle-kit push --force
             '
 
             # Logout

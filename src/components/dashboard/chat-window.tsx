@@ -18,6 +18,7 @@ interface ChatMessage {
   senderId: string;
   senderName: string;
   senderRole: string;
+  isPrivate?: boolean;
 }
 
 interface ChatWindowProps {
@@ -25,11 +26,22 @@ interface ChatWindowProps {
   teamName: string;
   projectName?: string;
   subtitle?: string;
+  isStudentView?: boolean;
 }
 
-export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWindowProps) {
+export function ChatWindow({
+  teamId,
+  teamName,
+  projectName,
+  subtitle,
+  isStudentView,
+}: ChatWindowProps) {
   const { data: session } = authClient.useSession();
   const currentUserId = session?.user?.id;
+
+  const [isPrivateChat, setIsPrivateChat] = useState(false);
+  const [hasUnreadGeneral, setHasUnreadGeneral] = useState(false);
+  const [hasUnreadPrivate, setHasUnreadPrivate] = useState(false);
 
   const [chatState, setChatState] = useState<{
     messages: ChatMessage[];
@@ -87,13 +99,20 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
     });
   };
 
+  // Keep a ref to avoid stale closure state in socket listener
+  const isPrivateChatRef = useRef(isPrivateChat);
+  useEffect(() => {
+    isPrivateChatRef.current = isPrivateChat;
+  }, [isPrivateChat]);
+
   // Core socket.io connection and real-time message handling
   useEffect(() => {
     let active = true;
 
     async function fetchMessages() {
       try {
-        const msgs = await getChatMessages(teamId);
+        setChatState({ messages: [], loading: true });
+        const msgs = await getChatMessages(teamId, isPrivateChat);
         if (active) {
           onMessagesFetched(msgs);
         }
@@ -107,7 +126,7 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
 
     // Initial load
     fetchMessages();
-    markChatAsRead(teamId).catch(() => {});
+    markChatAsRead(teamId, isPrivateChat).catch(() => {});
 
     // Setup Socket.IO
     const socket = getSocket();
@@ -116,14 +135,28 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
       socket.connect();
     }
 
+    // Join public room
     socket.emit('join_team', teamId);
+    // If student, also join private room to listen for background notifications
+    if (isStudentView) {
+      socket.emit('join_team_private', teamId);
+    }
 
-    const handleMessage = (newMessage: ChatMessage) => {
+    const handleMessage = (newMessage: ChatMessage & { isPrivate?: boolean }) => {
       if (!active) return;
-      onMessageReceived(newMessage);
-      // Mark as read when receiving a message
-      markChatAsRead(teamId).catch(() => {});
-      setTimeout(() => scrollToBottom('smooth'), 10);
+      const msgIsPrivate = !!newMessage.isPrivate;
+      if (msgIsPrivate === isPrivateChatRef.current) {
+        onMessageReceived(newMessage);
+        markChatAsRead(teamId, msgIsPrivate).catch(() => {});
+        setTimeout(() => scrollToBottom('smooth'), 10);
+      } else {
+        // Set notification dot on the inactive tab
+        if (msgIsPrivate) {
+          setHasUnreadPrivate(true);
+        } else {
+          setHasUnreadGeneral(true);
+        }
+      }
     };
 
     socket.on('message', handleMessage);
@@ -131,7 +164,7 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
     // Backup polling/read-marking for read receipts (every 10 seconds)
     const readReceiptInterval = setInterval(() => {
       if (active) {
-        markChatAsRead(teamId).catch(() => {});
+        markChatAsRead(teamId, isPrivateChatRef.current).catch(() => {});
       }
     }, 10000);
 
@@ -141,7 +174,7 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
       clearInterval(readReceiptInterval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamId]);
+  }, [teamId, isPrivateChat, isStudentView]);
 
   // Send message handler
   const handleSend = async (e: React.FormEvent) => {
@@ -157,6 +190,7 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
       senderId: currentUserId,
       senderName: session?.user?.name || 'Me',
       senderRole: (session?.user as { role?: string })?.role || 'student',
+      isPrivate: isPrivateChat,
     };
 
     setChatState((prev) => ({
@@ -168,7 +202,7 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
     setTimeout(() => scrollToBottom('smooth'), 10);
 
     try {
-      await sendChatMessage(teamId, trimmed);
+      await sendChatMessage(teamId, trimmed, isPrivateChat);
       setSending(false);
       setTimeout(() => scrollToBottom('smooth'), 10);
     } catch (err) {
@@ -196,11 +230,55 @@ export function ChatWindow({ teamId, teamName, projectName, subtitle }: ChatWind
           </h2>
           {projectName && (
             <p className="truncate text-xs font-bold text-zinc-400 uppercase dark:text-zinc-500">
-              {projectName} {subtitle && `• ${subtitle}`}
+              {projectName} {subtitle && `• ${isPrivateChat ? 'Private Team Space' : subtitle}`}
             </p>
           )}
         </div>
       </CardHeader>
+
+      {/* Tab Switcher for Students (No Icons) */}
+      {isStudentView && (
+        <div className="flex border-b border-zinc-100 bg-zinc-50/50 px-6 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/50">
+          <div className="flex rounded-lg bg-zinc-100 p-1 dark:bg-zinc-900">
+            <button
+              type="button"
+              onClick={() => {
+                setIsPrivateChat(false);
+                setHasUnreadGeneral(false);
+              }}
+              className={cn(
+                'relative rounded-md px-4 py-1.5 text-xs font-bold transition-all',
+                !isPrivateChat
+                  ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-100'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100',
+              )}
+            >
+              Group & Staff
+              {hasUnreadGeneral && (
+                <span className="absolute top-1 right-1 flex h-1.5 w-1.5 rounded-full bg-red-500" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsPrivateChat(true);
+                setHasUnreadPrivate(false);
+              }}
+              className={cn(
+                'relative rounded-md px-4 py-1.5 text-xs font-bold transition-all',
+                isPrivateChat
+                  ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-100'
+                  : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100',
+              )}
+            >
+              Team Only
+              {hasUnreadPrivate && (
+                <span className="absolute top-1 right-1 flex h-1.5 w-1.5 rounded-full bg-red-500" />
+              )}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Chat Messages */}
       <CardContent

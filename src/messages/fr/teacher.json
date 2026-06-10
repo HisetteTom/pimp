@@ -99,7 +99,10 @@
     "noPromo": "Aucune Promotion",
     "inviteCollaborators": "Inviter des Collaborateurs ({count} sélectionnés)",
     "filterProfessors": "Filtrer les enseignants...",
-    "noProfessorsFound": "Aucun autre enseignant trouvé"
+    "noProfessorsFound": "Aucun autre enseignant trouvé",
+    "inviteJuries": "Inviter des Jurys ({count} sélectionnés)",
+    "filterJuries": "Filtrer les jurys...",
+    "noJuriesFound": "Aucun jury trouvé"
   },
   "ProfessorCheckpointsEditor": {
     "title": "Jalons du Projet (Réunions/Échéances)",

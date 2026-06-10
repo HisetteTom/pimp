@@ -1,6 +1,5 @@
 import { pgTable, text, timestamp, boolean, integer } from 'drizzle-orm/pg-core';
 import { project } from './project';
-import { responsability } from './responsability';
 import { team } from './team';
 
 export const user = pgTable('user', {

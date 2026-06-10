@@ -12,11 +12,11 @@ async function main() {
   await cleanDatabase();
 
   // 2. Seed Users first sequentially
-  const { studentTestId, student2TestId, profTestId, prof2TestId, randomStudentIds } =
+  const { studentTestId, student2TestId, profTestId, prof2TestId, randomStudentIds, juryTestId } =
     await seedUsers();
 
   // 3. Seed Projects with teacher IDs assigned
-  const insertedProjects = await seedProjects(profTestId, prof2TestId);
+  const insertedProjects = await seedProjects(profTestId, prof2TestId, juryTestId);
 
   // 4. Seed Teams & Enrollments
   const { insertedTeams, enrollmentsToInsert } = await seedTeams({

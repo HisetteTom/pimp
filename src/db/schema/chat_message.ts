@@ -1,4 +1,4 @@
-import { pgTable, integer, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, integer, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 import { user } from './auth';
 import { team } from './team';
 
@@ -12,4 +12,5 @@ export const chatMessage = pgTable('chat_message', {
     .notNull(),
   text: text('text').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
+  isPrivate: boolean('is_private').notNull().default(false),
 });

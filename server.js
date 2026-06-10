@@ -131,6 +131,26 @@ function setupSocketHandlers(socket, nextPort) {
     }
   });
 
+  socket.on('join_team_private', async (teamId) => {
+    try {
+      const cookie = socket.handshake.headers.cookie || '';
+      const url = `http://localhost:${nextPort}/api/chat/auth?teamId=${teamId}&private=true`;
+
+      const response = await fetch(url, {
+        headers: { cookie },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.authorized) {
+          socket.join(`team_${teamId}_private`);
+        }
+      }
+    } catch (err) {
+      console.error('Socket private room join auth failed:', err);
+    }
+  });
+
   socket.on('disconnect', () => {
     // cleanups
   });

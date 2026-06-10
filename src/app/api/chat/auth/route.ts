@@ -3,9 +3,6 @@ import { auth } from '@/lib/auth';
 import { db } from '@/db';
 import { projectEnrollment } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { Server as SocketServer } from 'socket.io';
-
-const _dummyTracer = SocketServer;
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,6 +28,28 @@ export async function GET(request: NextRequest) {
     const role = (session.user as { role?: string }).role || 'student';
     const isStaff = role === 'professor' || role === 'jury' || role === 'owner';
     const isAdmin = role === 'admin';
+    const isPrivate = searchParams.get('private') === 'true';
+
+    if (isPrivate) {
+      // Reject staff/admins for private chats
+      if (isStaff || isAdmin) {
+        return NextResponse.json({ authorized: false }, { status: 403 });
+      }
+
+      // Enrolled student only
+      const enrollment = await db
+        .select()
+        .from(projectEnrollment)
+        .where(
+          and(eq(projectEnrollment.userId, session.user.id), eq(projectEnrollment.teamId, teamId)),
+        )
+        .limit(1);
+
+      if (enrollment.length > 0) {
+        return NextResponse.json({ authorized: true });
+      }
+      return NextResponse.json({ authorized: false }, { status: 403 });
+    }
 
     if (isStaff || isAdmin) {
       return NextResponse.json({ authorized: true });

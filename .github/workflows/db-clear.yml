@@ -1,0 +1,45 @@
+name: Wipe Production Database
+
+on:
+  workflow_dispatch:
+
+jobs:
+  wipe-db:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Clear Schema on droplet
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' << 'EOF'
+            export DOTENV_PRIVATE_KEY_PRODUCTION='${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}'
+            cd /home/${{ secrets.SSH_USER }}/app
+
+            # Fast dotenvx run helper
+            run_dotenvx() {
+              if command -v dotenvx >/dev/null 2>&1; then
+                dotenvx run -f .env.production -- "$@"
+              else
+                npx @dotenvx/dotenvx@latest run -f .env.production -- "$@"
+              fi  
+            }
+
+            run_dotenvx bash -c '
+              echo "Waiting for database container..."
+              until docker exec pimp-db-prod pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; do
+                sleep 1
+              done
+
+              echo "Wiping database schema (dropping public schema)..."
+              docker exec -i pimp-db-prod psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+              echo "Wipe successful!"
+            '
+          EOF

@@ -194,6 +194,7 @@ export function StudentChatView({ initialTeams }: StudentChatViewProps) {
             teamName={`Group: ${selectedTeam.name}`}
             projectName={selectedTeam.projectName}
             subtitle={`Teammates: ${selectedTeam.members.join(', ')}`}
+            isStudentView={true}
           />
         ) : (
           <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center dark:border-zinc-800 dark:bg-zinc-900/30">

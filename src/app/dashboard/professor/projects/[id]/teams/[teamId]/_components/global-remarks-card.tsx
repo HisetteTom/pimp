@@ -9,6 +9,7 @@ interface GlobalRemarksCardProps {
   setJuryFeedback: (val: string) => void;
   supervisorNotes: string;
   setSupervisorNotes: (val: string) => void;
+  role?: string;
 }
 
 export function GlobalRemarksCard({
@@ -17,6 +18,7 @@ export function GlobalRemarksCard({
   setJuryFeedback,
   supervisorNotes,
   setSupervisorNotes,
+  role = 'professor',
 }: GlobalRemarksCardProps) {
   const t = useTranslations('ProfessorGlobalRemarksCard');
 
@@ -71,9 +73,10 @@ export function GlobalRemarksCard({
             id="supervisor-notes"
             rows={4}
             value={supervisorNotes}
+            disabled={role === 'jury'}
             onChange={(e) => setSupervisorNotes(e.target.value)}
             placeholder={t('supervisorPlaceholder')}
-            className="bg-card resize-y rounded-none border-2 border-zinc-200 p-3 font-mono text-xs leading-relaxed font-medium focus-visible:ring-purple-500 dark:border-zinc-800"
+            className="bg-card resize-y rounded-none border-2 border-zinc-200 p-3 font-mono text-xs leading-relaxed font-medium focus-visible:ring-purple-500 disabled:opacity-70 dark:border-zinc-800"
           />
         </div>
       </CardContent>

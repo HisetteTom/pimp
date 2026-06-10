@@ -17,6 +17,7 @@ interface CriterionCardProps {
   error?: string;
   onScoreChange: (id: number, value: string) => void;
   onCommentChange: (id: number, value: string) => void;
+  readOnly?: boolean;
 }
 
 export function CriterionCard({
@@ -25,6 +26,7 @@ export function CriterionCard({
   error,
   onScoreChange,
   onCommentChange,
+  readOnly = false,
 }: CriterionCardProps) {
   const t = useTranslations('ProfessorCriterionCard');
 
@@ -76,12 +78,13 @@ export function CriterionCard({
               value={scoreData.score !== undefined ? scoreData.score : ''}
               onChange={(e) => onScoreChange(criterion.id, e.target.value)}
               placeholder="—"
+              disabled={readOnly}
               aria-invalid={error ? 'true' : undefined}
               className={`w-full border-2 text-sm font-semibold ${
                 error
                   ? 'border-red-500 focus:border-red-600'
                   : 'border-zinc-200 focus:border-purple-500 dark:border-zinc-800'
-              } bg-card rounded-none p-3 font-mono outline-none`}
+              } bg-card rounded-none p-3 font-mono outline-none disabled:opacity-70`}
             />
           </div>
           {error && (
@@ -105,8 +108,9 @@ export function CriterionCard({
             aria-label={t('comments')}
             type="text"
             value={scoreData.comment || ''}
+            disabled={readOnly}
             onChange={(e) => onCommentChange(criterion.id, e.target.value)}
-            className="bg-card w-full rounded-none border-2 border-zinc-200 p-3 text-xs font-medium outline-none focus:border-purple-500 dark:border-zinc-800"
+            className="bg-card w-full rounded-none border-2 border-zinc-200 p-3 text-xs font-medium outline-none focus:border-purple-500 disabled:opacity-70 dark:border-zinc-800"
           />
         </div>
       </CardContent>

@@ -2,7 +2,6 @@ import { pgTable, text, integer, timestamp, primaryKey } from 'drizzle-orm/pg-co
 import { user } from './auth';
 import { project } from './project';
 import { team } from './team';
-import { responsability } from './responsability';
 
 export const projectEnrollment = pgTable(
   'project_enrollment',

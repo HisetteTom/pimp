@@ -209,7 +209,7 @@ export function ProfileView({
       </Card>
 
       {/* NOTIFICATION CENTER - BELOW THE PROFILE */}
-      {user.role !== 'owner' && (
+      {user.role !== 'owner' && user.role !== 'jury' && (
         <div className="w-full">
           <Card className="flex min-h-[400px] flex-col rounded-none border-zinc-200/80 bg-white/70 shadow-md backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/70">
             <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-100 px-6 py-4 dark:border-zinc-800/80">

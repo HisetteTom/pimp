@@ -1,6 +1,5 @@
 import { pgTable, integer, varchar, index } from 'drizzle-orm/pg-core';
 import { project } from './project';
-import { responsability } from './responsability';
 
 export const compte = pgTable(
   'compte',

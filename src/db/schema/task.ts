@@ -1,5 +1,4 @@
 import { pgTable, integer, varchar, text, timestamp, AnyPgColumn } from 'drizzle-orm/pg-core';
-import { responsability } from './responsability';
 import { team } from './team';
 import { user } from './auth';
 

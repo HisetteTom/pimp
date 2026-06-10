@@ -9,6 +9,7 @@ interface EvaluationCriteriaGridProps {
   validationErrors: Record<number, string>;
   onScoreChange: (id: number, value: string) => void;
   onCommentChange: (id: number, value: string) => void;
+  readOnly?: boolean;
 }
 
 export function EvaluationCriteriaGrid({
@@ -17,6 +18,7 @@ export function EvaluationCriteriaGrid({
   validationErrors,
   onScoreChange,
   onCommentChange,
+  readOnly = false,
 }: EvaluationCriteriaGridProps) {
   const t = useTranslations('ProfessorEvaluationCriteriaGrid');
 
@@ -48,6 +50,7 @@ export function EvaluationCriteriaGrid({
                 error={error}
                 onScoreChange={onScoreChange}
                 onCommentChange={onCommentChange}
+                readOnly={readOnly}
               />
             );
           })}

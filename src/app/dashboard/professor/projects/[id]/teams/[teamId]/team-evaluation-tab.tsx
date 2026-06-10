@@ -26,6 +26,7 @@ export function TeamEvaluationTab({
   criteria,
   initialScores,
   team,
+  role = 'professor',
 }: TeamEvaluationTabProps) {
   const t = useTranslations('ProfessorTeamEvaluationTab');
   const { refresh } = useRouter();
@@ -162,6 +163,7 @@ export function TeamEvaluationTab({
         validationErrors={validationErrors}
         onScoreChange={handleScoreChange}
         onCommentChange={handleCommentChange}
+        readOnly={role === 'jury'}
       />
 
       {/* Global Grade and General Remarks */}
@@ -171,6 +173,7 @@ export function TeamEvaluationTab({
         setJuryFeedback={setJuryFeedback}
         supervisorNotes={supervisorNotes}
         setSupervisorNotes={setSupervisorNotes}
+        role={role}
       />
 
       {/* Save Button */}

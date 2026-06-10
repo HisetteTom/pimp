@@ -57,8 +57,8 @@ export function CreateProjectDialog() {
     setIsOpen(open);
     if (open) {
       getProjectFormDropdowns()
-        .then(({ students, professors }) => {
-          dispatch({ type: 'SET_DROPDOWNS', students, professors });
+        .then(({ students, professors, juries }) => {
+          dispatch({ type: 'SET_DROPDOWNS', students, professors, juries });
         })
         .catch(console.error);
     } else {
@@ -114,6 +114,7 @@ export function CreateProjectDialog() {
           targetPromos: state.targetPromos,
           targetUsers: state.targetUsers,
           coTeachers: state.coTeachers,
+          juries: state.juries,
           showEvaluationGrid: formState.showEvaluationGrid,
         });
 
@@ -165,12 +166,17 @@ export function CreateProjectDialog() {
             setTargetUsers={(users) => dispatch({ type: 'SET_TARGET_USERS', users })}
             coTeachers={state.coTeachers}
             setCoTeachers={(teachers) => dispatch({ type: 'SET_CO_TEACHERS', teachers })}
+            juries={state.juries}
+            setJuries={(juries) => dispatch({ type: 'SET_JURIES', juries })}
             students={state.students}
             professors={state.professors}
+            juriesList={state.juriesList}
             studentSearch={state.studentSearch}
             setStudentSearch={(search) => dispatch({ type: 'SET_STUDENT_SEARCH', search })}
             profSearch={state.profSearch}
             setProfSearch={(search) => dispatch({ type: 'SET_PROF_SEARCH', search })}
+            jurySearch={state.jurySearch}
+            setJurySearch={(search) => dispatch({ type: 'SET_JURY_SEARCH', search })}
             isPending={isPending}
           />
 

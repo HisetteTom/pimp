@@ -3,7 +3,11 @@ import { project } from '../../src/db/schema/project';
 import { user } from '../../src/db/schema/auth';
 import { eq } from 'drizzle-orm';
 
-export async function seedProjects(prof1Id: string | null, prof2Id: string | null) {
+export async function seedProjects(
+  prof1Id: string | null,
+  prof2Id: string | null,
+  juryId: string | null,
+) {
   console.log('Creating 9 realistic projects…');
   const projectsData = [
     {
@@ -134,6 +138,11 @@ export async function seedProjects(prof1Id: string | null, prof2Id: string | nul
     },
   ];
 
-  const insertedProjects = await db.insert(project).values(projectsData).returning();
+  const projectsWithJuries = projectsData.map((p) => ({
+    ...p,
+    juries: juryId ? [juryId] : [],
+  }));
+
+  const insertedProjects = await db.insert(project).values(projectsWithJuries).returning();
   return insertedProjects;
 }

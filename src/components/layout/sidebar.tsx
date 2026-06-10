@@ -96,12 +96,16 @@ export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
       ? [
           { href: '/dashboard/professor#top', label: t('dashboard'), icon: LayoutDashboard },
           { href: '/dashboard/professor#projects', label: t('allProjects'), icon: FolderRoot },
-          {
-            href: '/dashboard/professor/chat',
-            label: t('chat'),
-            icon: MessageSquare,
-            badge: unreadChatCount,
-          },
+          ...(!isJury
+            ? [
+                {
+                  href: '/dashboard/professor/chat',
+                  label: t('chat'),
+                  icon: MessageSquare,
+                  badge: unreadChatCount,
+                },
+              ]
+            : []),
           ...(isProfessor
             ? [
                 {

@@ -9,13 +9,19 @@ export async function seedUsers() {
   if (!ownerPassword) {
     throw new Error('SEED_ADMIN_PASSWORD environment variable is missing.');
   }
-  const [studentPasswordHash, profPasswordHash, adminPasswordHash, ownerPasswordHash] =
-    await Promise.all([
-      bcrypt.hash('etudiant', 10),
-      bcrypt.hash('professeur', 10),
-      bcrypt.hash('administrateur', 10),
-      bcrypt.hash(ownerPassword, 10),
-    ]);
+  const [
+    studentPasswordHash,
+    profPasswordHash,
+    adminPasswordHash,
+    ownerPasswordHash,
+    juryPasswordHash,
+  ] = await Promise.all([
+    bcrypt.hash('etudiant', 10),
+    bcrypt.hash('professeur', 10),
+    bcrypt.hash('administrateur', 10),
+    bcrypt.hash(ownerPassword, 10),
+    bcrypt.hash('jure', 10),
+  ]);
 
   const studentTestId = crypto.randomUUID();
   const student2TestId = crypto.randomUUID();
@@ -23,6 +29,7 @@ export async function seedUsers() {
   const prof2TestId = crypto.randomUUID();
   const adminTestId = crypto.randomUUID();
   const ownerTestId = crypto.randomUUID();
+  const juryTestId = crypto.randomUUID();
 
   console.log('Creating core test users…');
   await db.insert(user).values([
@@ -86,6 +93,16 @@ export async function seedUsers() {
       createdAt: new Date(),
       updatedAt: new Date(),
     },
+    {
+      id: juryTestId,
+      name: 'Jury Test 1',
+      email: 'jury@test.com',
+      username: 'jury',
+      role: 'jury',
+      emailVerified: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
   ]);
 
   await db.insert(account).values([
@@ -140,6 +157,15 @@ export async function seedUsers() {
       accountId: ownerTestId,
       providerId: 'credential',
       password: ownerPasswordHash,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    {
+      id: crypto.randomUUID(),
+      userId: juryTestId,
+      accountId: juryTestId,
+      providerId: 'credential',
+      password: juryPasswordHash,
       createdAt: new Date(),
       updatedAt: new Date(),
     },
@@ -226,5 +252,6 @@ export async function seedUsers() {
     profIds,
     studentPasswordHash,
     profPasswordHash,
+    juryTestId,
   };
 }

@@ -6,7 +6,7 @@ import { auth } from '@/lib/auth';
 import { eq, and, gt, asc, inArray, sql } from 'drizzle-orm';
 import { headers } from 'next/headers';
 
-export async function getChatMessages(teamId: number) {
+export async function getChatMessages(teamId: number, isPrivate: boolean = false) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -19,6 +19,10 @@ export async function getChatMessages(teamId: number) {
   const role = (currentUser as { role?: string }).role || 'student';
   const isStaff = role === 'professor' || role === 'jury' || role === 'owner';
   const isAdmin = role === 'admin';
+
+  if (isPrivate && (isStaff || isAdmin)) {
+    throw new Error('Access denied to private group chat');
+  }
 
   if (!isStaff && !isAdmin) {
     // Student: check if enrolled in this team
@@ -47,13 +51,13 @@ export async function getChatMessages(teamId: number) {
     })
     .from(chatMessage)
     .innerJoin(user, eq(chatMessage.senderId, user.id))
-    .where(eq(chatMessage.teamId, teamId))
+    .where(and(eq(chatMessage.teamId, teamId), eq(chatMessage.isPrivate, isPrivate)))
     .orderBy(asc(chatMessage.createdAt));
 
   return messages;
 }
 
-export async function sendChatMessage(teamId: number, text: string) {
+export async function sendChatMessage(teamId: number, text: string, isPrivate: boolean = false) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -61,6 +65,28 @@ export async function sendChatMessage(teamId: number, text: string) {
     throw new Error('Unauthorized');
   }
   const currentUser = session.user;
+
+  const role = (currentUser as { role?: string }).role || 'student';
+  const isStaff = role === 'professor' || role === 'jury' || role === 'owner';
+  const isAdmin = role === 'admin';
+
+  if (isPrivate) {
+    if (isStaff || isAdmin) {
+      throw new Error('Access denied to private group chat');
+    }
+    // Student: check if enrolled in this team
+    const enrollment = await db
+      .select()
+      .from(projectEnrollment)
+      .where(
+        and(eq(projectEnrollment.userId, currentUser.id), eq(projectEnrollment.teamId, teamId)),
+      )
+      .limit(1);
+
+    if (enrollment.length === 0) {
+      throw new Error('Access denied to private group chat');
+    }
+  }
 
   const trimmed = text.trim();
   if (!trimmed) {
@@ -75,6 +101,7 @@ export async function sendChatMessage(teamId: number, text: string) {
         teamId,
         senderId: currentUser.id,
         text: trimmed,
+        isPrivate,
       })
       .returning(),
     db
@@ -83,10 +110,11 @@ export async function sendChatMessage(teamId: number, text: string) {
         userId: currentUser.id,
         teamId,
         lastReadAt: new Date(),
+        lastReadPrivateAt: new Date(),
       })
       .onConflictDoUpdate({
         target: [chatReadReceipt.userId, chatReadReceipt.teamId],
-        set: { lastReadAt: new Date() },
+        set: isPrivate ? { lastReadPrivateAt: new Date() } : { lastReadAt: new Date() },
       }),
     db
       .select({
@@ -105,6 +133,7 @@ export async function sendChatMessage(teamId: number, text: string) {
     senderId: inserted.senderId,
     senderName: senderInfo?.name || 'Me',
     senderRole: senderInfo?.role || 'student',
+    isPrivate: inserted.isPrivate,
   };
 
   // Broadcast to Socket.IO room if initialized
@@ -114,13 +143,14 @@ export async function sendChatMessage(teamId: number, text: string) {
     }
   ).io;
   if (io) {
-    io.to(`team_${teamId}`).emit('message', broadcastMessage);
+    const room = isPrivate ? `team_${teamId}_private` : `team_${teamId}`;
+    io.to(room).emit('message', broadcastMessage);
   }
 
   return inserted;
 }
 
-export async function markChatAsRead(teamId: number) {
+export async function markChatAsRead(teamId: number, isPrivate: boolean = false) {
   // Inline Auth Check for React Doctor
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -137,10 +167,11 @@ export async function markChatAsRead(teamId: number) {
       userId: currentUser.id,
       teamId,
       lastReadAt: new Date(),
+      lastReadPrivateAt: new Date(),
     })
     .onConflictDoUpdate({
       target: [chatReadReceipt.userId, chatReadReceipt.teamId],
-      set: { lastReadAt: new Date() },
+      set: isPrivate ? { lastReadPrivateAt: new Date() } : { lastReadAt: new Date() },
     });
 
   return { success: true };
@@ -210,11 +241,17 @@ export async function getUnreadChatCount() {
           ? db
               .select({ count: sql<number>`count(*)` })
               .from(chatMessage)
-              .where(and(eq(chatMessage.teamId, tId), gt(chatMessage.createdAt, lastRead)))
+              .where(
+                and(
+                  eq(chatMessage.teamId, tId),
+                  eq(chatMessage.isPrivate, false),
+                  gt(chatMessage.createdAt, lastRead),
+                ),
+              )
           : db
               .select({ count: sql<number>`count(*)` })
               .from(chatMessage)
-              .where(eq(chatMessage.teamId, tId));
+              .where(and(eq(chatMessage.teamId, tId), eq(chatMessage.isPrivate, false)));
       });
 
       const results = await Promise.all(unreadPromises);
@@ -242,11 +279,28 @@ export async function getUnreadChatCount() {
         .limit(1);
 
       if (receipt) {
-        const [result] = await db
+        const publicCountPromise = db
           .select({ count: sql<number>`count(*)` })
           .from(chatMessage)
-          .where(and(eq(chatMessage.teamId, tId), gt(chatMessage.createdAt, receipt.lastReadAt)));
-        return Number(result?.count || 0);
+          .where(
+            and(
+              eq(chatMessage.teamId, tId),
+              eq(chatMessage.isPrivate, false),
+              gt(chatMessage.createdAt, receipt.lastReadAt),
+            ),
+          );
+        const privateCountPromise = db
+          .select({ count: sql<number>`count(*)` })
+          .from(chatMessage)
+          .where(
+            and(
+              eq(chatMessage.teamId, tId),
+              eq(chatMessage.isPrivate, true),
+              gt(chatMessage.createdAt, receipt.lastReadPrivateAt),
+            ),
+          );
+        const [[pubRes], [privRes]] = await Promise.all([publicCountPromise, privateCountPromise]);
+        return Number(pubRes?.count || 0) + Number(privRes?.count || 0);
       } else {
         const [result] = await db
           .select({ count: sql<number>`count(*)` })
@@ -320,11 +374,17 @@ export async function getSupervisedTeams() {
         ? db
             .select({ count: sql<number>`count(*)` })
             .from(chatMessage)
-            .where(and(eq(chatMessage.teamId, t.id), gt(chatMessage.createdAt, lastRead)))
+            .where(
+              and(
+                eq(chatMessage.teamId, t.id),
+                eq(chatMessage.isPrivate, false),
+                gt(chatMessage.createdAt, lastRead),
+              ),
+            )
         : db
             .select({ count: sql<number>`count(*)` })
             .from(chatMessage)
-            .where(eq(chatMessage.teamId, t.id));
+            .where(and(eq(chatMessage.teamId, t.id), eq(chatMessage.isPrivate, false)));
 
       const membersPromise = db
         .select({ name: user.name })
@@ -456,22 +516,43 @@ export async function getStudentTeams() {
   ]);
 
   const projectMap = new Map(enrolledProjects.map((p) => [p.id, p.name]));
-  const receiptMap = new Map(receipts.map((r) => [r.teamId, r.lastReadAt]));
+  const receiptMap = new Map(receipts.map((r) => [r.teamId, r]));
 
   // Concurrent fetch using Promise.all
   const studentTeamsWithCounts = await Promise.all(
     studentTeams.map(async (t) => {
-      const lastRead = receiptMap.get(t.id);
+      const receipt = receiptMap.get(t.id);
 
-      const countPromise = lastRead
-        ? db
-            .select({ count: sql<number>`count(*)` })
-            .from(chatMessage)
-            .where(and(eq(chatMessage.teamId, t.id), gt(chatMessage.createdAt, lastRead)))
+      const countPromise = receipt
+        ? Promise.all([
+            db
+              .select({ count: sql<number>`count(*)` })
+              .from(chatMessage)
+              .where(
+                and(
+                  eq(chatMessage.teamId, t.id),
+                  eq(chatMessage.isPrivate, false),
+                  gt(chatMessage.createdAt, receipt.lastReadAt),
+                ),
+              ),
+            db
+              .select({ count: sql<number>`count(*)` })
+              .from(chatMessage)
+              .where(
+                and(
+                  eq(chatMessage.teamId, t.id),
+                  eq(chatMessage.isPrivate, true),
+                  gt(chatMessage.createdAt, receipt.lastReadPrivateAt),
+                ),
+              ),
+          ]).then(([pub, priv]) => {
+            return [{ count: Number(pub[0]?.count || 0) + Number(priv[0]?.count || 0) }];
+          })
         : db
             .select({ count: sql<number>`count(*)` })
             .from(chatMessage)
-            .where(eq(chatMessage.teamId, t.id));
+            .where(eq(chatMessage.teamId, t.id))
+            .then(([res]) => [{ count: Number(res?.count || 0) }]);
 
       const membersPromise = db
         .select({ name: user.name })

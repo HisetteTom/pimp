@@ -24,22 +24,32 @@ export default async function ProfessorSettingsPage() {
     headers: await headers(),
   });
 
-  if (!session || (session.user.role !== 'professor' && session.user.role !== 'owner')) {
+  if (
+    !session ||
+    (session.user.role !== 'professor' &&
+      session.user.role !== 'owner' &&
+      session.user.role !== 'jury')
+  ) {
     redirect('/login');
   }
 
   const [cookieStore, t, profProjects] = await Promise.all([
     cookies(),
     getTranslations('Settings'),
-    db
-      .select()
-      .from(project)
-      .where(
-        or(
-          eq(project.teacherId, session.user.id),
-          sql(templateStrings, session.user.id, project.coTeachers),
-        ),
-      ),
+    session.user.role === 'jury'
+      ? db
+          .select()
+          .from(project)
+          .where(sql(templateStrings, session.user.id, project.juries))
+      : db
+          .select()
+          .from(project)
+          .where(
+            or(
+              eq(project.teacherId, session.user.id),
+              sql(templateStrings, session.user.id, project.coTeachers),
+            ),
+          ),
   ]);
 
   const locale = cookieStore.get('NEXT_LOCALE')?.value || 'fr';
