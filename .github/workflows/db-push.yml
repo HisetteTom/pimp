@@ -1,20 +1,15 @@
-name: Seed Production Database
+name: Push Database Schema
 
 on:
   workflow_dispatch:
 
 jobs:
-  seed-db:
+  push-schema:
     runs-on: ubuntu-latest
     environment:
       name: production
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
@@ -22,12 +17,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Transfer Seed Scripts
-        run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p /home/${{ secrets.SSH_USER }}/app"
-          scp -r scripts ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/${{ secrets.SSH_USER }}/app/
-
-      - name: Copy and Execute Seeding inside App Container
+      - name: Push Schema on droplet
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' << 'EOF'
             export DOTENV_PRIVATE_KEY_PRODUCTION='${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}'
@@ -48,14 +38,8 @@ jobs:
                 sleep 1
               done
 
-              echo "Ensuring tables exist by pushing database schema..."
+              echo "Pushing database schema via Drizzle..."
               docker exec -i pimp-app-prod bunx drizzle-kit push --force
-
-              echo "Copying seed scripts into pimp-app-prod container..."
-              docker cp /home/${{ secrets.SSH_USER }}/app/scripts pimp-app-prod:/app/scripts
-
-              echo "Running seed script inside container..."
-              docker exec -i pimp-app-prod bun /app/scripts/seed-data.ts
-              echo "Database seeding completed successfully!"
+              echo "Schema pushed successfully!"
             '
           EOF
