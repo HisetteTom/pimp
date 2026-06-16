@@ -69,7 +69,17 @@ vi.mock('@/db', () => {
   });
   const mockSelect = vi.fn().mockReturnValue({ from: mockFrom });
 
-  const mockWhereUpdate = vi.fn().mockResolvedValue(undefined);
+  const mockReturningUpdate = vi
+    .fn()
+    .mockResolvedValue([
+      { id: 101, teamId: 10, name: 'Livrable 1', status: 'accepted', feedback: 'Good job' },
+    ]);
+  const mockWhereUpdate = vi.fn().mockImplementation(() => {
+    const promise = Promise.resolve(undefined);
+    return Object.assign(promise, {
+      returning: mockReturningUpdate,
+    });
+  });
   const mockSet = vi.fn().mockReturnValue({ where: mockWhereUpdate });
   const mockUpdate = vi.fn().mockReturnValue({ set: mockSet });
 

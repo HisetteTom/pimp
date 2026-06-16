@@ -173,6 +173,7 @@ describe('Student Actions', () => {
       vi.mocked(db.query.project.findFirst).mockResolvedValue({
         id: 42,
         maxGroups: 2,
+        status: 'proposed',
       } as any);
 
       // Mock current group count = 2
@@ -211,6 +212,7 @@ describe('Student Actions', () => {
       vi.mocked(db.query.project.findFirst).mockResolvedValue({
         id: 42,
         maxGroups: 5,
+        status: 'proposed',
       } as any);
 
       // Mock current group count = 2
@@ -252,6 +254,7 @@ describe('Student Actions', () => {
       vi.mocked(db.query.project.findFirst).mockResolvedValue({
         id: 42,
         maxMembersPerGroup: 3,
+        status: 'proposed',
       } as any);
 
       // Mock team count = 3
@@ -272,6 +275,7 @@ describe('Student Actions', () => {
       vi.mocked(db.query.project.findFirst).mockResolvedValue({
         id: 42,
         maxMembersPerGroup: 5,
+        status: 'proposed',
       } as any);
 
       // Mock team count = 2
@@ -292,6 +296,12 @@ describe('Student Actions', () => {
     it('clears student team assignment', async () => {
       vi.mocked(auth.api.getSession).mockResolvedValue({
         user: { id: 'stud1' },
+      } as any);
+
+      // Mock Project
+      vi.mocked(db.query.project.findFirst).mockResolvedValue({
+        id: 42,
+        status: 'proposed',
       } as any);
 
       const updateMock = vi.mocked(db.update);

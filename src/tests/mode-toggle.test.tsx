@@ -11,6 +11,11 @@ vi.mock('next-themes', () => {
   };
 });
 
+// Mock next-intl
+vi.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}));
+
 describe('ModeToggle Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -26,7 +31,7 @@ describe('ModeToggle Component', () => {
     });
 
     render(<ModeToggle />);
-    expect(screen.getByText('Toggle theme')).toBeInTheDocument();
+    expect(screen.getByText('toggleTheme')).toBeInTheDocument();
   });
 
   it('calls setTheme with "dark" when theme is "light" and button is clicked', () => {

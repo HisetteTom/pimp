@@ -196,7 +196,7 @@ describe('Evaluation Actions', () => {
 
     it('saves successfully with jury role and handles empty/null scores and comments', async () => {
       vi.mocked(auth.api.getSession).mockResolvedValue({
-        user: { id: 'jury1', role: 'jury' },
+        user: { id: 'jury1', role: 'professor' },
       } as any);
 
       const insertMock = vi.mocked(db.insert);
