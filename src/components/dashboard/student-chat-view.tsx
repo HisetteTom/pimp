@@ -26,6 +26,11 @@ interface StudentChatViewProps {
   initialTeams: StudentTeam[];
 }
 
+/**
+ * StudentChatView renders the main client-side message center for students.
+ * Embeds project filtering dropdown selectors, polls team lists dynamically
+ * to monitor unread indicators, and coordinates selected ChatWindow contexts.
+ */
 export function StudentChatView({ initialTeams }: StudentChatViewProps) {
   const [teams, setTeams] = useState<StudentTeam[]>(initialTeams);
   const [selectedTeam, setSelectedTeam] = useState<StudentTeam | null>(

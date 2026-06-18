@@ -3,6 +3,9 @@ import { user } from './auth';
 import { project } from './project';
 import { team } from './team';
 
+/**
+ * Tracks student enrollment inside a project and their specific team assignment.
+ */
 export const projectEnrollment = pgTable(
   'project_enrollment',
   {

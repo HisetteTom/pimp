@@ -47,6 +47,9 @@ interface ExportManagerProps {
   initialProjects: ExportProject[];
 }
 
+/**
+ * Coordinates selecting and generating CSV/PDF files of team grades.
+ */
 export function ExportManager({ initialProjects }: ExportManagerProps) {
   const t = useTranslations('ProfessorExport');
   const [selectedIds, setSelectedIds] = useState<number[]>(() => initialProjects.map((p) => p.id));
@@ -149,7 +152,7 @@ export function ExportManager({ initialProjects }: ExportManagerProps) {
 
   return (
     <div className="space-y-6">
-      {/* 1. Project Selector Checklist */}
+      {/* Project Selector Checklist */}
       <Card className="bg-card border-2 border-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)] dark:border-zinc-800">
         <CardHeader className="pb-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -222,14 +225,14 @@ export function ExportManager({ initialProjects }: ExportManagerProps) {
         </CardContent>
       </Card>
 
-      {/* 2. Export Actions Cards */}
+      {/* Export Actions Cards */}
       <ExportActions
         selectedProjectsCount={selectedProjects.length}
         handleExportCSV={handleExportCSV}
         handlePrintPDF={handlePrintPDF}
       />
 
-      {/* 3. PRINT-ONLY CONTAINER (Invisible in UI, styled beautifully for window.print()) */}
+      {/* PRINT-ONLY CONTAINER (Invisible in UI, styled beautifully for window.print()) */}
       <PrintContainer selectedProjects={selectedProjects} />
     </div>
   );
@@ -241,6 +244,9 @@ interface ExportActionsProps {
   handlePrintPDF: () => void;
 }
 
+/**
+ * Renders file download/print action triggers.
+ */
 function ExportActions({
   selectedProjectsCount,
   handleExportCSV,
@@ -305,6 +311,9 @@ interface PrintContainerProps {
   selectedProjects: ExportProject[];
 }
 
+/**
+ * Invisible DOM print layout hydrated on window.print calls.
+ */
 function PrintContainer({ selectedProjects }: PrintContainerProps) {
   const t = useTranslations('ProfessorExport');
 

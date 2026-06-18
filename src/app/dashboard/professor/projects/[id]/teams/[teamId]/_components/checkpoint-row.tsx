@@ -34,6 +34,11 @@ export interface CheckpointRowProps {
   readOnly?: boolean;
 }
 
+/**
+ * Renders a checkpoint row inside the supervisor dashboard.
+ * Supports inline editing of title/due date, deletion of the checkpoint,
+ * and saving team-specific feedback notes associated with the checkpoint.
+ */
 export function CheckpointRow({
   checkpoint,
   teamId,

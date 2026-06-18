@@ -6,6 +6,11 @@ import { Trash2, Loader2 } from 'lucide-react';
 import { deleteTeam } from '@/app/dashboard/professor/actions';
 import { toast } from 'sonner';
 
+/**
+ * A client-side button component that handles team deletion.
+ * Prompts the user with a confirmation dialog and invokes the server action
+ * to remove the team and its associated records.
+ */
 export function DeleteTeamButton({ teamId, teamName }: { teamId: number; teamName: string }) {
   const [isPending, startTransition] = useTransition();
 

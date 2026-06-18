@@ -27,6 +27,10 @@ interface TargetingSectionProps {
   isPending: boolean;
 }
 
+/**
+ * TargetingSection renders the filters selector panels for cohorts, students,
+ * co-teachers, and evaluation juries inside project configuration dialog forms.
+ */
 export function TargetingSection({
   targetPromos,
   setTargetPromos,

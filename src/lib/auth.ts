@@ -5,6 +5,11 @@ import { user, session, account, verification } from '@/db/schema';
 import { username } from 'better-auth/plugins';
 import bcrypt from 'bcrypt';
 
+/**
+ * Configure Better Auth instance.
+ * Connects database schemas using Drizzle, configures bcrypt for password hashing,
+ * and sets default hooks and roles for registered users.
+ */
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: 'pg',

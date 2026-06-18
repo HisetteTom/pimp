@@ -1,6 +1,9 @@
 import { pgTable, integer, varchar, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 import { user } from './auth';
 
+/**
+ * System and chat notifications dispatched to users.
+ */
 export const notification = pgTable('notification', {
   id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
   userId: text('user_id')

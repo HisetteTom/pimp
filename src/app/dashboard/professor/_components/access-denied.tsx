@@ -2,6 +2,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
+/**
+ * AccessDenied renders an error card indicating unauthorized dashboard access.
+ * Prompts the user to re-authenticate via a redirection link back to the login page.
+ */
 export function AccessDenied() {
   const t = useTranslations('ProfessorAccessDenied');
 

@@ -36,7 +36,10 @@ interface EnrolledStudent {
   teamName: string | null;
 }
 
-// 1. Project Header Card Component
+// Project Header Card Component
+/**
+ * Header card for displaying key metadata of a project.
+ */
 export function ProjectHeaderCard({
   currentProject,
   professorName,
@@ -82,7 +85,10 @@ export function ProjectHeaderCard({
   );
 }
 
-// 2. Enrolled Students Table Component
+// Enrolled Students Table Component
+/**
+ * Renders list of enrolled students in a project.
+ */
 export function EnrolledStudentsTable({
   enrolledStudents,
   teams,
@@ -164,7 +170,10 @@ export function EnrolledStudentsTable({
   );
 }
 
-// 3. Teams Status List Component
+// Teams Status List Component
+/**
+ * Renders status lists of teams assigned to a project.
+ */
 export function TeamsStatusList({
   teams,
   maxMembersPerGroup,

@@ -12,6 +12,11 @@ interface GlobalRemarksCardProps {
   role?: string;
 }
 
+/**
+ * Renders global project evaluation notes.
+ * Displays the automated computed grade alongside text feedback sections for juries
+ * and private logs for supervisors.
+ */
 export function GlobalRemarksCard({
   globalGrade,
   juryFeedback,

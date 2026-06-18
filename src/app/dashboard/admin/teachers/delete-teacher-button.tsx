@@ -6,6 +6,9 @@ import { Trash2, Loader2 } from 'lucide-react';
 import { deleteTeacher } from '../actions';
 import { toast } from 'sonner';
 
+/**
+ * Action button initiating confirmation dialogue and deletion processes for a professor.
+ */
 export function DeleteTeacherButton({
   teacherId,
   teacherName,

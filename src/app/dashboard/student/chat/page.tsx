@@ -13,6 +13,11 @@ export const metadata: Metadata = {
   description: 'Collaborate with your team and supervisors.',
 };
 
+/**
+ * Server page component for the student chat workspace.
+ * Resolves user sessions, fetches team memberships and student projects list in parallel,
+ * loads teammate details, and mounts the StudentChatView interface.
+ */
 export default async function StudentChatPage() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -26,7 +31,7 @@ export default async function StudentChatPage() {
     );
   }
 
-  // 1. Fetch student teams and enrollments in parallel
+  // Fetch student teams and enrollments in parallel
   const [studentTeams, enrollments] = await Promise.all([
     getStudentTeams(),
     db.select().from(projectEnrollment).where(eq(projectEnrollment.userId, session.user.id)),

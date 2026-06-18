@@ -29,6 +29,10 @@ const COLUMNS = [
   { id: 'done', titleKey: 'colDone' },
 ];
 
+/**
+ * Renders a read-only Kanban board displaying the tasks of a team.
+ * Allows supervisors or juries to inspect task progress, deadlines, priority, and assignees.
+ */
 export function ReadOnlyKanban({ initialTasks, members }: ReadOnlyKanbanProps) {
   const t = useTranslations('ProfessorReadOnlyKanban');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -323,6 +327,9 @@ function KanbanCard({
 
 const emptySubscribe = () => () => {};
 
+/**
+ * Renders a localized date string on the client only to prevent SSR hydration mismatches.
+ */
 function ClientDate({ date }: { date: string | Date }) {
   const isClient = useSyncExternalStore(
     emptySubscribe,

@@ -2,6 +2,10 @@ import { pgTable, text, integer, timestamp, primaryKey } from 'drizzle-orm/pg-co
 import { user } from './auth';
 import { team } from './team';
 
+/**
+ * Tracks the last read message timestamp per user in a team's chat.
+ * Maintains separate markers for standard channels and private (supervisor) channels.
+ */
 export const chatReadReceipt = pgTable(
   'chat_read_receipt',
   {

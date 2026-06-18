@@ -58,6 +58,9 @@ function reducer(state: State, action: Action): State {
   }
 }
 
+/**
+ * Student/Professor registration page form.
+ */
 export function RegisterForm() {
   const t = useTranslations('Auth');
   const [state, dispatch] = useReducer(reducer, initialState);

@@ -42,6 +42,11 @@ interface ProjectCardProps {
 
 const EMPTY_MEMBERS: { id: string; name: string; image?: string | null }[] = [];
 
+/**
+ * Renders a card summarizing project details for students.
+ * Displays timelines, group capacity limits, and action options to join
+ * a project space or refuse a project proposal suggestion.
+ */
 export function ProjectCard({
   id,
   title,

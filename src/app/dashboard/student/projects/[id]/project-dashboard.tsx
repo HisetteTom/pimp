@@ -74,6 +74,11 @@ export interface ProjectDashboardProps {
   }[];
 }
 
+/**
+ * Renders the main student project dashboard interface.
+ * Coordinates navigation tabs (overviews, task managers, deliverables, calendars, evaluation criteria grids)
+ * and resolves details modals for selected tasks.
+ */
 export function ProjectDashboard({
   project,
   team,

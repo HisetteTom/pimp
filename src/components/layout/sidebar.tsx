@@ -41,6 +41,11 @@ interface SidebarProps {
   unreadCount?: number;
 }
 
+/**
+ * Main application Sidebar component.
+ * Evaluates active user sessions and roles (admin, professor, jury, student) to map out navigation routes.
+ * Initializes background polling to fetch unread chat counts every 10 seconds.
+ */
 export function Sidebar({ team, userProjects, unreadCount = 0 }: SidebarProps) {
   const t = useTranslations('Sidebar');
   const pathname = usePathname();

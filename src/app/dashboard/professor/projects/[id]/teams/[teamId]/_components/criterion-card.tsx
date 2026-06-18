@@ -20,6 +20,11 @@ interface CriterionCardProps {
   readOnly?: boolean;
 }
 
+/**
+ * Renders an input form for a single grading criterion.
+ * Handles numeric validation limits, displays potential error flags,
+ * and allows supervisors to comment on individual marks.
+ */
 export function CriterionCard({
   criterion,
   scoreData,

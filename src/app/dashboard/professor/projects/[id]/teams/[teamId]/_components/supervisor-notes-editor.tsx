@@ -17,6 +17,11 @@ export interface SupervisorNotesEditorProps {
   readOnly?: boolean;
 }
 
+/**
+ * Renders a structured rich note-taking environment for supervisors.
+ * Allows adding, editing, and deleting named sections of plain text.
+ * Serializes the structure as JSON to persist notes on the team model via the saveTeamNotes server action.
+ */
 export function SupervisorNotesEditor({
   teamId,
   projectId,

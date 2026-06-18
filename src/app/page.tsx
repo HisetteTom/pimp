@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   description: "Plateforme de gestion et suivi des projets étudiants de l'ISEN.",
 };
 
+/**
+ * Root home page that routes authenticated users to their respective role-based dashboards.
+ */
 export default async function HomePage() {
   const session = await auth.api.getSession({
     headers: await headers(),

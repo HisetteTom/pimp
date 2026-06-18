@@ -8,6 +8,9 @@ import { revalidatePath } from 'next/cache';
 import { eq, and } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
 
+/**
+ * Registers a new professor in the system with credentials, forcing a password reset on first access.
+ */
 export async function createTeacher(formData: { name: string; email: string; password: string }) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -47,6 +50,9 @@ export async function createTeacher(formData: { name: string; email: string; pas
   revalidatePath('/dashboard/admin/teachers');
 }
 
+/**
+ * Creates a new team under a specified project.
+ */
 export async function createTeam(projectId: number, name: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -63,6 +69,9 @@ export async function createTeam(projectId: number, name: string) {
   revalidatePath(`/dashboard/admin/projects/${projectId}`);
 }
 
+/**
+ * Registers a student enrollment for a specific project.
+ */
 export async function enrollStudent(projectId: number, userId: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -82,6 +91,9 @@ export async function enrollStudent(projectId: number, userId: string) {
   revalidatePath(`/dashboard/admin/projects/${projectId}`);
 }
 
+/**
+ * Cancels a student's project enrollment.
+ */
 export async function unenrollStudent(projectId: number, userId: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -97,6 +109,9 @@ export async function unenrollStudent(projectId: number, userId: string) {
   revalidatePath(`/dashboard/admin/projects/${projectId}`);
 }
 
+/**
+ * Assigns or updates a student's team membership inside a project.
+ */
 export async function assignStudentToTeam(
   projectId: number,
   userId: string,
@@ -120,6 +135,9 @@ export async function assignStudentToTeam(
 import { session as sessionTable, notification as notificationTable, project } from '@/db/schema';
 import { sql } from 'drizzle-orm';
 
+/**
+ * Deletes a professor profile and removes references in projects, sessions, accounts, and notifications.
+ */
 export async function deleteTeacher(teacherId: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -129,15 +147,15 @@ export async function deleteTeacher(teacherId: string) {
   }
 
   await db.transaction(async (tx) => {
-    // 1. Set teacherId to null in project table
+    // Set teacherId to null in project table
     await tx.update(project).set({ teacherId: null }).where(eq(project.teacherId, teacherId));
 
-    // 2. Remove from coTeachers array in project table
+    // Remove from coTeachers array in project table
     await tx.execute(
       sql`UPDATE "project" SET "co_teachers" = array_remove("co_teachers", ${teacherId}) WHERE ${teacherId} = ANY("co_teachers")`,
     );
 
-    // 3. Delete session, account, notification, and user records
+    // Delete session, account, notification, and user records
     await tx.delete(sessionTable).where(eq(sessionTable.userId, teacherId));
     await tx.delete(account).where(eq(account.userId, teacherId));
     await tx.delete(notificationTable).where(eq(notificationTable.userId, teacherId));

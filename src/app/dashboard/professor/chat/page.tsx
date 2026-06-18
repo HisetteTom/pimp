@@ -20,6 +20,9 @@ const templateStrings = Object.assign(sqlStrings, {
   raw: sqlStrings,
 }) as unknown as TemplateStringsArray;
 
+/**
+ * Workspace enabling real-time communications between professors and student teams.
+ */
 export default async function ProfessorChatPage() {
   const session = await auth.api.getSession({
     headers: await headers(),

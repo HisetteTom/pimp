@@ -13,6 +13,11 @@ export const metadata: Metadata = {
   description: 'View your user profile and notifications on PIMP.',
 };
 
+/**
+ * Server page component for the student profile section.
+ * Queries user properties, database alerts list, active enrollments, and projects
+ * to construct profile views and feed layout sidebars.
+ */
 export default async function StudentProfilePage() {
   const session = await auth.api.getSession({
     headers: await headers(),

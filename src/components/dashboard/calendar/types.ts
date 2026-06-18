@@ -1,3 +1,6 @@
+/**
+ * Types representing calendar components.
+ */
 export interface Task {
   id: number;
   name: string;

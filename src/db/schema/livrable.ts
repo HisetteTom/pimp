@@ -1,6 +1,9 @@
 import { pgTable, integer, varchar, text, timestamp } from 'drizzle-orm/pg-core';
 import { team } from './team';
 
+/**
+ * Deliverables submitted by teams for review and grading.
+ */
 export const livrable = pgTable('livrable', {
   id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
   name: text('name').notNull(),

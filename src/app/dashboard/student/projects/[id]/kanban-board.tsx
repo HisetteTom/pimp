@@ -30,6 +30,11 @@ interface KanbanBoardProps {
   teamId: number;
 }
 
+/**
+ * Renders the interactive Kanban board for student task management.
+ * Utilizes dnd-kit pointer/keyboard sensors and sortable contexts to allow dragging
+ * task cards between status columns (todo, in_progress, done), persisting updates.
+ */
 export function KanbanBoard({ initialTasks, projectId, members, teamId }: KanbanBoardProps) {
   const t = useTranslations('KanbanBoard');
   const [tasks, setTasks] = useState<Task[]>(() => initialTasks);

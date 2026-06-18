@@ -7,6 +7,10 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { eq, and } from 'drizzle-orm';
 
+/**
+ * Endpoint for downloading/viewing uploaded deliverables securely.
+ * Checks permissions relative to the user's role and enrolled team status.
+ */
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth.api.getSession({

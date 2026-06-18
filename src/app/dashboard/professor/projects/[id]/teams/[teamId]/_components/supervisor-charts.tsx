@@ -80,6 +80,11 @@ export interface TaskStatsAndBreakdownProps {
   members: Member[];
 }
 
+/**
+ * Renders team statistics charts and lists.
+ * Incorporates a circular pie distribution of tasks based on statuses (todo, in_progress, done),
+ * a status percentage progress bar, and the team members grid list showing roles/responsibilities.
+ */
 export function TaskStatsAndBreakdown({
   tasks,
   tasksByStatus,

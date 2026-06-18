@@ -31,6 +31,11 @@ export interface TimelineAndEvolutionProps {
   completionPercentage: number;
 }
 
+/**
+ * Renders project progress indicators.
+ * Combines date boundaries, active progress indicators, and an area chart
+ * mapping task completion percentages over time.
+ */
 export function TimelineAndEvolution({
   project,
   timelineProgress,

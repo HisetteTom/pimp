@@ -4,6 +4,10 @@ import { db } from '@/db';
 import { projectEnrollment } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 
+/**
+ * Validates and authorizes chat WebSocket connection requests.
+ * Ensures caller is logged in and belongs to the requested project team.
+ */
 export async function GET(request: NextRequest) {
   try {
     const session = await auth.api.getSession({

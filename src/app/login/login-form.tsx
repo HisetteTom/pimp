@@ -18,6 +18,9 @@ import Link from 'next/link';
 import { Loader2, Mail, Lock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+/**
+ * Login handler form. Authenticates user session using the email provider.
+ */
 export function LoginForm() {
   const t = useTranslations('Auth');
   const [email, setEmail] = useState('');

@@ -15,6 +15,10 @@ if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
   };
 }
 
+/**
+ * Provides theme context using next-themes.
+ * Filters out development warnings regarding inject scripts in React 19.
+ */
 export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
 }

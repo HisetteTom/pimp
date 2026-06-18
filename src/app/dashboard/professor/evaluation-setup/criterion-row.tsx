@@ -33,6 +33,10 @@ interface CriterionRowProps {
   onDelete: () => void;
 }
 
+/**
+ * Component representing a single criterion row item in the setup view.
+ * Supports inline editing or deletion.
+ */
 export function CriterionRow({
   criterion,
   isEditing,

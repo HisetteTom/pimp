@@ -14,6 +14,12 @@ export const metadata: Metadata = {
   description: 'Manage your projects and track your progress on PIMP.',
 };
 
+/**
+ * Server page component for the Student Dashboard landing view.
+ * Authenticates user sessions, queries target cohorts and user lists,
+ * processes active student enrollments, filters out dismissed proposals,
+ * and renders categorized cards matching project structures.
+ */
 export default async function StudentDashboardPage() {
   const [t, session] = await Promise.all([
     getTranslations('Dashboard'),

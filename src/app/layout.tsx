@@ -33,6 +33,10 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 
+/**
+ * Root layout component.
+ * Mounts the internationalization provider and sets up system theme hydration.
+ */
 export default async function RootLayout({
   children,
 }: Readonly<{

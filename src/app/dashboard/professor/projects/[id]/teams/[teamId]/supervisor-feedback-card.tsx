@@ -19,6 +19,11 @@ interface SupervisorFeedbackCardProps {
   readOnly?: boolean;
 }
 
+/**
+ * Renders a structured feedback panel for a specific dashboard section (overview, kanban, deliverables).
+ * Parses section-specific text from a JSON-serialized team feedback field, handles changes locally,
+ * and posts update payloads back using the evaluateTeam server action.
+ */
 export function SupervisorFeedbackCard({
   teamId,
   projectId,

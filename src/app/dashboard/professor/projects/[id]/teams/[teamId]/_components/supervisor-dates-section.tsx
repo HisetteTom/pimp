@@ -24,6 +24,11 @@ export interface SupervisorDatesSectionProps {
   readOnly?: boolean;
 }
 
+/**
+ * Renders the timeline checkpoint manager section.
+ * Allows professors to add milestones with associated deadlines,
+ * and iterates over existing checkpoints using CheckpointRow to display detail notes.
+ */
 export function SupervisorDatesSection({
   projectId,
   teamId,

@@ -1,5 +1,8 @@
 import { S3Client, CreateBucketCommand, HeadBucketCommand } from '@aws-sdk/client-s3';
 
+/**
+ * Configure S3 storage client. Defaults to localhost for development.
+ */
 export const s3Client = new S3Client({
   endpoint: process.env.STORAGE_ENDPOINT || 'http://localhost:9010',
   region: process.env.STORAGE_REGION || 'us-east-1',
@@ -12,6 +15,9 @@ export const s3Client = new S3Client({
 
 export const BUCKET_NAME = process.env.STORAGE_BUCKET || 'pimp-deliverables';
 
+/**
+ * Assures target S3 bucket is initialized, creating it if not present.
+ */
 export async function ensureBucketExists() {
   try {
     await s3Client.send(new HeadBucketCommand({ Bucket: BUCKET_NAME }));

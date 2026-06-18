@@ -2,6 +2,9 @@ import { pgTable, text, timestamp, boolean, integer } from 'drizzle-orm/pg-core'
 import { project } from './project';
 import { team } from './team';
 
+/**
+ * User account metadata and application relations.
+ */
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -20,6 +23,9 @@ export const user = pgTable('user', {
   requiresPasswordChange: boolean('requires_password_change').default(false).notNull(),
 });
 
+/**
+ * Session storage for active authentication tokens.
+ */
 export const session = pgTable('session', {
   id: text('id').primaryKey(),
   expiresAt: timestamp('expires_at').notNull(),
@@ -33,6 +39,9 @@ export const session = pgTable('session', {
     .references(() => user.id),
 });
 
+/**
+ * OAuth/Credential credentials mapped to active users.
+ */
 export const account = pgTable('account', {
   id: text('id').primaryKey(),
   accountId: text('account_id').notNull(),
@@ -51,6 +60,9 @@ export const account = pgTable('account', {
   updatedAt: timestamp('updated_at').notNull(),
 });
 
+/**
+ * Single-use tokens for verification and password recovery.
+ */
 export const verification = pgTable('verification', {
   id: text('id').primaryKey(),
   identifier: text('identifier').notNull(),

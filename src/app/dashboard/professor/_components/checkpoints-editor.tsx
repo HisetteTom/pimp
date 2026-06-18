@@ -20,6 +20,10 @@ interface CheckpointsEditorProps {
   onUpdate: (id: string, field: 'title' | 'dueDate', value: string) => void;
 }
 
+/**
+ * Renders a list editor for project checkpoints.
+ * Provides controls for adding, deleting, and updating milestone titles and due dates.
+ */
 export function CheckpointsEditor({
   checkpoints,
   isPending,

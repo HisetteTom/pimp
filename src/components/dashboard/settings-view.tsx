@@ -14,6 +14,11 @@ import { Button } from '@/components/ui/button';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
+/**
+ * Renders the application settings view.
+ * Handles locale configurations (English or French) and commits changes
+ * to the NEXT_LOCALE cookie, performing a reload to reflect translation shifts.
+ */
 export function SettingsView({ initialLocale }: { initialLocale: string }) {
   const t = useTranslations('Settings');
   const [locale, setLocale] = React.useState(initialLocale);

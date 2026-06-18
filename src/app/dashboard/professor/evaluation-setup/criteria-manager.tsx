@@ -67,6 +67,9 @@ type Action =
   | { type: 'UPDATE_CRITERION'; criterion: Criterion }
   | { type: 'DELETE_CRITERION'; id: number };
 
+/**
+ * Reducer function managing the criteria manager state transitions.
+ */
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'SET_SELECTED_PROJECT':
@@ -143,6 +146,9 @@ function reducer(state: State, action: Action): State {
   }
 }
 
+/**
+ * Interactive workspace for managing grading criteria per project.
+ */
 export function CriteriaManager({ projects, initialCriteria }: CriteriaManagerProps) {
   const t = useTranslations('ProfessorCriteriaManager');
   const [isPending, startTransition] = useTransition();

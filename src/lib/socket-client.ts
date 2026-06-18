@@ -2,6 +2,10 @@ import { io, Socket } from 'socket.io-client';
 
 let socket: Socket | null = null;
 
+/**
+ * Lazily initializes and returns the Socket.io client instance.
+ * Ensures the connection is setup only in browser environments.
+ */
 export const getSocket = (): Socket => {
   if (!socket) {
     if (typeof window === 'undefined') {

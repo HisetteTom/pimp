@@ -67,6 +67,10 @@ export type DialogAction =
   | { type: 'SET_CHECKPOINTS'; checkpoints: { id: string; title: string; dueDate: string }[] }
   | { type: 'RESET' };
 
+/**
+ * State reducer for managing dialog inputs when creating or editing projects.
+ * Organizes targeting fields, checklists, and search parameters.
+ */
 export function dialogReducer(state: DialogState, action: DialogAction): DialogState {
   switch (action.type) {
     case 'SET_DROPDOWNS':

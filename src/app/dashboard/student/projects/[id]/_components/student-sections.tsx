@@ -205,6 +205,10 @@ type FormAction =
   | { type: 'SET_NAME'; name: string }
   | { type: 'SET_UPLOADING'; uploading: boolean };
 
+/**
+ * Local state reducer for managing file deliverable submission modal.
+ * Tracks upload action progression, active editing entity, and upload loading indicator.
+ */
 function formReducer(state: FormState, action: FormAction): FormState {
   switch (action.type) {
     case 'OPEN_NEW':
@@ -260,6 +264,10 @@ export function StudentDeliverablesSection({
     dispatch({ type: 'OPEN_EDIT', deliverable: l });
   };
 
+  /**
+   * Dispatches a multipart request to the upload endpoint.
+   * Performs validation checks and triggers page data refresh upon success.
+   */
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!state.name) {

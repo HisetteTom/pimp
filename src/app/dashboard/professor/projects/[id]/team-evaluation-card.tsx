@@ -20,6 +20,11 @@ interface TeamEvaluationCardProps {
   initialFeedback?: string | null;
 }
 
+/**
+ * Renders an evaluation form card for a team.
+ * Allows professors to record a grade between 0 and 20 and add structured feedback,
+ * invoking the evaluateTeam server action on submit.
+ */
 export function TeamEvaluationCard({
   teamId,
   projectId,

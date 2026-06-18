@@ -14,6 +14,9 @@ import * as evaluationSchema from './schema/evaluation';
 import * as notificationSchema from './schema/notification';
 import * as projectEnrollmentSchema from './schema/project_enrollment';
 
+/**
+ * Unified application database schema.
+ */
 const schema = {
   ...projectSchema,
   ...teamSchema,
@@ -31,6 +34,7 @@ const schema = {
 };
 
 declare global {
+  // Prevent duplicate database client connections during local hot-reloads
   var dbClient: postgres.Sql | undefined;
 }
 
@@ -50,4 +54,7 @@ if (process.env.NODE_ENV === 'production') {
   client = globalThis.dbClient;
 }
 
+/**
+ * Configured Drizzle client instance.
+ */
 export const db = drizzle(client, { schema });

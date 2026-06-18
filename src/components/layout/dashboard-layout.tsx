@@ -18,6 +18,10 @@ interface DashboardLayoutProps {
   };
 }
 
+/**
+ * Master server-side layout wrapper for the authenticated dashboard workspace.
+ * Feeds user session properties and unread database notifications count into the Sidebar component.
+ */
 export async function DashboardLayout({ children, team, userProjects }: DashboardLayoutProps) {
   const session = await auth.api.getSession({
     headers: await headers(),

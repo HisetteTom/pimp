@@ -1,3 +1,7 @@
+/**
+ * Unified entry point exporting all Drizzle database schemas.
+ */
+
 export * from './project';
 export * from './team';
 export * from './task';

@@ -20,6 +20,12 @@ interface TeamEvaluationTabProps {
   role: string;
 }
 
+/**
+ * Renders the primary evaluation tab interface.
+ * Coordinates criterion-specific scoring, global feedback textareas,
+ * live score-to-grade aggregation, and input constraint validation.
+ * Persists data via the saveTeamEvaluation server action.
+ */
 export function TeamEvaluationTab({
   projectId,
   teamId,

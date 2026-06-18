@@ -88,6 +88,11 @@ const getNotifIcon = (type: string) => {
   }
 };
 
+/**
+ * Renders the user profile card and the notification center.
+ * Displays details about the active user session and maps out system alerts
+ * with support for optimistic updates on read actions.
+ */
 export function ProfileView({
   user,
   initialNotifications,

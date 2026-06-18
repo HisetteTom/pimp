@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   description: 'Configure your language and application preferences.',
 };
 
+/**
+ * Server page component for student settings.
+ * Checks authentication, retrieves active client locales, and constructs
+ * navigation parameters to display application preference panels.
+ */
 export default async function StudentSettingsPage() {
   const session = await auth.api.getSession({
     headers: await headers(),

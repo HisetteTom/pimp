@@ -25,6 +25,9 @@ interface ProjectsSidebarProps {
   onSelectProject: (id: number) => void;
 }
 
+/**
+ * Sidebar navigation list of professor projects to select from in the criteria setup.
+ */
 export function ProjectsSidebar({
   projects,
   selectedProjectId,

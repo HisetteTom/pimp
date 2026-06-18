@@ -7,6 +7,9 @@ import { headers } from 'next/headers';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
 
+/**
+ * Updates the password during first login, resetting the password-change requirement flag.
+ */
 export async function updateFirstLoginPassword(password: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -20,10 +23,10 @@ export async function updateFirstLoginPassword(password: string) {
   const passwordHash = await bcrypt.hash(password, 10);
 
   await db.transaction(async (tx) => {
-    // 1. Update password in credentials account
+    // Update password in credentials account
     await tx.update(account).set({ password: passwordHash }).where(eq(account.userId, userId));
 
-    // 2. Clear requiresPasswordChange flag on user profile
+    // Clear requiresPasswordChange flag on user profile
     await tx.update(user).set({ requiresPasswordChange: false }).where(eq(user.id, userId));
   });
 }

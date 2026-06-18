@@ -18,6 +18,9 @@ import { createTeacher } from '../actions';
 import { Loader2, Plus, Mail, Lock, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+/**
+ * Modal dialog for inputting and registering new professor accounts.
+ */
 export function CreateTeacherDialog() {
   const t = useTranslations('AdminCreateTeacher');
   const [isOpen, setIsOpen] = useState(false);

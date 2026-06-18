@@ -2,6 +2,9 @@ import { pgTable, integer, text, primaryKey } from 'drizzle-orm/pg-core';
 import { project } from './project';
 import { user } from './auth';
 
+/**
+ * Tracks which projects were explicitly declined or refused by students.
+ */
 export const refusedProject = pgTable(
   'refused_project',
   {

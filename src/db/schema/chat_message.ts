@@ -2,6 +2,10 @@ import { pgTable, integer, text, timestamp, boolean } from 'drizzle-orm/pg-core'
 import { user } from './auth';
 import { team } from './team';
 
+/**
+ * Chat messages sent within a team context.
+ * Supports public and private (supervisor-only) message flagging.
+ */
 export const chatMessage = pgTable('chat_message', {
   id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
   teamId: integer('team_id')

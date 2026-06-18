@@ -51,6 +51,9 @@ type FormAction =
   | { type: 'SET_FIELD'; field: string; value: string | boolean }
   | { type: 'RESET'; payload: FormState };
 
+/**
+ * Reducer function for managing local project form input state.
+ */
 function formReducer(state: FormState, action: FormAction): FormState {
   switch (action.type) {
     case 'SET_FIELD':
@@ -62,6 +65,10 @@ function formReducer(state: FormState, action: FormAction): FormState {
   }
 }
 
+/**
+ * A dialog component that allows professors to modify existing project settings,
+ * including details, targeting promos/users, co-teachers, and evaluation juries.
+ */
 export function EditProjectDialog({ projectData }: EditProjectDialogProps) {
   const t = useTranslations('ProfessorEditDialog');
   const [isOpen, setIsOpen] = useState(false);

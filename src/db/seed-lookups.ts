@@ -1,6 +1,10 @@
 import { db } from './index';
 import { responsability } from './schema/responsability';
 
+/**
+ * Seeds static lookup tables in the database.
+ * Resolves conflicts by ignoring pre-existing lookup records.
+ */
 async function seed() {
   console.log('Seeding lookup tables...');
   await db.insert(responsability).values({ id: 1 }).onConflictDoNothing();

@@ -19,6 +19,9 @@ const templateStrings = Object.assign(sqlStrings, {
   raw: sqlStrings,
 }) as unknown as TemplateStringsArray;
 
+/**
+ * Professor settings configuration view. Enables switching locales and updating preferences.
+ */
 export default async function ProfessorSettingsPage() {
   const session = await auth.api.getSession({
     headers: await headers(),

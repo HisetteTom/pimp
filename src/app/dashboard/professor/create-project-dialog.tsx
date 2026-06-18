@@ -44,6 +44,9 @@ function formReducer(state: typeof initialFormState, action: FormAction) {
   }
 }
 
+/**
+ * Dialog module supporting project registration and initial checkpoints setup.
+ */
 export function CreateProjectDialog() {
   const t = useTranslations('ProfessorCreateDialog');
   const [isOpen, setIsOpen] = useState(false);

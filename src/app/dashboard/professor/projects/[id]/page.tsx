@@ -21,6 +21,11 @@ export const metadata: Metadata = {
   description: 'View and manage enrolled student teams and their project spaces.',
 };
 
+/**
+ * Fetches the projects list to display in the sidebar.
+ * Filters projects based on the user's role: jury members see projects they evaluate,
+ * while professors/owners see projects they teach or co-teach.
+ */
 async function fetchSidebarProjects(userId: string, role: string) {
   if (role === 'jury') {
     return await db
@@ -34,6 +39,11 @@ async function fetchSidebarProjects(userId: string, role: string) {
     .where(or(eq(project.teacherId, userId), sql`${userId} = ANY(${project.coTeachers})`));
 }
 
+/**
+ * Renders the detail view for a specific project within the professor workspace.
+ * Resolves translation keys, validates path parameters, verifies authentication,
+ * and aggregates team enrollments, members, tasks, and deliverables.
+ */
 export default async function ProfessorProjectDetailPage({
   params,
 }: {

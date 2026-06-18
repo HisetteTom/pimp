@@ -93,6 +93,11 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
   }
 }
 
+/**
+ * Renders the interactive project schedule calendar.
+ * Integrates FullCalendar to map out boundary start/end dates,
+ * checkpoints, and team tasks, supporting localized viewports and filtering logic.
+ */
 export function ProjectCalendar<TTask extends BaseTask = BaseTask>({
   project,
   tasks,
@@ -196,7 +201,7 @@ export function ProjectCalendar<TTask extends BaseTask = BaseTask>({
       });
     });
 
-    // 3. Tasks
+    // Tasks
     if (!onlyTeacherDates) {
       tasks.forEach((t) => {
         if (!t.deadline) return;

@@ -3,6 +3,9 @@
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 
+/**
+ * Global application error boundary page fallback.
+ */
 export default function Error({
   error,
   reset,

@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   description: 'First login password change enforcement.',
 };
 
+/**
+ * Initial gateway for users flagged for mandatory password reset.
+ */
 export default async function ChangePasswordPage() {
   const session = await auth.api.getSession({
     headers: await headers(),

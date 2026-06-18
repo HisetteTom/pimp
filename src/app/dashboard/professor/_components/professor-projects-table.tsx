@@ -32,6 +32,11 @@ interface ProfessorProjectsTableProps {
   totalProjects: number;
 }
 
+/**
+ * Renders a structured projects data table listing active projects.
+ * Incorporates detailed status badges, groups allocation counters, project timelines,
+ * and management navigation control buttons.
+ */
 export function ProfessorProjectsTable({ projects, totalProjects }: ProfessorProjectsTableProps) {
   const t = useTranslations('ProfessorProjectsTable');
 

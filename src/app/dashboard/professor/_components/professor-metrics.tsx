@@ -9,6 +9,11 @@ interface ProfessorMetricsProps {
   pendingDeliverables: number;
 }
 
+/**
+ * Renders statistical metrics summary cards on the professor dashboard landing page.
+ * Displays project targets, assigned teams, unique enrolled students,
+ * and deliverables awaiting evaluation.
+ */
 export function ProfessorMetrics({
   totalProjects,
   totalTeams,

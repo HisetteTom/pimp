@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   description: 'Configure evaluation grids and custom scoring criteria for student projects.',
 };
 
+/**
+ * Helper to fetch sidebar projects supervised by the teacher.
+ */
 async function fetchSidebarProjects(teacherId: string) {
   return await db
     .select()
@@ -22,6 +25,9 @@ async function fetchSidebarProjects(teacherId: string) {
     .where(or(eq(project.teacherId, teacherId), sql`${teacherId} = ANY(${project.coTeachers})`));
 }
 
+/**
+ * Page establishing the evaluation grid settings workspace.
+ */
 export default async function EvaluationSetupPage() {
   const [t, session] = await Promise.all([
     getTranslations('ProfessorEvaluationSetup'),

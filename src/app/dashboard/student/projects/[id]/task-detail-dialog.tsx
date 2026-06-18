@@ -44,6 +44,11 @@ interface TaskDetailDialogProps {
   projectId: number;
 }
 
+/**
+ * Renders a task modifier modal.
+ * Resolves inputs for title, description text, priority levels, target deadlines,
+ * and team assignee lists, updating or deleting the record via server actions.
+ */
 export function TaskDetailDialog({
   task,
   open,

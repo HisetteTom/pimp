@@ -7,6 +7,9 @@ import { eq, and } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 
+/**
+ * Appends a new evaluation criterion to a project.
+ */
 export async function createCriterion(data: {
   projectId: number;
   name: string;
@@ -39,6 +42,9 @@ export async function createCriterion(data: {
   }
 }
 
+/**
+ * Updates details of an evaluation criterion.
+ */
 export async function updateCriterion(data: {
   id: number;
   name: string;
@@ -71,6 +77,9 @@ export async function updateCriterion(data: {
   }
 }
 
+/**
+ * Deletes a specified evaluation criterion from a project.
+ */
 export async function deleteCriterion(id: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -93,6 +102,9 @@ export async function deleteCriterion(id: number) {
   }
 }
 
+/**
+ * Processes a team's evaluation grade, comments, and specific criteria scores.
+ */
 export async function saveTeamEvaluation(data: {
   teamId: number;
   projectId: number;
@@ -123,7 +135,7 @@ export async function saveTeamEvaluation(data: {
         })
         .where(eq(team.id, data.teamId));
     } else {
-      // 1. Update Team global grades/comments
+      // Update Team global grades/comments
       await db
         .update(team)
         .set({
@@ -133,7 +145,7 @@ export async function saveTeamEvaluation(data: {
         })
         .where(eq(team.id, data.teamId));
 
-      // 2. Save individual criterion scores (Upsert style in parallel)
+      // Save individual criterion scores (Upsert style in parallel)
       await Promise.all(
         data.scores.map(async (item) => {
           const existing = await db
@@ -167,7 +179,7 @@ export async function saveTeamEvaluation(data: {
       );
     }
 
-    // 3. Trigger notification for all team members (Grading notifications disabled for now)
+    // Trigger notification for all team members (Grading notifications disabled for now)
 
     revalidatePath(`/dashboard/professor/projects/${data.projectId}/teams/${data.teamId}`);
     return { success: true };
@@ -177,6 +189,9 @@ export async function saveTeamEvaluation(data: {
   }
 }
 
+/**
+ * Toggles visibility of the evaluation grid to students.
+ */
 export async function updateProjectEvaluationGridVisibility(projectId: number, show: boolean) {
   const session = await auth.api.getSession({
     headers: await headers(),

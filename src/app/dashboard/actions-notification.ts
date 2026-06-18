@@ -7,6 +7,9 @@ import { eq, and, desc, ne } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 
+/**
+ * Retrieves notifications for the active session user, processing real-time deadline warnings.
+ */
 export async function getNotifications() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -23,7 +26,7 @@ export async function getNotifications() {
   const userId = session.user.id;
 
   try {
-    // 1. Fetch user notifications first
+    // Fetch user notifications first
     const userNotifications = await db
       .select()
       .from(notification)
@@ -46,7 +49,7 @@ export async function getNotifications() {
       );
     };
 
-    // 2. Perform tomorrow check for active project enrollments
+    // Perform tomorrow check for active project enrollments
     const enrollments = await db
       .select()
       .from(projectEnrollment)
@@ -61,7 +64,7 @@ export async function getNotifications() {
       enrollments.map(async (enrollment) => {
         let createdForEnrollment = false;
 
-        // A. End of project tomorrow
+        // Check end of project tomorrow
         const [projectData] = await db
           .select()
           .from(project)
@@ -84,7 +87,7 @@ export async function getNotifications() {
           }
         }
 
-        // B. Checkpoint tomorrow
+        // Check checkpoint tomorrow
         const checkpoints = await db
           .select()
           .from(checkpoint)
@@ -114,7 +117,7 @@ export async function getNotifications() {
           createdForEnrollment = true;
         }
 
-        // C. Task deadline tomorrow
+        // Check task deadline tomorrow
         if (enrollment.teamId) {
           const teamTasks = await db
             .select()
@@ -158,7 +161,7 @@ export async function getNotifications() {
 
     const notificationsCreated = results.some(Boolean);
 
-    // 3. Re-query user notifications if any were newly created so they are immediately returned
+    // Re-query user notifications if any were newly created so they are immediately returned
     if (notificationsCreated) {
       return await db
         .select()
@@ -174,6 +177,9 @@ export async function getNotifications() {
   }
 }
 
+/**
+ * Marks a specific notification as read.
+ */
 export async function markAsRead(id: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -197,6 +203,9 @@ export async function markAsRead(id: number) {
   }
 }
 
+/**
+ * Marks all notifications as read for the active session user.
+ */
 export async function markAllAsRead() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -221,6 +230,9 @@ export async function markAllAsRead() {
 }
 
 // Internal server-side helper to trigger notifications
+/**
+ * Creates and registers a new notification in the database.
+ */
 export async function createNotification({
   userId,
   title,

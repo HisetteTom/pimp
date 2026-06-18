@@ -12,6 +12,11 @@ interface DetailsDialogProps {
   members: { id: string; name: string }[];
 }
 
+/**
+ * Renders a details dialog for calendar items.
+ * Evaluates clicked event data (project boundaries, timeline checkpoints, or tasks)
+ * to layout corresponding metadata views.
+ */
 export function DetailsDialog({
   selectedEvent,
   isOpen,

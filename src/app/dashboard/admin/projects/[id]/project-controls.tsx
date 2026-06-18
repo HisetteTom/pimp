@@ -28,7 +28,10 @@ interface StudentOption {
   promo: string | null;
 }
 
-// 1. Team Selector Dropdown next to each student
+// Team Selector Dropdown next to each student
+/**
+ * Interactive selector dropdown for changing a student's team assignment.
+ */
 export function StudentTeamSelector({
   studentId,
   projectId,
@@ -85,7 +88,10 @@ export function StudentTeamSelector({
   );
 }
 
-// 2. Force Enroll Student Form
+// Force Enroll Student Form
+/**
+ * Tool allowing administrators to force-enroll a student into a project.
+ */
 export function EnrollmentTool({
   projectId,
   unenrolledStudents,
@@ -168,7 +174,10 @@ export function EnrollmentTool({
   );
 }
 
-// 3. Create Team Tool
+// Create Team Tool
+/**
+ * Administrator tool for creating a new team under a project.
+ */
 export function CreateTeamTool({ projectId }: { projectId: number }) {
   const t = useTranslations('AdminProjectControls');
   const [teamName, setTeamName] = useState('');
@@ -232,7 +241,10 @@ export function CreateTeamTool({ projectId }: { projectId: number }) {
   );
 }
 
-// 4. Kick / Unenroll Button
+// Kick / Unenroll Button
+/**
+ * Button triggering confirmation dialog to unenroll a student.
+ */
 export function UnenrollButton({
   studentId,
   studentName,

@@ -1,6 +1,9 @@
 import { pgTable, integer, varchar, index } from 'drizzle-orm/pg-core';
 import { project } from './project';
 
+/**
+ * Legacy account schema. Maps accounts to specific projects.
+ */
 export const compte = pgTable(
   'compte',
   {

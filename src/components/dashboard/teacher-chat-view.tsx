@@ -26,6 +26,11 @@ interface TeacherChatViewProps {
   initialTeams: SupervisedTeam[];
 }
 
+/**
+ * TeacherChatView renders the professor/teaching staff workspace chat list.
+ * Integrates project filter Select triggers, dynamically polls supervised student team lists,
+ * and handles matching active ChatWindows on selection.
+ */
 export function TeacherChatView({ initialTeams }: TeacherChatViewProps) {
   const [teams, setTeams] = useState<SupervisedTeam[]>(initialTeams);
   const [selectedTeam, setSelectedTeam] = useState<SupervisedTeam | null>(

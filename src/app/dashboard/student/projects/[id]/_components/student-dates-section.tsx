@@ -3,6 +3,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslations } from 'next-intl';
 
+/**
+ * Safeguarded wrapper for rendering dates in local formats.
+ * Prevents crash when invalid datetime values are supplied.
+ */
 function formatLocalDate(dateVal: Date | string | number | null | undefined): string {
   if (!dateVal) return 'No Date';
   try {
@@ -23,6 +27,9 @@ export interface StudentDatesSectionProps {
   checkpointNotes: { id: number; checkpointId: number; teamId: number; notes: string | null }[];
 }
 
+/**
+ * Renders checkpoints and feedback logs left by the project supervisors.
+ */
 export function StudentDatesSection({ checkpoints, checkpointNotes }: StudentDatesSectionProps) {
   const t = useTranslations('StudentDatesSection');
   return (

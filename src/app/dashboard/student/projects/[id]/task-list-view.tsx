@@ -42,6 +42,11 @@ const priorityStyles = {
   high: 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-400 border border-red-500/20',
 } as Record<string, string>;
 
+/**
+ * Renders a list layout of student tasks in a tabular spreadsheet format.
+ * Provides controls for modifying status dropdowns directly, formats priority weight tags,
+ * alerts students of overdue deadlines, and integrates details/creation dialogs.
+ */
 export function TaskListView({ initialTasks, projectId, members, teamId }: TaskListViewProps) {
   const t = useTranslations('TaskListView');
   const [tasks, setTasks] = useState<Task[]>(() => initialTasks);

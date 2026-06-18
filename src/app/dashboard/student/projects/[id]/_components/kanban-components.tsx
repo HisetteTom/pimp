@@ -20,6 +20,10 @@ export interface Task {
 
 const emptySubscribe = () => () => {};
 
+/**
+ * Prevents Next.js server-side hydration mismatches when displaying dates.
+ * Relies on useSyncExternalStore to verify the component is mounted on the client.
+ */
 function ClientDate({ date }: { date: string | Date }) {
   const isClient = useSyncExternalStore(
     emptySubscribe,
@@ -120,6 +124,10 @@ export function KanbanCard({
   );
 }
 
+/**
+ * Sortable wrapper around KanbanCard using @dnd-kit/sortable.
+ * Injects drag attributes, event listeners, and styling transformations into the wrapper button.
+ */
 export function SortableTaskCard({
   task,
   members,

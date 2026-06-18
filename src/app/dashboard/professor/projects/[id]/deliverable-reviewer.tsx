@@ -21,6 +21,9 @@ interface DeliverableReviewerProps {
   readOnly?: boolean;
 }
 
+/**
+ * Returns a styled badge representing the current review status of the deliverable.
+ */
 function getStatusBadge(s: string, t: (key: string) => string) {
   switch (s) {
     case 'approved':
@@ -44,6 +47,11 @@ function getStatusBadge(s: string, t: (key: string) => string) {
   }
 }
 
+/**
+ * Renders a review panel for student deliverables.
+ * Allows professors to download the file, input text feedback,
+ * and change the status (approve, reject, or reset to pending).
+ */
 export function DeliverableReviewer({
   deliverableId,
   projectId,

@@ -4,6 +4,10 @@ interface StatusBadgeProps {
   status: string;
 }
 
+/**
+ * Renders a styled badge matches operational stages.
+ * Formats colors and labels according to project lifecycle states.
+ */
 export function StatusBadge({ status }: StatusBadgeProps) {
   switch (status) {
     case 'proposed':

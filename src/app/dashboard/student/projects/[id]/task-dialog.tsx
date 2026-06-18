@@ -34,6 +34,11 @@ interface TaskDialogProps {
   defaultStatus?: string;
 }
 
+/**
+ * Renders a task creator modal.
+ * Captures inputs for task titles, descriptions, priorities, deadlines,
+ * and select assignees to post new task objects via the createTask server action.
+ */
 export function TaskDialog({
   projectId,
   teamId,

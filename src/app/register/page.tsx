@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   description: 'Créez votre compte PIMP pour rejoindre la plateforme de gestion de projets.',
 };
 
+/**
+ * Registration gateway page wrapper.
+ */
 export default function RegisterPage() {
   return <RegisterForm />;
 }

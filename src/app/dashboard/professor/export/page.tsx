@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   description: 'Export student project evaluation details to Excel or print/save as PDF.',
 };
 
+/**
+ * Database helper to retrieve projects supervised by or co-supervised by a professor.
+ */
 async function getProfessorProjects(teacherId: string) {
   return db
     .select()
@@ -28,6 +31,9 @@ async function getProfessorProjects(teacherId: string) {
     .where(or(eq(project.teacherId, teacherId), sql`${teacherId} = ANY(${project.coTeachers})`));
 }
 
+/**
+ * Page establishing the evaluation grid export workspace.
+ */
 export default async function ExportPage() {
   const [t, session] = await Promise.all([
     getTranslations('ProfessorExport'),
@@ -40,12 +46,12 @@ export default async function ExportPage() {
 
   const teacherId = session.user.id;
 
-  // 1. Fetch all projects where teacher is owner or co-teacher
+  // Fetch all projects where teacher is owner or co-teacher
   const professorProjects = await getProfessorProjects(teacherId);
 
   const projectIds = professorProjects.map((p) => p.id);
 
-  // 2. Fetch dependencies in parallel
+  // Fetch dependencies in parallel
   const [allCriteria, allTeams, allEnrollments] = await Promise.all([
     projectIds.length > 0
       ? db

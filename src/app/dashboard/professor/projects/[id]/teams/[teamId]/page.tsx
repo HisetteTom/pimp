@@ -18,6 +18,10 @@ import { notFound, redirect } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { SupervisorWorkspace } from './supervisor-workspace';
 
+/**
+ * Fetches the list of projects for the navigation sidebar, filtering
+ * based on whether the user is an evaluation jury or teaching staff.
+ */
 async function fetchSidebarProjects(userId: string, role: string) {
   if (role === 'jury') {
     return await db
@@ -31,6 +35,11 @@ async function fetchSidebarProjects(userId: string, role: string) {
     .where(or(eq(project.teacherId, userId), sql`${userId} = ANY(${project.coTeachers})`));
 }
 
+/**
+ * Server page component for the supervisor workspace of a specific student team.
+ * Resolves path params, checks authorization (jury/professor/owner), queries all
+ * project-related entities (tasks, checkpoints, evaluations), and renders the dashboard.
+ */
 export default async function SupervisorTeamPage({
   params,
 }: {

@@ -1,6 +1,9 @@
 import { pgTable, integer, date, text, boolean } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
+/**
+ * Core project schema defining dates, restrictions, targets, and coordinator configurations.
+ */
 export const project = pgTable('project', {
   id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
   name: text('name').notNull(),

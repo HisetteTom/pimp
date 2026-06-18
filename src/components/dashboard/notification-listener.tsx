@@ -4,6 +4,11 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getNotifications, markAsRead } from '@/app/dashboard/actions-notification';
 
+/**
+ * Headless client-side component that polls for system notifications.
+ * Requests HTML5 Notification permissions on mount, queries the server periodically,
+ * and displays system notifications, handling redirects and read marking on interaction.
+ */
 export function NotificationListener() {
   const router = useRouter();
   const { push } = router;

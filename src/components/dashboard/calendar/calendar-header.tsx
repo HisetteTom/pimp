@@ -15,6 +15,11 @@ interface CalendarHeaderProps {
   onSetView: (viewType: string) => void;
 }
 
+/**
+ * Renders the top navigation toolbar for the FullCalendar scheduler.
+ * Exposes handlers for shifting months/days, switching calendar viewport types
+ * (month, week, day), and toggling dataset filters.
+ */
 export function CalendarHeader({
   calendarRef,
   viewTitle,

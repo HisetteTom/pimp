@@ -17,6 +17,9 @@ import { updateFirstLoginPassword } from './actions';
 import Image from 'next/image';
 import { Loader2, Lock, KeyRound } from 'lucide-react';
 
+/**
+ * Password recovery/reset input form.
+ */
 export function ChangePasswordForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

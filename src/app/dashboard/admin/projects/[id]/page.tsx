@@ -30,6 +30,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+/**
+ * Administrator project control room view. Resolves project metadata,
+ * enrolled students, and group allocations.
+ */
 export default async function AdminProjectControlPage({ params }: Props) {
   const [t, session] = await Promise.all([
     getTranslations('AdminProjectControl'),

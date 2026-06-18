@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'Configure your language and application preferences.',
 };
 
+/**
+ * Administrator settings configuration view. Enables switching locales and updating user settings.
+ */
 export default async function AdminSettingsPage() {
   const session = await auth.api.getSession({
     headers: await headers(),

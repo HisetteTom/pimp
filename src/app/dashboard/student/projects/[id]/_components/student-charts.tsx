@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Clock } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
+// Recharts components are imported dynamically with SSR disabled to prevent mismatch
+// issues, since layout calculations depend on client-side window properties.
 const ResponsiveContainer = dynamic(
   () => import('recharts').then((mod) => mod.ResponsiveContainer),
   { ssr: false },
@@ -56,6 +58,10 @@ const colorMap: Record<string, string> = {
   Done: '#ff7800',
 };
 
+/**
+ * Renders custom SVG radial gradient sectors inside Recharts Pie slices.
+ * Creates smooth transparency gradients using colors mapped to each task status.
+ */
 const PieGradient = (props: PieGradientProps) => {
   const entryName = props.payload?.name || '';
   const color = colorMap[entryName] || '#a1a1aa';
@@ -108,6 +114,10 @@ export interface StudentTimelineAndEvolutionProps {
   completionPercentage: number;
 }
 
+/**
+ * Renders the project's calendar duration progress and the work timeline chart.
+ * Uses area gradients under the curves for modern UI aesthetic.
+ */
 export function StudentTimelineAndEvolution({
   project,
   timelineProgress,

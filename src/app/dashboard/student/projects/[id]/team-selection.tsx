@@ -37,6 +37,10 @@ interface TeamSelectionProps {
   projectStatus?: string;
 }
 
+/**
+ * Client component for student team formation and registration.
+ * Handles creation of new teams or joining existing ones, respecting project capacity bounds.
+ */
 export function TeamSelection({
   projectId,
   teams,
@@ -48,6 +52,7 @@ export function TeamSelection({
   const [isPending, startTransition] = useTransition();
   const [newTeamName, setNewTeamName] = useState('');
 
+  // Team changes are only permitted during the early proposal or validated states.
   const isSelectionAllowed = projectStatus === 'proposed' || projectStatus === 'validated';
 
   const handleCreateTeam = () => {

@@ -20,6 +20,11 @@ interface ProjectFormFieldsProps {
   isPending: boolean;
 }
 
+/**
+ * Renders the core form inputs for defining or editing a project.
+ * Groups fields for name title, description text, schedule dates,
+ * team quotas, and evaluation display toggles.
+ */
 export function ProjectFormFields({ formState, onChange, isPending }: ProjectFormFieldsProps) {
   const t = useTranslations('ProfessorProjectFormFields');
 

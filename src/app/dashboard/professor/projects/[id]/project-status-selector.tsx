@@ -23,6 +23,11 @@ const statuses = [
   { value: 'closed', key: 'closed' },
 ];
 
+/**
+ * ProjectStatusSelector allows professors to update a project's operational phase.
+ * It uses useOptimistic to provide immediate visual feedback during the state transition
+ * and invokes updateProjectStatus in a transition boundary.
+ */
 export function ProjectStatusSelector({ projectId, initialStatus }: ProjectStatusSelectorProps) {
   const t = useTranslations('ProfessorProjectDetail');
   const [isPending, startTransition] = useTransition();

@@ -1,6 +1,10 @@
 import { getRequestConfig } from 'next-intl/server';
 import { cookies } from 'next/headers';
 
+/**
+ * Configure internationalization requests.
+ * Loads appropriate translation JSON bundles dynamically based on the locale cookie.
+ */
 export default getRequestConfig(async () => {
   const cookieStore = await cookies();
   const locale = cookieStore.get('NEXT_LOCALE')?.value || 'fr';

@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   description: 'Monitor student projects, validate deliverables, and grade teams.',
 };
 
+/**
+ * Database helper to retrieve projects supervised by or co-supervised by a professor.
+ */
 async function fetchProfessorProjects(userId: string, role: string) {
   const sqlStrings = ['', ' = ANY(', ')'];
   const templateStrings = Object.assign(sqlStrings, {
@@ -35,6 +38,9 @@ async function fetchProfessorProjects(userId: string, role: string) {
     .where(or(eq(project.teacherId, userId), sql(templateStrings, userId, project.coTeachers)));
 }
 
+/**
+ * Main dashboard gateway for professors/teachers and juries.
+ */
 export default async function ProfessorDashboardPage() {
   const [t, session] = await Promise.all([
     getTranslations('ProfessorDashboard'),

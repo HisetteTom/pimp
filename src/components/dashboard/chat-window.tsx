@@ -29,6 +29,11 @@ interface ChatWindowProps {
   isStudentView?: boolean;
 }
 
+/**
+ * ChatWindow manages real-time messaging conversations for team workspaces.
+ * Leverages Socket.IO for client-server duplex communication and applies optimistic
+ * updates when dispatching messages before server action acknowledgement.
+ */
 export function ChatWindow({
   teamId,
   teamName,

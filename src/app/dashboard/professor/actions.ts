@@ -18,6 +18,9 @@ import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { createNotification } from '../actions-notification';
 
+/**
+ * Resolves user pools categorized for dropdown selections in project setup.
+ */
 export async function getProjectFormDropdowns() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -48,6 +51,9 @@ export async function getProjectFormDropdowns() {
   return { students, professors, juries };
 }
 
+/**
+ * Creates a new project workspace and configures initial milestones/checkpoints.
+ */
 export async function createProject(data: {
   name: string;
   description: string;
@@ -103,7 +109,7 @@ export async function createProject(data: {
     try {
       const targetedStudentIds = new Set<string>();
 
-      // 1. Fetch students in targeted promos
+      // Fetch students in targeted promos
       if (data.targetPromos && data.targetPromos.length > 0) {
         const promoStudents = await db
           .select({ id: user.id })
@@ -114,7 +120,7 @@ export async function createProject(data: {
         }
       }
 
-      // 2. Add specifically targeted student IDs
+      // Add specifically targeted student IDs
       if (data.targetUsers && data.targetUsers.length > 0) {
         for (const uid of data.targetUsers) {
           targetedStudentIds.add(uid);
@@ -146,6 +152,9 @@ export async function createProject(data: {
   }
 }
 
+/**
+ * Updates a project's state.
+ */
 export async function updateProjectStatus(projectId: number, status: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -165,6 +174,9 @@ export async function updateProjectStatus(projectId: number, status: string) {
   }
 }
 
+/**
+ * Validates team deliverables (approves or rejects) and updates status with feedback.
+ */
 export async function validateDeliverable(
   deliverableId: number,
   status: string,
@@ -219,6 +231,9 @@ export async function validateDeliverable(
   }
 }
 
+/**
+ * Saves team evaluations, recording notes and letter grades.
+ */
 export async function evaluateTeam(
   teamId: number,
   grade: string | null,
@@ -242,6 +257,9 @@ export async function evaluateTeam(
   }
 }
 
+/**
+ * Saves confidential notes/observations for a specific team.
+ */
 export async function saveTeamNotes(teamId: number, notes: string, projectId: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -260,6 +278,9 @@ export async function saveTeamNotes(teamId: number, notes: string, projectId: nu
   }
 }
 
+/**
+ * Appends a new checkpoint milestone to a project.
+ */
 export async function createCheckpoint(projectId: number, title: string, dueDate: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -286,6 +307,9 @@ export async function createCheckpoint(projectId: number, title: string, dueDate
   }
 }
 
+/**
+ * Updates an existing project checkpoint detail.
+ */
 export async function updateCheckpoint(
   checkpointId: number,
   title: string,
@@ -315,6 +339,9 @@ export async function updateCheckpoint(
   }
 }
 
+/**
+ * Deletes a project checkpoint milestone.
+ */
 export async function deleteCheckpoint(checkpointId: number, projectId: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -333,6 +360,9 @@ export async function deleteCheckpoint(checkpointId: number, projectId: number) 
   }
 }
 
+/**
+ * Saves notes matching a checkpoint status.
+ */
 export async function saveCheckpointNote(
   checkpointId: number,
   teamId: number,
@@ -374,6 +404,9 @@ export async function saveCheckpointNote(
   }
 }
 
+/**
+ * Modifies an existing project definition settings.
+ */
 export async function updateProject(
   projectId: number,
   data: {
@@ -423,6 +456,9 @@ export async function updateProject(
   }
 }
 
+/**
+ * Deletes a team and cleans up all related comments, tasks, and enrollments in a transaction.
+ */
 export async function deleteTeam(teamId: number) {
   const session = await auth.api.getSession({
     headers: await headers(),

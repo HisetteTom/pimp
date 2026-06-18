@@ -7,6 +7,11 @@ interface CalendarFiltersProps {
   setHideInProgress: (val: boolean) => void;
 }
 
+/**
+ * Renders filter control buttons for calendar scheduler event items.
+ * Allows filtering datasets by author status (e.g. milestones written by professors)
+ * or hiding tasks currently in progress.
+ */
 export function CalendarFilters({
   onlyTeacherDates,
   setOnlyTeacherDates,

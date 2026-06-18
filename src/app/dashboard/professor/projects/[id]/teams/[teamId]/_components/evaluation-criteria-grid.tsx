@@ -12,6 +12,10 @@ interface EvaluationCriteriaGridProps {
   readOnly?: boolean;
 }
 
+/**
+ * Renders a list of grading fields corresponding to project evaluation criteria.
+ * Feeds local scores and validation states to individual CriterionCard inputs.
+ */
 export function EvaluationCriteriaGrid({
   criteria,
   scores,

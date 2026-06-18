@@ -1,6 +1,9 @@
 import { pgTable, integer, text, AnyPgColumn } from 'drizzle-orm/pg-core';
 import { project } from './project';
 
+/**
+ * Student group allocations mapped to a specific project.
+ */
 export const team = pgTable('team', {
   id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
   name: text('name').notNull(),

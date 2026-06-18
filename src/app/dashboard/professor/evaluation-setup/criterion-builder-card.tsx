@@ -20,6 +20,9 @@ interface CriterionBuilderCardProps {
   onCancel: () => void;
 }
 
+/**
+ * Renders a card containing inputs for establishing a new evaluation criterion.
+ */
 export function CriterionBuilderCard({
   newName,
   newDescription,

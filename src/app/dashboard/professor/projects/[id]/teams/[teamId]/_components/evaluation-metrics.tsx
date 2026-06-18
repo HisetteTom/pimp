@@ -10,6 +10,10 @@ interface EvaluationMetricsProps {
   };
 }
 
+/**
+ * Renders live grade statistics based on accumulated criteria input scores.
+ * Computes a simple fraction representation of points earned versus the total possible project points.
+ */
 export function EvaluationMetrics({ totalScoreInfo }: EvaluationMetricsProps) {
   const t = useTranslations('ProfessorEvaluationMetrics');
 

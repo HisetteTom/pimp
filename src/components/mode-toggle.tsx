@@ -7,6 +7,10 @@ import { Button } from '@/components/ui/button';
 
 import { useTranslations } from 'next-intl';
 
+/**
+ * Theme mode toggler button component.
+ * Rotates icons visually and updates theme styling between light and dark modes.
+ */
 export function ModeToggle() {
   const { theme, setTheme } = useTheme();
   const t = useTranslations('Sidebar');

@@ -2,6 +2,9 @@ import { pgTable, integer, varchar, text, timestamp, AnyPgColumn } from 'drizzle
 import { team } from './team';
 import { user } from './auth';
 
+/**
+ * Team tasks defining assignment details, lifecycle state, and deadlines.
+ */
 export const task = pgTable('task', {
   id: integer('id').primaryKey().generatedByDefaultAsIdentity(),
   name: text('name').notNull(),

@@ -29,6 +29,11 @@ const priorityStyles = {
   high: 'bg-red-100 text-red-800 dark:bg-red-950/30 dark:text-red-450 border border-red-500/20',
 } as Record<string, string>;
 
+/**
+ * Renders a read-only list view of team tasks in a tabular format.
+ * Displays statuses, priority weights, target deadlines, and member assignments,
+ * allowing supervisors to view task details in a side modal.
+ */
 export function ReadOnlyTaskListView({ initialTasks, members }: ReadOnlyTaskListViewProps) {
   const t = useTranslations('ProfessorReadOnlyTaskList');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -318,6 +323,10 @@ function ClientDate({ date }: { date: string | Date }) {
   );
 }
 
+/**
+ * A client-safe badge component that determines if a task is overdue relative to the client's current time.
+ * Suppresses hydration warnings by using useSyncExternalStore.
+ */
 function OverdueBadge({
   deadline,
   status,

@@ -90,6 +90,13 @@ const EMPTY_CRITERIA: {
 }[] = [];
 const EMPTY_SCORES: { criterionId: number; score?: number | null; comment?: string | null }[] = [];
 
+/**
+ * Renders the primary workspace layout for team supervision.
+ * Organizes supervisor workflows into tabs: task breakdown dashboards,
+ * task lists/kanbans, deliverable reviews, checkpoint notes, interactive calendars,
+ * private supervisor logs, and evaluation scorecards.
+ * Restricts specific tabs for jury users.
+ */
 export function SupervisorWorkspace({
   project,
   team,

@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   description: 'View your user profile and notifications on PIMP.',
 };
 
+/**
+ * Database helper to retrieve projects supervised by or co-supervised by a professor.
+ */
 async function fetchSidebarProjects(userId: string, role: string) {
   if (role === 'jury') {
     return await db
@@ -26,6 +29,9 @@ async function fetchSidebarProjects(userId: string, role: string) {
     .where(or(eq(project.teacherId, userId), sql`${userId} = ANY(${project.coTeachers})`));
 }
 
+/**
+ * Professor profile page showing personal account details and notifications.
+ */
 export default async function ProfessorProfilePage() {
   const session = await auth.api.getSession({
     headers: await headers(),

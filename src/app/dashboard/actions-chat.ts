@@ -6,6 +6,9 @@ import { auth } from '@/lib/auth';
 import { eq, and, gt, asc, inArray, sql } from 'drizzle-orm';
 import { headers } from 'next/headers';
 
+/**
+ * Retrieves chat messages for a specific team, optionally filtering for private messages.
+ */
 export async function getChatMessages(teamId: number, isPrivate: boolean = false) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -57,6 +60,9 @@ export async function getChatMessages(teamId: number, isPrivate: boolean = false
   return messages;
 }
 
+/**
+ * Appends a new chat message to a team's feed and triggers real-time socket events.
+ */
 export async function sendChatMessage(teamId: number, text: string, isPrivate: boolean = false) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -150,6 +156,9 @@ export async function sendChatMessage(teamId: number, text: string, isPrivate: b
   return inserted;
 }
 
+/**
+ * Marks a team's chat messages as read for the current user.
+ */
 export async function markChatAsRead(teamId: number, isPrivate: boolean = false) {
   // Inline Auth Check for React Doctor
   const session = await auth.api.getSession({
@@ -177,6 +186,9 @@ export async function markChatAsRead(teamId: number, isPrivate: boolean = false)
   return { success: true };
 }
 
+/**
+ * Calculates total unread chat messages for the current user (aggregated for professors across supervised teams).
+ */
 export async function getUnreadChatCount() {
   try {
     // Inline Auth Check for React Doctor
@@ -315,6 +327,9 @@ export async function getUnreadChatCount() {
   }
 }
 
+/**
+ * Fetches all teams supervised by the current professor along with member lists and unread message counts.
+ */
 export async function getSupervisedTeams() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -408,6 +423,9 @@ export async function getSupervisedTeams() {
   return supervisedTeamsWithCounts;
 }
 
+/**
+ * Resolves current student team and supervisor info.
+ */
 export async function getStudentTeamChatInfo() {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -464,6 +482,9 @@ export async function getStudentTeamChatInfo() {
   };
 }
 
+/**
+ * Retrieves all teams a student is enrolled in with details and unread chat message counts.
+ */
 export async function getStudentTeams() {
   const session = await auth.api.getSession({
     headers: await headers(),

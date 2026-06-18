@@ -18,6 +18,11 @@ import { DashboardLayout } from '@/components/layout/dashboard-layout';
 import { TeamSelection } from './team-selection';
 import { ProjectDashboard } from './project-dashboard';
 
+/**
+ * Server page component for the student project details space.
+ * Authenticates user, enforces security checks, maps project enrollments,
+ * and mounts either the TeamSelection screen (if unassigned) or the ProjectDashboard.
+ */
 export default async function ProjectPage({
   params,
   searchParams,

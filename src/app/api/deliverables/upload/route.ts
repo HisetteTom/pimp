@@ -8,6 +8,10 @@ import { headers } from 'next/headers';
 import { eq, and } from 'drizzle-orm';
 import { createNotification } from '@/app/dashboard/actions-notification';
 
+/**
+ * Endpoint for uploading team deliverables to S3 storage.
+ * Creates database records for the deliverables and triggers supervisor notifications.
+ */
 export async function POST(req: NextRequest) {
   try {
     const session = await auth.api.getSession({

@@ -25,6 +25,9 @@ export const metadata: Metadata = {
   description: 'View and create professor/teacher accounts.',
 };
 
+/**
+ * Administrator panel for managing professor accounts and registrations.
+ */
 export default async function AdminTeachersPage() {
   const [t, session] = await Promise.all([
     getTranslations('AdminTeachers'),

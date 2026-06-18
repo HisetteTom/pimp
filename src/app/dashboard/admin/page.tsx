@@ -25,6 +25,10 @@ export const metadata: Metadata = {
   description: 'Global control center of all projects, teams, students, and professors.',
 };
 
+/**
+ * Global administrator cockpit dashboard view. Displays platform statistics,
+ * user distributions, and ongoing academic projects.
+ */
 export default async function AdminDashboardPage() {
   const [t, session] = await Promise.all([
     getTranslations('AdminDashboard'),

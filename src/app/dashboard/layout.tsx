@@ -3,6 +3,9 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { NotificationListener } from '@/components/dashboard/notification-listener';
 
+/**
+ * Core dashboard context layout. Checks session validity and handles base redirections.
+ */
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({
     headers: await headers(),

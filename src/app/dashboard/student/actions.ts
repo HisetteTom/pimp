@@ -9,6 +9,9 @@ import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { createNotification } from '../actions-notification';
 
+/**
+ * Refuses a project invitation, clearing any automatic assignments.
+ */
 export async function refuseInvitation(projectId: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -19,7 +22,7 @@ export async function refuseInvitation(projectId: number) {
   }
 
   try {
-    // 1. Mark as refused for this student
+    // Mark as refused for this student
     await db
       .insert(refusedProject)
       .values({
@@ -28,7 +31,7 @@ export async function refuseInvitation(projectId: number) {
       })
       .onConflictDoNothing();
 
-    // 2. Clear enrollment if they were assigned
+    // Clear enrollment if they were assigned
     await db
       .delete(projectEnrollment)
       .where(
@@ -45,6 +48,9 @@ export async function refuseInvitation(projectId: number) {
   }
 }
 
+/**
+ * Enrolls a student in a project.
+ */
 export async function joinProject(projectId: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -67,6 +73,9 @@ export async function joinProject(projectId: number) {
   redirect(`/dashboard/student/projects/${projectId}`);
 }
 
+/**
+ * Creates a new team under a project, assigning the student creator as leader.
+ */
 export async function createTeam(projectId: number, teamName: string) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -116,6 +125,9 @@ export async function createTeam(projectId: number, teamName: string) {
   revalidatePath(`/dashboard/student/projects/${projectId}`);
 }
 
+/**
+ * Assigns student user to a specific team in a project.
+ */
 export async function joinTeam(projectId: number, teamId: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -156,6 +168,9 @@ export async function joinTeam(projectId: number, teamId: number) {
   revalidatePath(`/dashboard/student/projects/${projectId}`);
 }
 
+/**
+ * Removes the current student user from their team membership.
+ */
 export async function leaveTeam(projectId: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -186,6 +201,9 @@ export async function leaveTeam(projectId: number) {
   revalidatePath(`/dashboard/student/projects/${projectId}`);
 }
 
+/**
+ * Registers a new task under a student team's kanban workspace.
+ */
 export async function createTask(data: {
   name: string;
   description?: string;
@@ -247,6 +265,9 @@ export async function createTask(data: {
   revalidatePath(`/dashboard/student/projects/${data.projectId}`);
 }
 
+/**
+ * Updates task status and stores in-progress/completed timestamp markers.
+ */
 export async function updateTaskStatus(taskId: number, status: string, projectId: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -285,6 +306,9 @@ export async function updateTaskStatus(taskId: number, status: string, projectId
   revalidatePath(`/dashboard/student/projects/${projectId}`);
 }
 
+/**
+ * Deletes a task by ID.
+ */
 export async function deleteTask(taskId: number, projectId: number) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -297,6 +321,9 @@ export async function deleteTask(taskId: number, projectId: number) {
   revalidatePath(`/dashboard/student/projects/${projectId}`);
 }
 
+/**
+ * Modifies an existing task settings and logs assignments updates.
+ */
 export async function updateTask(data: {
   id: number;
   name: string;
