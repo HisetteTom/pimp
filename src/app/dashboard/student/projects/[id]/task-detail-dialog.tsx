@@ -5,7 +5,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -125,7 +124,7 @@ export function TaskDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[450px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[450px]">
         <form onSubmit={handleSubmit} className="space-y-4">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold tracking-tighter uppercase">
@@ -259,18 +258,15 @@ export function TaskDetailDialog({
             </div>
           </div>
 
-          <DialogFooter className="flex items-center justify-between gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+          <div className="flex flex-col gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
             <Button
-              type="button"
-              variant="ghost"
-              onClick={handleDelete}
-              disabled={deleting || loading}
-              className="text-destructive hover:bg-destructive/10 p-2 text-xs font-bold tracking-wider uppercase"
+              type="submit"
+              disabled={loading || deleting}
+              className="w-full text-xs font-bold tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)]"
             >
-              <Trash2 className="mr-1.5 size-4" />
-              {t('delete')}
+              {loading ? t('saving') : t('saveChanges')}
             </Button>
-            <div className="ml-auto flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -281,14 +277,17 @@ export function TaskDetailDialog({
                 {t('cancel')}
               </Button>
               <Button
-                type="submit"
-                disabled={loading || deleting}
-                className="text-xs font-bold tracking-wider uppercase shadow-[4px_4px_0px_0px_rgba(var(--primary-rgb),0.2)]"
+                type="button"
+                variant="ghost"
+                onClick={handleDelete}
+                disabled={deleting || loading}
+                className="text-destructive hover:bg-destructive/10 text-xs font-bold tracking-wider uppercase"
               >
-                {loading ? t('saving') : t('saveChanges')}
+                <Trash2 className="mr-1.5 size-4" />
+                {t('delete')}
               </Button>
             </div>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
