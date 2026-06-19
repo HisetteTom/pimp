@@ -409,29 +409,23 @@ function SidebarAccountSection({
       <p className="mb-2 px-3 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
         {t('account')}
       </p>
-      <Link
-        href={
-          isAdmin
-            ? '/dashboard/admin/profile'
-            : isStaff
-              ? '/dashboard/professor/profile'
-              : '/dashboard/student/profile'
-        }
-      >
-        <span className="flex items-center justify-between rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <User className="size-4" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 flex h-3.5 min-w-[14px] animate-pulse items-center justify-center rounded-full bg-red-500 px-0.5 text-[8px] leading-none font-black text-white ring-1 ring-white dark:ring-zinc-900">
-                  {unreadCount}
-                </span>
-              )}
+      {!isAdmin && (
+        <Link href={isStaff ? '/dashboard/professor/profile' : '/dashboard/student/profile'}>
+          <span className="flex items-center justify-between rounded-none border-l-2 border-transparent px-3 py-2 text-[12px] font-bold text-zinc-700 transition-all hover:border-zinc-900 hover:bg-zinc-900 hover:text-white dark:text-zinc-300 dark:hover:bg-white dark:hover:text-zinc-900">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <User className="size-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 min-w-[14px] animate-pulse items-center justify-center rounded-full bg-red-500 px-0.5 text-[8px] leading-none font-black text-white ring-1 ring-white dark:ring-zinc-900">
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
+              <span>{t('profile')}</span>
             </div>
-            <span>{t('profile')}</span>
-          </div>
-        </span>
-      </Link>
+          </span>
+        </Link>
+      )}
       <Link
         href={
           isAdmin
