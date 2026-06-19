@@ -21,14 +21,11 @@ Avant de démarrer l'application, créez un fichier nommé `.env.local` à la ra
 DATABASE_URL=postgres://pimp:pimp@localhost:5433/pimp
 
 # Clé de chiffrement pour Better Auth (générez-la via la commande : openssl rand -base64 32)
-BETTER_AUTH_SECRET=remplacez_par_une_cle_securisee
+BETTER_AUTH_SECRET=votre_cle
 
 # URL d'accès à l'application et à l'authentification
 BETTER_AUTH_URL=http://localhost:3000
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Clé API pour l'envoi de mails transactionnels via Resend
-RESEND_API_KEY=re_votre_cle_resend
 
 # Configuration du stockage S3 de fichiers (RustFS géré par Docker en local)
 STORAGE_ENDPOINT=http://localhost:9010
@@ -38,7 +35,7 @@ STORAGE_BUCKET=pimp-deliverables
 
 # Identifiants de l'administrateur par défaut créés lors du peuplement initial
 SEED_ADMIN_EMAIL=admin@domain.com
-SEED_ADMIN_PASSWORD=mot_de_passe_robuste
+SEED_ADMIN_PASSWORD=mot_de_passe
 ```
 
 ## Installation et Lancement
