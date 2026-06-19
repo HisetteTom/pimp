@@ -1,4 +1,4 @@
-# PIMP - Project & Internship Management Platform
+# PIMP - Projet Isen Manager & Planner
 
 PIMP est une plateforme web moderne conçue pour simplifier et centraliser la gestion des projets universitaires et des stages. Elle permet aux étudiants, enseignants et administrateurs de collaborer efficacement à travers des outils de suivi de tâches (Kanban), des revues de livrables, des grilles d'évaluation et une messagerie instantanée.
 
